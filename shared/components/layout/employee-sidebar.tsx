@@ -13,6 +13,7 @@ interface EmployeeSidebarProps {
 const NAV = [
   { name: "Dashboard", href: "/employee" },
   { name: "POS Terminal", href: "/employee/pos" },
+  { name: "Order Queue", href: "/employee/orders" },
   { name: "Profile", href: "/employee/profile", disabled: true },
 ];
 

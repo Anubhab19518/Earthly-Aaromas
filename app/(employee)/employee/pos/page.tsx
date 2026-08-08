@@ -10,7 +10,8 @@ export default async function POSPage() {
 
   // Use the security-definer RPC — employees are at aal1, so direct table queries
   // on organization_memberships are blocked by RLS.
-  const { data: info, error } = await supabase.rpc("get_my_employee_info").single();
+  const { data: rawInfo, error } = await supabase.rpc("get_my_employee_info").single();
+  const info = rawInfo as any;
 
   if (error || !info) redirect("/employee-login");
   if (info.role_code === "OWNER") redirect("/dashboard");

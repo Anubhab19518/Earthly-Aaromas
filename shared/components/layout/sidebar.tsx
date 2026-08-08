@@ -13,6 +13,8 @@ interface NavItem {
 
 const DASHBOARD_NAV: NavItem[] = [
   { name: "Overview", href: "/dashboard" },
+  { name: "Audit Log", href: "/audit" },
+  { name: "Financial Overview", href: "/financial" },
 ];
 
 const MASTER_DATA_NAV: NavItem[] = [
@@ -31,11 +33,11 @@ const INVENTORY_NAV: NavItem[] = [
   { name: "Goods Receipts", href: "/receiving" },
   { name: "Stock Transfers", href: "/stock-transfers" },
   { name: "Inventory Snapshot", href: "/inventory" },
+  { name: "Inventory Ledger", href: "/inventory/ledger" },
 ];
 
-const FUTURE_NAV: NavItem[] = [
-  { name: "Orders", href: "#", disabled: true },
-  { name: "Analytics", href: "#", disabled: true },
+const SALES_NAV: NavItem[] = [
+  { name: "Orders Monitoring", href: "/orders" },
 ];
 
 function NavLink({ item }: { item: NavItem }) {
@@ -74,43 +76,35 @@ export function Sidebar() {
         </div>
       </div>
       
-      <div className="flex-1 overflow-y-auto py-4 px-3 space-y-6">
-        <div>
+      <nav className="flex-1 space-y-8 px-4 py-6 overflow-y-auto">
+        <div className="space-y-1">
           <h3 className="px-3 text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-2">Dashboard</h3>
-          <nav className="space-y-1">
-            {DASHBOARD_NAV.map((item) => (
-              <NavLink key={item.name} item={item} />
-            ))}
-          </nav>
+          {DASHBOARD_NAV.map((item) => (
+            <NavLink key={item.name} item={item} />
+          ))}
+        </div>
+        
+        <div className="space-y-1">
+          <h3 className="px-3 text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-2">Sales</h3>
+          {SALES_NAV.map((item) => (
+            <NavLink key={item.name} item={item} />
+          ))}
         </div>
 
-        <div>
+        <div className="space-y-1">
           <h3 className="px-3 text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-2">Inventory</h3>
-          <nav className="space-y-1">
-            {INVENTORY_NAV.map((item) => (
-              <NavLink key={item.name} item={item} />
-            ))}
-          </nav>
+          {INVENTORY_NAV.map((item) => (
+            <NavLink key={item.name} item={item} />
+          ))}
         </div>
 
-        <div>
+        <div className="space-y-1">
           <h3 className="px-3 text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-2">Master Data</h3>
-          <nav className="space-y-1">
-            {MASTER_DATA_NAV.map((item) => (
-              <NavLink key={item.name} item={item} />
-            ))}
-          </nav>
+          {MASTER_DATA_NAV.map((item) => (
+            <NavLink key={item.name} item={item} />
+          ))}
         </div>
-
-        <div>
-          <h3 className="px-3 text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-2">Coming Soon</h3>
-          <nav className="space-y-1">
-            {FUTURE_NAV.map((item) => (
-              <NavLink key={item.name} item={item} />
-            ))}
-          </nav>
-        </div>
-      </div>
+      </nav>
     </div>
   );
 }

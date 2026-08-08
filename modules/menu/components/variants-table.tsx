@@ -100,7 +100,7 @@ export function VariantsTable({ menuItemId, variants }: Props) {
                       >
                         <Edit2 className="h-4 w-4" />
                       </button>
-                      <form action={deleteMenuVariant}>
+                      <form action={(fd) => { deleteMenuVariant(fd); }}>
                         <input type="hidden" name="id" value={variant.id} />
                         <input type="hidden" name="menu_item_id" value={menuItemId} />
                         <button

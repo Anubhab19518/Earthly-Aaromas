@@ -78,7 +78,7 @@ export function StockTransferDetailClient({
               <Edit2 className="mr-2 h-4 w-4" />
               Edit Details
             </button>
-            <form action={changeStockTransferStatus}>
+            <form action={(fd) => { changeStockTransferStatus(fd); }}>
               <input type="hidden" name="id" value={transfer.id} />
               <input type="hidden" name="status" value="SHIPPED" />
               <button type="submit" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors bg-blue-600 text-white hover:bg-blue-700 h-9 px-4 py-2">
@@ -86,7 +86,7 @@ export function StockTransferDetailClient({
                 Ship Transfer
               </button>
             </form>
-            <form action={changeStockTransferStatus}>
+            <form action={(fd) => { changeStockTransferStatus(fd); }}>
               <input type="hidden" name="id" value={transfer.id} />
               <input type="hidden" name="status" value="CANCELLED" />
               <button type="submit" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors bg-red-600 text-white hover:bg-red-700 h-9 px-4 py-2">
@@ -98,7 +98,7 @@ export function StockTransferDetailClient({
         )}
         {transfer.status === "SHIPPED" && activeBranchId === transfer.destination_location_id && (
           <div className="flex items-center gap-2">
-            <form action={receiveStockTransfer}>
+            <form action={(fd) => { receiveStockTransfer(fd); }}>
               <input type="hidden" name="id" value={transfer.id} />
               <button type="submit" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors bg-emerald-600 text-white hover:bg-emerald-700 h-9 px-4 py-2">
                 <CheckCircle className="mr-2 h-4 w-4" />
@@ -167,7 +167,7 @@ export function StockTransferDetailClient({
                       {isDraft && (
                         <td className="px-6 py-4 text-right">
                           {activeBranchId === transfer.source_location_id && (
-                            <form action={deleteStockTransferItem}>
+                            <form action={(fd) => { deleteStockTransferItem(fd); }}>
                               <input type="hidden" name="id" value={item.id} />
                               <input type="hidden" name="transferId" value={transfer.id} />
                               <button type="submit" className="text-red-500 hover:text-red-700 p-2 rounded-md hover:bg-red-50 transition-colors">

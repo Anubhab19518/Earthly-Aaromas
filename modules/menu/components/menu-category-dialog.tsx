@@ -22,7 +22,7 @@ export function MenuCategoryDialog({ open, onOpenChange, category }: MenuCategor
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const form = useForm<MenuCategoryFormValues>({
-    resolver: zodResolver(menuCategorySchema),
+    resolver: zodResolver(menuCategorySchema) as any,
     defaultValues: {
       name: "",
       description: "",
@@ -76,7 +76,7 @@ export function MenuCategoryDialog({ open, onOpenChange, category }: MenuCategor
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
         <h2 className="text-xl font-semibold">{category ? "Edit Category" : "Add Category"}</h2>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="mt-4 space-y-4">
+        <form onSubmit={form.handleSubmit(onSubmit as any)} className="mt-4 space-y-4">
           <div>
             <label className="block text-sm font-medium text-zinc-700">Name *</label>
             <input

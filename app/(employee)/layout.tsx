@@ -12,14 +12,16 @@ export default async function EmployeeLayout({ children }: { children: ReactNode
   // Use the security-definer RPC — employees are at aal1, so direct table queries
   // on organization_memberships, organizations, profiles, and roles are all blocked
   // by the has_mfa_assurance() RLS policies added in the TOTP migration.
-  const { data: info, error } = await supabase.rpc("get_my_employee_info").single();
+  const { data: rawInfo, error } = await supabase.rpc("get_my_employee_info").single();
+  
+  if (error || !rawInfo) redirect("/employee-login");
 
-  if (error || !info) redirect("/employee-login");
+  const info = rawInfo as any;
 
   // Owners must not be in the employee portal
   if (info.role_code === "OWNER") redirect("/dashboard");
 
-  const orgName = info.organization_name ?? "Your Organisation";
+  const orgName = info.organization_name ?? "Tea Chain";
   const userFullName = info.full_name ?? "Employee";
 
   return (

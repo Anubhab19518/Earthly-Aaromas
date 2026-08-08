@@ -160,7 +160,7 @@ export function GrnDetailView({
       <div className="mt-6">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-base font-semibold text-zinc-900">Items ({items.length})</h2>
-          {isDraft && (
+          {isDraft && !grn.purchase_order_id && (
             <button
               onClick={() => setIsAddOpen(true)}
               className="rounded-md bg-[#587333] px-4 py-2 text-sm font-semibold text-white hover:bg-[#3a4f20]"
@@ -188,7 +188,9 @@ export function GrnDetailView({
               {items.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-4 py-8 text-center text-sm text-zinc-500">
-                    No items yet. Click "Add Item" to begin.
+                    {grn.purchase_order_id 
+                      ? "No items found in this Goods Receipt." 
+                      : 'No items yet. Click "Add Item" to begin.'}
                   </td>
                 </tr>
               ) : (

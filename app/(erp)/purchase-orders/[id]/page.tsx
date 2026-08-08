@@ -36,13 +36,14 @@ export default async function PurchaseOrderDetailPage({
 
   if (!po) notFound();
 
-  const [{ data: items }, { data: suppliers }, { data: locations }, { data: ingredients }, { data: units }, { data: taxCategories }] = await Promise.all([
+  const [{ data: items }, { data: suppliers }, { data: locations }, { data: ingredients }, { data: units }, { data: taxCategories }, { data: ingredientConversions }] = await Promise.all([
     supabase.from("purchase_order_items").select("*").eq("po_id", id).order("created_at"),
     supabase.from("suppliers").select("*").eq("organization_id", membership.organization_id),
     supabase.from("locations").select("*").eq("organization_id", membership.organization_id),
     supabase.from("ingredients").select("*").eq("organization_id", membership.organization_id).is("deleted_at", null),
     supabase.from("units").select("*").is("deleted_at", null),
     supabase.from("tax_categories").select("*").eq("organization_id", membership.organization_id).is("deleted_at", null),
+    supabase.from("ingredient_unit_conversions").select("*").eq("organization_id", membership.organization_id).is("deleted_at", null),
   ]);
 
   return (
@@ -54,6 +55,8 @@ export default async function PurchaseOrderDetailPage({
       ingredients={ingredients || []}
       units={units || []}
       taxCategories={taxCategories || []}
+      ingredientConversions={ingredientConversions || []}
     />
   );
 }
+

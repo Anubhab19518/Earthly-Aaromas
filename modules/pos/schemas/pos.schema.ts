@@ -24,6 +24,19 @@ export const processSaleSchema = z.object({
   grand_total: z.number().min(0),
 });
 
+// New order-queue workflow schema
+export const createOrderSchema = z.object({
+  location_id: z.string().uuid(),
+  customer_name: z.string().min(1, "Customer name is required"),
+  customer_phone: z.string().optional().nullable(),
+  items: z.array(posCartItemSchema).min(1, "Cart cannot be empty"),
+  subtotal: z.number().min(0),
+  discount_amount: z.number().min(0).default(0),
+  tax_amount: z.number().min(0),
+  grand_total: z.number().min(0),
+});
+
 export type POSCartItem = z.infer<typeof posCartItemSchema>;
 export type POSPayment = z.infer<typeof posPaymentSchema>;
 export type ProcessSalePayload = z.infer<typeof processSaleSchema>;
+export type CreateOrderPayload = z.infer<typeof createOrderSchema>;

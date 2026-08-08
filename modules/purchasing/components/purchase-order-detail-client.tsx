@@ -41,6 +41,7 @@ export function PurchaseOrderDetailClient({
   ingredients,
   units,
   taxCategories,
+  ingredientConversions,
 }: {
   po: any;
   items: any[];
@@ -49,6 +50,7 @@ export function PurchaseOrderDetailClient({
   ingredients: any[];
   units: any[];
   taxCategories: any[];
+  ingredientConversions: { ingredient_id: string; from_unit_id: string }[];
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [isAddingItem, setIsAddingItem] = useState(false);
@@ -81,7 +83,7 @@ export function PurchaseOrderDetailClient({
               <Edit2 className="mr-2 h-4 w-4" />
               Edit Details
             </button>
-            <form action={changePurchaseOrderStatus}>
+            <form action={(fd) => { changePurchaseOrderStatus(fd); }}>
               <input type="hidden" name="id" value={po.id} />
               <input type="hidden" name="status" value="APPROVED" />
               <button type="submit" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors bg-blue-600 text-white hover:bg-blue-700 h-9 px-4 py-2">
@@ -89,7 +91,7 @@ export function PurchaseOrderDetailClient({
                 Approve PO
               </button>
             </form>
-            <form action={changePurchaseOrderStatus}>
+            <form action={(fd) => { changePurchaseOrderStatus(fd); }}>
               <input type="hidden" name="id" value={po.id} />
               <input type="hidden" name="status" value="CANCELLED" />
               <button type="submit" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors bg-red-600 text-white hover:bg-red-700 h-9 px-4 py-2">
@@ -101,7 +103,7 @@ export function PurchaseOrderDetailClient({
         )}
         {po.status === "APPROVED" && (
           <div className="flex items-center gap-2">
-            <form action={changePurchaseOrderStatus}>
+            <form action={(fd) => { changePurchaseOrderStatus(fd); }}>
               <input type="hidden" name="id" value={po.id} />
               <input type="hidden" name="status" value="SENT" />
               <button type="submit" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors bg-purple-600 text-white hover:bg-purple-700 h-9 px-4 py-2">
@@ -109,7 +111,7 @@ export function PurchaseOrderDetailClient({
                 Mark as Sent
               </button>
             </form>
-            <form action={changePurchaseOrderStatus}>
+            <form action={(fd) => { changePurchaseOrderStatus(fd); }}>
               <input type="hidden" name="id" value={po.id} />
               <input type="hidden" name="status" value="CANCELLED" />
               <button type="submit" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors bg-red-600 text-white hover:bg-red-700 h-9 px-4 py-2">
@@ -203,7 +205,7 @@ export function PurchaseOrderDetailClient({
                       </td>
                       {isDraft && (
                         <td className="px-6 py-4 text-right">
-                          <form action={deletePurchaseOrderItem}>
+                          <form action={(fd) => { deletePurchaseOrderItem(fd); }}>
                             <input type="hidden" name="id" value={item.id} />
                             <input type="hidden" name="poId" value={po.id} />
                             <button type="submit" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors hover:bg-red-50 hover:text-red-700 text-red-500 h-8 w-8">
@@ -261,6 +263,7 @@ export function PurchaseOrderDetailClient({
               ingredients={ingredients}
               units={units}
               taxCategories={taxCategories}
+              ingredientConversions={ingredientConversions}
               onSuccess={() => setIsAddingItem(false)}
             />
           </div>

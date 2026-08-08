@@ -43,7 +43,8 @@ export default async function VariantPage({ params }: { params: Promise<{ id: st
     { data: ingredients },
     { data: units },
     { data: branchConfigs },
-    { data: locations }
+    { data: locations },
+    { data: ingredientConversions }
   ] = await Promise.all([
     supabase
       .from("recipe_items")
@@ -52,13 +53,13 @@ export default async function VariantPage({ params }: { params: Promise<{ id: st
       .eq("organization_id", membership.organization_id),
     supabase
       .from("ingredients")
-      .select("id, name, base_unit_id")
+      .select("*")
       .eq("organization_id", membership.organization_id)
       .is("deleted_at", null)
       .order("name"),
     supabase
       .from("units")
-      .select("id, name, measurement_category")
+      .select("*")
       .is("deleted_at", null),
     supabase
       .from("branch_menu_configs")
@@ -70,7 +71,12 @@ export default async function VariantPage({ params }: { params: Promise<{ id: st
       .select("id, name")
       .eq("organization_id", membership.organization_id)
       .is("deleted_at", null)
-      .order("name")
+      .order("name"),
+    supabase
+      .from("ingredient_unit_conversions")
+      .select("*")
+      .eq("organization_id", membership.organization_id)
+      .is("deleted_at", null)
   ]);
 
   return (
@@ -97,6 +103,7 @@ export default async function VariantPage({ params }: { params: Promise<{ id: st
         recipeItems={recipeItems || []}
         ingredients={ingredients || []}
         units={units || []}
+        ingredientConversions={ingredientConversions || []}
       />
 
       <BranchConfigTable

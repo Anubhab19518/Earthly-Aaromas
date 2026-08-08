@@ -38,7 +38,7 @@ export function MenuItemDialog({ open, onOpenChange, categories, taxCategories, 
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const form = useForm<MenuItemFormValues>({
-    resolver: zodResolver(menuItemSchema),
+    resolver: zodResolver(menuItemSchema) as any,
     defaultValues: {
       category_id: "",
       name: "",
@@ -104,7 +104,7 @@ export function MenuItemDialog({ open, onOpenChange, categories, taxCategories, 
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
         <h2 className="text-xl font-semibold">{item ? "Edit Menu Item" : "Add Menu Item"}</h2>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="mt-4 space-y-4">
+        <form onSubmit={form.handleSubmit(onSubmit as any)} className="mt-4 space-y-4">
           
           <div>
             <label className="block text-sm font-medium text-zinc-700">Category *</label>

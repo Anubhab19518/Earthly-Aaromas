@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import { cookies } from "next/headers";
 import { Package, Truck, Store, Layers, ClipboardList, TrendingUp, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import Link from "next/link";
+import { ShopAnalyticsSection } from "@/modules/analytics/components/shop-analytics-section";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -30,7 +31,7 @@ export default async function DashboardPage() {
   // Fetch counts
   const { count: ingredientsCount } = await supabase.from("ingredients").select("*", { count: "exact", head: true }).eq("organization_id", orgId).is("deleted_at", null);
   const { count: suppliersCount } = await supabase.from("suppliers").select("*", { count: "exact", head: true }).eq("organization_id", orgId).is("deleted_at", null);
-  const { count: warehousesCount } = await supabase.from("locations").select("*", { count: "exact", head: true }).eq("organization_id", orgId).eq("type", "WAREHOUSE").is("deleted_at", null);
+  const { count: pendingPosCount } = await supabase.from("purchase_orders").select("*", { count: "exact", head: true }).eq("organization_id", orgId).in("status", ["APPROVED", "SENT"]);
   
   let grnsQuery = supabase.from("goods_receipts").select("*", { count: "exact", head: true }).eq("organization_id", orgId);
   let inventoryItemsQuery = supabase.from("inventory_snapshot").select("*", { count: "exact", head: true }).eq("organization_id", orgId);
@@ -54,40 +55,66 @@ export default async function DashboardPage() {
     recentMovementsQuery = recentMovementsQuery.eq("location_id", activeBranchId);
   }
 
-  const [{ count: grnsCount }, { count: inventoryItemsCount }, { data: recentGrns }, { data: recentMovements }] = await Promise.all([
+  const [{ count: grnsCount }, { count: inventoryItemsCount }, { data: recentGrns }, { data: recentMovements }, { data: activeBranch }] = await Promise.all([
     grnsQuery,
     inventoryItemsQuery,
     recentGrnsQuery,
     recentMovementsQuery,
+    activeBranchId ? supabase.from("locations").select("id, name, location_types(code)").eq("id", activeBranchId).single() : Promise.resolve({ data: null }),
   ]);
+
+  let shopAnalytics = null;
+  const isShop = (activeBranch?.location_types as any)?.code === "SHOP" || (activeBranch?.location_types as any)?.code === "KITCHEN" || (activeBranch?.location_types as any)?.code === "COUNTER";
+
+  if (activeBranchId && isShop) {
+    const { getShopAnalytics } = await import("@/modules/analytics/services/shop-analytics.actions");
+    shopAnalytics = await getShopAnalytics(orgId, activeBranchId);
+  }
 
   const grnIds = recentMovements?.filter((m: any) => m.reference_type === "GOODS_RECEIPT" && m.reference_id).map((m: any) => m.reference_id) || [];
   const transferIds = recentMovements?.filter((m: any) => (m.reference_type === "TRANSFER_IN" || m.reference_type === "TRANSFER_OUT") && m.reference_id).map((m: any) => m.reference_id) || [];
 
-  const [ { data: grnItems }, { data: transferItems } ] = await Promise.all([
+  const orderIds = recentMovements?.filter((m: any) => m.reference_type === "RECIPE_CONSUMPTION" && m.reference_id).map((m: any) => m.reference_id) || [];
+
+  const [ { data: grnItems }, { data: transferItems }, { data: orders }, { data: locations } ] = await Promise.all([
     grnIds.length > 0 ? supabase.from("goods_receipt_items").select("goods_receipt_id, ingredient_id, received_quantity, units!purchase_unit_id(symbol)").in("goods_receipt_id", grnIds) : Promise.resolve({ data: [] }),
     transferIds.length > 0 ? supabase.from("stock_transfer_items").select("transfer_id, ingredient_id, quantity, units(symbol)").in("transfer_id", transferIds) : Promise.resolve({ data: [] }),
+    orderIds.length > 0 ? supabase.from("sales_orders").select("id, order_number").in("id", orderIds) : Promise.resolve({ data: [] }),
+    transferIds.length > 0 ? supabase.from("locations").select("id, name").eq("organization_id", orgId) : Promise.resolve({ data: [] }),
   ]);
+
+  const transfers = transferIds.length > 0 ? (await supabase.from("stock_transfers").select("transfer_number, source_location_id, destination_location_id").in("transfer_number", transferIds)).data : [];
 
   const movementsWithDisplay = recentMovements?.map((mov: any) => {
     let displayQty = Math.abs(mov.quantity);
     let displayUnit = mov.ingredients?.units?.symbol || "";
+    let formatted_reference = mov.reference_id;
 
     if (mov.reference_type === "GOODS_RECEIPT" && grnItems) {
+      formatted_reference = mov.reference_id; // already grn number
       const item = grnItems.find(i => i.goods_receipt_id === mov.reference_id && i.ingredient_id === mov.ingredient_id);
       if (item) {
         displayQty = Number(item.received_quantity);
-        displayUnit = item.units?.symbol || "";
+        displayUnit = (item.units as any)?.symbol || "";
       }
-    } else if ((mov.reference_type === "TRANSFER_IN" || mov.reference_type === "TRANSFER_OUT") && transferItems) {
+    } else if ((mov.reference_type === "TRANSFER_IN" || mov.reference_type === "TRANSFER_OUT" || mov.reference_type === "STOCK_TRANSFER") && transferItems) {
+      const transfer = transfers?.find(t => t.transfer_number === mov.reference_id);
+      if (transfer && locations) {
+        const source = locations.find(l => l.id === transfer.source_location_id);
+        const dest = locations.find(l => l.id === transfer.destination_location_id);
+        if (source && dest) formatted_reference = `${source.name} → ${dest.name}`;
+      }
       const item = transferItems.find(i => i.transfer_id === mov.reference_id && i.ingredient_id === mov.ingredient_id);
       if (item) {
         displayQty = Number(item.quantity);
-        displayUnit = item.units?.symbol || "";
+        displayUnit = (item.units as any)?.symbol || "";
       }
+    } else if (mov.reference_type === "RECIPE_CONSUMPTION" && orders) {
+      const order = orders.find(o => o.id === mov.reference_id);
+      if (order) formatted_reference = `Order #${order.order_number}`;
     }
 
-    return { ...mov, displayQty, displayUnit };
+    return { ...mov, displayQty, displayUnit, formatted_reference };
   });
 
   return (
@@ -98,6 +125,10 @@ export default async function DashboardPage() {
           <p className="mt-1 text-sm text-zinc-500">Monitor your inventory and supply chain operations</p>
         </div>
       </div>
+
+      {isShop && shopAnalytics && (
+        <ShopAnalyticsSection analytics={shopAnalytics} />
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 auto-rows-[140px]">
         {/* Bento Grid: Row 1 */}
@@ -124,14 +155,14 @@ export default async function DashboardPage() {
 
         {/* Bento Grid: Row 2 */}
         <DashboardCard 
-          title="Warehouses" 
-          value={warehousesCount || 0} 
-          icon={<Store className="h-5 w-5" />} 
+          title="Pending POs" 
+          value={pendingPosCount || 0} 
+          icon={<ClipboardList className="h-5 w-5" />} 
           className="col-span-1 border-zinc-200 bg-white hover:bg-gradient-to-br hover:from-[#4a632a] hover:to-[#3a4f20] hover:border-[#3d5123]"
           titleClass="text-zinc-500 group-hover:text-[#c2dcb0]"
           valueClass="text-zinc-900 text-3xl group-hover:text-white"
           iconClass="text-zinc-600 bg-zinc-100 group-hover:bg-[#3a4f20]/50 group-hover:text-[#eaf1e2]"
-          href="/locations"
+          href="/purchase-orders"
         />
         <DashboardCard 
           title="Suppliers" 
@@ -155,7 +186,8 @@ export default async function DashboardPage() {
         />
 
         {/* Bento Grid: Row 3 & 4 (Lists) */}
-        <div className="col-span-1 md:col-span-2 row-span-3 rounded-2xl border border-zinc-200 bg-white shadow-sm overflow-hidden flex flex-col">
+        {!isShop && (
+          <div className="col-span-1 md:col-span-2 row-span-3 rounded-2xl border border-zinc-200 bg-white shadow-sm overflow-hidden flex flex-col">
           <div className="border-b border-zinc-100 bg-white/50 px-6 py-5 flex justify-between items-center backdrop-blur-sm">
             <div className="flex items-center gap-2">
               <ClipboardList className="h-4 w-4 text-zinc-400" />
@@ -186,6 +218,7 @@ export default async function DashboardPage() {
             )}
           </div>
         </div>
+        )}
 
         <div className="col-span-1 md:col-span-2 row-span-3 rounded-2xl border border-zinc-200 bg-white shadow-sm overflow-hidden flex flex-col">
           <div className="border-b border-zinc-100 bg-white/50 px-6 py-5 flex justify-between items-center backdrop-blur-sm">
@@ -214,6 +247,9 @@ export default async function DashboardPage() {
                         {mov.displayQty.toFixed(2)} {mov.displayUnit}
                       </span>
                       <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">{mov.movement_type.replace("_", " ")}</p>
+                      {mov.formatted_reference && (
+                        <p className="text-[10px] text-zinc-500 max-w-[150px] truncate" title={mov.formatted_reference}>{mov.formatted_reference}</p>
+                      )}
                     </div>
                   </li>
                 ))}

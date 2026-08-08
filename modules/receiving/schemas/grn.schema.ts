@@ -11,6 +11,7 @@ export const goodsReceiptSchema = z.object({
   warehouse_location_id: z.string().uuid(),
   invoice_number: z.string().nullable().optional(),
   invoice_date: z.string().nullable().optional(),
+  purchase_order_id: z.string().uuid().nullable().optional(),
   received_date: z.string(),
   remarks: z.string().nullable().optional(),
   status: GrnStatusSchema,

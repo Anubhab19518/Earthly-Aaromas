@@ -34,9 +34,10 @@ interface Props {
   recipeItems: RecipeItem[];
   ingredients: Ingredient[];
   units: Unit[];
+  ingredientConversions: { ingredient_id: string; from_unit_id: string }[];
 }
 
-export function RecipeBuilder({ variantId, recipeItems, ingredients, units }: Props) {
+export function RecipeBuilder({ variantId, recipeItems, ingredients, units, ingredientConversions }: Props) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   return (
@@ -83,7 +84,7 @@ export function RecipeBuilder({ variantId, recipeItems, ingredients, units }: Pr
                     {Number(item.quantity_in_base_unit).toFixed(4)} {item.ingredients?.units?.name}
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <form action={deleteRecipeItem} className="inline-block">
+                    <form action={(fd) => { deleteRecipeItem(fd); }} className="inline-block">
                       <input type="hidden" name="id" value={item.id} />
                       <input type="hidden" name="variant_id" value={variantId} />
                       <button
@@ -108,6 +109,7 @@ export function RecipeBuilder({ variantId, recipeItems, ingredients, units }: Pr
         variantId={variantId}
         ingredients={ingredients}
         units={units}
+        ingredientConversions={ingredientConversions}
       />
     </div>
   );

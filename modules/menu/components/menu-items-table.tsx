@@ -130,7 +130,7 @@ export function MenuItemsTable({ items, categories, taxCategories }: Props) {
                       >
                         <Edit2 className="h-4 w-4" />
                       </button>
-                      <form action={deleteMenuItem}>
+                      <form action={(fd) => { deleteMenuItem(fd); }}>
                         <input type="hidden" name="id" value={item.id} />
                         <button
                           type="submit"
