@@ -76,7 +76,7 @@ export function PurchaseOrderItemForm({
           required
           value={selectedIngredientId}
           onChange={(e) => setSelectedIngredientId(e.target.value)}
-          className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 bg-white text-sm shadow-sm focus:border-[#4a632a] focus:outline-none focus:ring-1 focus:ring-[#4a632a]"
+          className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 bg-white text-sm shadow-sm focus:border-sky-600 focus:outline-none focus:ring-1 focus:ring-[#4a632a]"
         >
           <option value="">Select ingredient</option>
           {ingredients.map((i) => (
@@ -99,7 +99,7 @@ export function PurchaseOrderItemForm({
             step="0.001"
             min="0.001"
             required
-            className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 bg-white text-sm shadow-sm focus:border-[#4a632a] focus:outline-none focus:ring-1 focus:ring-[#4a632a]"
+            className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 bg-white text-sm shadow-sm focus:border-sky-600 focus:outline-none focus:ring-1 focus:ring-[#4a632a]"
           />
         </div>
         <div className="space-y-2">
@@ -110,7 +110,7 @@ export function PurchaseOrderItemForm({
             name="unitId"
             required
             disabled={!selectedIngredientId}
-            className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 bg-white text-sm shadow-sm focus:border-[#4a632a] focus:outline-none focus:ring-1 focus:ring-[#4a632a] disabled:bg-zinc-100 disabled:text-zinc-500"
+            className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 bg-white text-sm shadow-sm focus:border-sky-600 focus:outline-none focus:ring-1 focus:ring-[#4a632a] disabled:bg-zinc-100 disabled:text-zinc-500"
           >
             <option value="">
               {selectedIngredientId
@@ -141,7 +141,7 @@ export function PurchaseOrderItemForm({
             step="0.01"
             min="0"
             required
-            className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 bg-white text-sm shadow-sm focus:border-[#4a632a] focus:outline-none focus:ring-1 focus:ring-[#4a632a]"
+            className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 bg-white text-sm shadow-sm focus:border-sky-600 focus:outline-none focus:ring-1 focus:ring-[#4a632a]"
           />
         </div>
         <div className="space-y-2">
@@ -150,7 +150,7 @@ export function PurchaseOrderItemForm({
           </label>
           <select
             name="taxCategoryId"
-            className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 bg-white text-sm shadow-sm focus:border-[#4a632a] focus:outline-none focus:ring-1 focus:ring-[#4a632a]"
+            className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 bg-white text-sm shadow-sm focus:border-sky-600 focus:outline-none focus:ring-1 focus:ring-[#4a632a]"
           >
             <option value="">No Tax</option>
             {taxCategories.map((t) => (
@@ -174,7 +174,7 @@ export function PurchaseOrderItemForm({
         <button
           type="submit"
           disabled={isPending}
-          className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors bg-[#587333] text-zinc-50 shadow hover:bg-[#587333]/90 h-9 px-4 py-2 disabled:pointer-events-none disabled:opacity-50"
+          className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors bg-sky-600 text-zinc-50 shadow hover:bg-sky-600/90 h-9 px-4 py-2 disabled:pointer-events-none disabled:opacity-50"
         >
           {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Add Item

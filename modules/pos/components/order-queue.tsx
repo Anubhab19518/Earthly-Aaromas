@@ -152,7 +152,7 @@ function OrderCard({
             <button
               onClick={() => handleAction("prepare")}
               disabled={isLoading}
-              className="flex-1 rounded-md bg-[#4a632a] px-3 py-2 text-xs font-semibold text-white hover:bg-[#3d5123] disabled:opacity-60 transition-colors flex items-center justify-center gap-1.5"
+              className="flex-1 rounded-md bg-sky-600 px-3 py-2 text-xs font-semibold text-white hover:bg-[#3d5123] disabled:opacity-60 transition-colors flex items-center justify-center gap-1.5"
             >
               <ChefHat className="h-3.5 w-3.5" />
               {isLoading ? "Starting..." : "Start Preparing"}

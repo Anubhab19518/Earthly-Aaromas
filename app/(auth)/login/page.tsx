@@ -18,11 +18,16 @@ export default async function LoginPage() {
   }
 
   return (
-    <section className="w-full max-w-md rounded-xl border border-zinc-200 bg-white p-8 shadow-sm">
-      <p className="text-sm font-semibold tracking-wide text-zinc-500">TEA CHAIN ERP</p>
-      <h1 className="mt-2 text-2xl font-semibold tracking-tight text-zinc-950">Owner Portal</h1>
-      <p className="mt-2 text-sm text-zinc-600">Sign in to your operations dashboard.</p>
-      <div className="mt-8">
+    <section className="w-full max-w-sm flex flex-col items-center bg-transparent p-6">
+      {/* Logo */}
+      <div className="flex items-center justify-center gap-2 text-[#8b5cf6] mb-8">
+        <span className="text-xl font-semibold tracking-tight text-slate-800">Earthly Aaromas</span>
+      </div>
+
+      <h1 className="text-[22px] font-bold tracking-tight text-slate-900 text-center">Sign In</h1>
+      <p className="mt-1.5 text-[13px] font-medium text-slate-500 mb-8 text-center">Enter your email and password to access your workspace</p>
+      
+      <div className="w-full">
         <LoginForm />
       </div>
     </section>

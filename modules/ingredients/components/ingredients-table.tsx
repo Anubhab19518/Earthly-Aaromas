@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Plus, Search, Filter, Package, Hash, Tag, Scale, IndianRupee, Flag, Activity } from "lucide-react";
 import { Ingredient, IngredientCategory } from "@/modules/ingredients/schemas/ingredient.schema";
 import { IngredientUnitConversion } from "@/modules/ingredients/schemas/ingredient-conversion.schema";
 import { Unit } from "@/modules/units/schemas/unit.schema";
@@ -11,6 +12,7 @@ import { ConversionsPanel } from "./conversions-panel";
 import { AlertPoliciesPanel } from "@/modules/inventory/components/alert-policies-panel";
 import { Location } from "@/modules/locations/schemas/location.schema";
 import { InventoryAlertPolicy } from "@/modules/inventory/schemas/alert-policy.schema";
+import { TableToolbar } from "@/shared/components/ui/table-toolbar";
 
 interface IngredientsTableProps {
   ingredients: Ingredient[];
@@ -38,6 +40,18 @@ export function IngredientsTable({
   
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
+  const [activeSort, setActiveSort] = useState("name-asc");
+
+  const sortOptions = [
+    { label: "Name (A-Z)", value: "name-asc" },
+    { label: "Name (Z-A)", value: "name-desc" },
+    { label: "SKU (A-Z)", value: "sku-asc" },
+    { label: "SKU (Z-A)", value: "sku-desc" },
+    { label: "Status (A-Z)", value: "status-asc" },
+    { label: "Cost (High-Low)", value: "cost-desc" },
+    { label: "Cost (Low-High)", value: "cost-asc" },
+  ];
+  const [showFilters, setShowFilters] = useState(false);
 
   const getCategoryName = (categoryId: string) =>
     categories.find((c) => c.id === categoryId)?.name ?? "-";
@@ -59,6 +73,14 @@ export function IngredientsTable({
                           (ing.sku && ing.sku.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesStatus = statusFilter === "ALL" || ing.status === statusFilter;
     return matchesSearch && matchesStatus;
+  }).sort((a, b) => {
+    const [by, dir] = activeSort.split("-");
+    const mod = dir === "asc" ? 1 : -1;
+    if (by === "name") return a.name.localeCompare(b.name) * mod;
+    if (by === "sku") return (a.sku || "").localeCompare(b.sku || "") * mod;
+    if (by === "status") return a.status.localeCompare(b.status) * mod;
+    if (by === "cost") return ((Number(a.standard_cost) || 0) - (Number(b.standard_cost) || 0)) * mod;
+    return 0;
   });
 
   return (
@@ -77,15 +99,23 @@ export function IngredientsTable({
           </button>
           <button
             onClick={() => setIsAddOpen(true)}
-            className="rounded-md bg-[#587333] px-4 py-2 text-sm font-semibold text-white hover:bg-[#587333]"
+            className="rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-600"
           >
             Add Ingredient
           </button>
         </div>
       </div>
 
-      <div className="mb-4 flex items-center gap-4">
-        <div className="relative flex-1 max-w-md">
+      <TableToolbar 
+        sortOptions={sortOptions}
+        activeSort={activeSort}
+        onSortChange={setActiveSort}
+        onFilter={() => setShowFilters(!showFilters)} 
+      />
+
+      {showFilters && (
+        <div className="mb-4 flex items-center gap-4">
+          <div className="relative flex-1 max-w-md">
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
             <svg className="h-4 w-4 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -96,44 +126,45 @@ export function IngredientsTable({
             placeholder="Search ingredients by name or SKU..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="block w-full rounded-md border border-zinc-300 py-2 pl-10 pr-3 text-sm placeholder-zinc-400 focus:border-[#587333] focus:outline-none focus:ring-1 focus:ring-[#587333]"
+            className="block w-full rounded-md border border-zinc-300 py-2 pl-10 pr-3 text-sm placeholder-zinc-400 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
           />
         </div>
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="rounded-md border border-zinc-300 py-2 pl-3 pr-8 text-sm outline-none focus:border-[#587333] focus:ring-1 focus:ring-[#587333]"
+          className="rounded-md border border-zinc-300 py-2 pl-3 pr-8 text-sm outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
         >
           <option value="ALL">All Status</option>
           <option value="ACTIVE">Active</option>
           <option value="INACTIVE">Inactive</option>
         </select>
       </div>
+      )}
 
       <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm">
         <table className="min-w-full divide-y divide-zinc-200">
-          <thead className="bg-zinc-50">
-            <tr>
+          <thead className="bg-zinc-50 border-b border-zinc-200">
+            <tr className="divide-x divide-zinc-200">
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
-                Name
+                <div className="flex items-center gap-1.5"><Package className="w-3.5 h-3.5" />Name</div>
               </th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
-                SKU
+                <div className="flex items-center gap-1.5"><Hash className="w-3.5 h-3.5" />SKU</div>
               </th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
-                Category
+                <div className="flex items-center gap-1.5"><Tag className="w-3.5 h-3.5" />Category</div>
               </th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
-                Base Unit
+                <div className="flex items-center gap-1.5"><Scale className="w-3.5 h-3.5" />Base Unit</div>
               </th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
-                Cost
+                <div className="flex items-center gap-1.5"><IndianRupee className="w-3.5 h-3.5" />Cost</div>
               </th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
-                Flags
+                <div className="flex items-center gap-1.5"><Flag className="w-3.5 h-3.5" />Flags</div>
               </th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
-                Status
+                <div className="flex items-center gap-1.5"><Activity className="w-3.5 h-3.5" />Status</div>
               </th>
               <th scope="col" className="relative px-6 py-3">
                 <span className="sr-only">Actions</span>
@@ -151,7 +182,7 @@ export function IngredientsTable({
               </tr>
             ) : (
               filteredIngredients.map((ingredient) => (
-                <tr key={ingredient.id} className="hover:bg-zinc-50">
+                <tr key={ingredient.id} className="hover:bg-zinc-50 divide-x divide-zinc-200">
                   <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-zinc-900">
                     {ingredient.name}
                   </td>

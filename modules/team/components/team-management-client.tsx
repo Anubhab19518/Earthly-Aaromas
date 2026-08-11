@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { User, Shield, Calendar, Activity, Mail } from "lucide-react";
 import { InviteEmployeeDialog } from "./invite-employee-dialog";
 import { format } from "date-fns";
 
@@ -20,7 +21,7 @@ export function TeamManagementClient({ members, invitations, roles, locations, c
       <div className="mb-6 flex items-center justify-end">
         <button
           onClick={() => setIsInviteOpen(true)}
-          className="rounded-md bg-[#587333] px-4 py-2 text-sm font-semibold text-white hover:bg-[#587333]"
+          className="rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-600"
         >
           Invite Employee
         </button>
@@ -36,10 +37,10 @@ export function TeamManagementClient({ members, invitations, roles, locations, c
             <table className="min-w-full divide-y divide-zinc-200">
               <thead className="bg-white">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">Role</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">Joined</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500"><div className="flex items-center gap-1.5"><User className="w-3.5 h-3.5" />Name</div></th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500"><div className="flex items-center gap-1.5"><Shield className="w-3.5 h-3.5" />Role</div></th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500"><div className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" />Joined</div></th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500"><div className="flex items-center gap-1.5"><Activity className="w-3.5 h-3.5" />Status</div></th>
                   <th className="relative px-6 py-3">
                     <span className="sr-only">Actions</span>
                   </th>
@@ -103,9 +104,9 @@ export function TeamManagementClient({ members, invitations, roles, locations, c
             <table className="min-w-full divide-y divide-zinc-200">
               <thead className="bg-white">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">Email</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">Role</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500"><div className="flex items-center gap-1.5"><Mail className="w-3.5 h-3.5" />Email</div></th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500"><div className="flex items-center gap-1.5"><Shield className="w-3.5 h-3.5" />Role</div></th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500"><div className="flex items-center gap-1.5"><Activity className="w-3.5 h-3.5" />Status</div></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-200 bg-white">

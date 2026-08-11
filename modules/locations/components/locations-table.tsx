@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { Hash, MapPin, Tag, Network, Activity } from "lucide-react";
 import { Location, LocationType } from "@/modules/locations/schemas/location.schema";
 import { LocationDialog } from "./location-dialog";
 import { DeleteLocationDialog } from "./delete-location-dialog";
+import { TableToolbar } from "@/shared/components/ui/table-toolbar";
 
 type LocationWithRelations = Location & {
   location_types: { code: string; name: string };
@@ -19,6 +21,24 @@ export function LocationsTable({ locations, locationTypes }: LocationsTableProps
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editLocation, setEditLocation] = useState<LocationWithRelations | null>(null);
   const [deleteLocation, setDeleteLocation] = useState<LocationWithRelations | null>(null);
+  const [activeSort, setActiveSort] = useState("name-asc");
+
+  const sortOptions = [
+    { label: "Name (A-Z)", value: "name-asc" },
+    { label: "Name (Z-A)", value: "name-desc" },
+    { label: "Code (A-Z)", value: "code-asc" },
+    { label: "Code (Z-A)", value: "code-desc" },
+    { label: "Status (A-Z)", value: "status-asc" },
+  ];
+
+  const sortedLocations = [...locations].sort((a, b) => {
+    const [by, dir] = activeSort.split("-");
+    const mod = dir === "asc" ? 1 : -1;
+    if (by === "name") return a.name.localeCompare(b.name) * mod;
+    if (by === "code") return a.code.localeCompare(b.code) * mod;
+    if (by === "status") return a.status.localeCompare(b.status) * mod;
+    return 0;
+  });
 
   return (
     <div>
@@ -29,30 +49,36 @@ export function LocationsTable({ locations, locationTypes }: LocationsTableProps
         </div>
         <button
           onClick={() => setIsAddOpen(true)}
-          className="rounded-md bg-[#587333] px-4 py-2 text-sm font-semibold text-white hover:bg-[#3a4f20]"
+          className="rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700"
         >
           Add Location
         </button>
       </div>
 
+      <TableToolbar 
+        sortOptions={sortOptions}
+        activeSort={activeSort}
+        onSortChange={setActiveSort}
+      />
+
       <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm">
         <table className="min-w-full divide-y divide-zinc-200">
-          <thead className="bg-zinc-50">
-            <tr>
+          <thead className="bg-zinc-50 border-b border-zinc-200">
+            <tr className="divide-x divide-zinc-200">
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
-                Code
+                <div className="flex items-center gap-1.5"><Hash className="w-3.5 h-3.5" />Code</div>
               </th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
-                Name
+                <div className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" />Name</div>
               </th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
-                Type
+                <div className="flex items-center gap-1.5"><Tag className="w-3.5 h-3.5" />Type</div>
               </th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
-                Parent
+                <div className="flex items-center gap-1.5"><Network className="w-3.5 h-3.5" />Parent</div>
               </th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
-                Status
+                <div className="flex items-center gap-1.5"><Activity className="w-3.5 h-3.5" />Status</div>
               </th>
               <th scope="col" className="relative px-6 py-3">
                 <span className="sr-only">Actions</span>
@@ -67,8 +93,8 @@ export function LocationsTable({ locations, locationTypes }: LocationsTableProps
                 </td>
               </tr>
             ) : (
-              locations.map((location) => (
-                <tr key={location.id} className="hover:bg-zinc-50">
+              sortedLocations.map((location) => (
+                <tr key={location.id} className="hover:bg-zinc-50 divide-x divide-zinc-200">
                   <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-zinc-900">{location.code}</td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm text-zinc-500">{location.name}</td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm text-zinc-500">

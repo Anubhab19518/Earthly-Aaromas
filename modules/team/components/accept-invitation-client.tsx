@@ -64,7 +64,7 @@ export function AcceptInvitationClient({ token, email }: AcceptInvitationClientP
         <input
           type="text"
           {...form.register("fullName")}
-          className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+          className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
           placeholder="e.g., Jane Doe"
         />
         {form.formState.errors.fullName && (
@@ -77,7 +77,7 @@ export function AcceptInvitationClient({ token, email }: AcceptInvitationClientP
         <input
           type="tel"
           {...form.register("phoneNumber")}
-          className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+          className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
           placeholder="e.g., +1234567890"
         />
         {form.formState.errors.phoneNumber && (
@@ -90,7 +90,7 @@ export function AcceptInvitationClient({ token, email }: AcceptInvitationClientP
         <input
           type="password"
           {...form.register("password")}
-          className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+          className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
           placeholder="At least 8 characters"
         />
         {form.formState.errors.password && (
@@ -103,7 +103,7 @@ export function AcceptInvitationClient({ token, email }: AcceptInvitationClientP
         <input
           type="password"
           {...form.register("confirmPassword")}
-          className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+          className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
         />
         {form.formState.errors.confirmPassword && (
           <p className="mt-1 text-sm text-red-600">{form.formState.errors.confirmPassword.message}</p>
@@ -119,7 +119,7 @@ export function AcceptInvitationClient({ token, email }: AcceptInvitationClientP
       <button
         type="submit"
         disabled={isPending}
-        className="w-full rounded-md bg-[#587333] px-4 py-2 text-sm font-semibold text-white hover:bg-[#587333] disabled:opacity-60"
+        className="w-full rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-600 disabled:opacity-60"
       >
         {isPending ? "Creating Account..." : "Set Up Account"}
       </button>

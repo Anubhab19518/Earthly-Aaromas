@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { format } from "date-fns";
-import { Plus, Search, FileText } from "lucide-react";
+import { Plus, Search, FileText, Hash, Building2, MapPin, Calendar, IndianRupee, Activity } from "lucide-react";
+import { TableToolbar } from "@/shared/components/ui/table-toolbar";
 
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
@@ -37,15 +39,44 @@ export function PurchaseOrderListTable({
   locations: any[];
   canCreate: boolean;
 }) {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [supplierFilter, setSupplierFilter] = useState<string>("ALL");
+  const [activeSort, setActiveSort] = useState("date-desc");
+
+  const sortOptions = [
+    { label: "Date (Newest)", value: "date-desc" },
+    { label: "Date (Oldest)", value: "date-asc" },
+    { label: "PO # (A-Z)", value: "number-asc" },
+    { label: "PO # (Z-A)", value: "number-desc" },
+    { label: "Status (A-Z)", value: "status-asc" },
+    { label: "Total Amount (High-Low)", value: "amount-desc" },
+    { label: "Total Amount (Low-High)", value: "amount-asc" },
+  ];
+  const [showFilters, setShowFilters] = useState(false);
 
   const filteredOrders = purchaseOrders.filter((po) => {
     const matchesSearch = po.po_number.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === "ALL" || po.status === statusFilter;
     const matchesSupplier = supplierFilter === "ALL" || po.supplier_id === supplierFilter;
     return matchesSearch && matchesStatus && matchesSupplier;
+  }).sort((a, b) => {
+    const [by, dir] = activeSort.split("-");
+    const mod = dir === "asc" ? 1 : -1;
+    if (by === "number") {
+      return a.po_number.toLowerCase().localeCompare(b.po_number.toLowerCase()) * mod;
+    }
+    if (by === "status") {
+      return a.status.localeCompare(b.status) * mod;
+    }
+    if (by === "amount") {
+      return (Number(a.total_amount) - Number(b.total_amount)) * mod;
+    }
+    if (by === "date") {
+      return (new Date(a.created_at).getTime() - new Date(b.created_at).getTime()) * mod;
+    }
+    return 0;
   });
 
   return (
@@ -53,14 +84,22 @@ export function PurchaseOrderListTable({
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">Purchase Orders</h1>
         {canCreate && (
-          <Link href="/purchase-orders/new" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-[#587333] text-zinc-50 shadow hover:bg-[#587333]/90 h-9 px-4 py-2">
+          <Link href="/purchase-orders/new" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-sky-600 text-zinc-50 shadow hover:bg-sky-600/90 h-9 px-4 py-2">
             <Plus className="mr-2 h-4 w-4" />
             New Purchase Order
           </Link>
         )}
       </div>
 
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+      <TableToolbar 
+        sortOptions={sortOptions}
+        activeSort={activeSort}
+        onSortChange={setActiveSort}
+        onFilter={() => setShowFilters(!showFilters)} 
+      />
+
+      {showFilters && (
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
         <div className="relative flex-1">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-zinc-500" />
           <input
@@ -89,6 +128,7 @@ export function PurchaseOrderListTable({
           ))}
         </select>
       </div>
+      )}
 
       <div className="rounded-lg border bg-white shadow-sm overflow-hidden">
         {filteredOrders.length === 0 ? (
@@ -102,23 +142,22 @@ export function PurchaseOrderListTable({
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
-              <thead className="bg-zinc-50 text-zinc-500 border-b">
-                <tr>
-                  <th className="px-4 py-3 font-medium">PO Number</th>
-                  <th className="px-4 py-3 font-medium">Supplier</th>
-                  <th className="px-4 py-3 font-medium">Destination</th>
-                  <th className="px-4 py-3 font-medium">Expected Delivery</th>
-                  <th className="px-4 py-3 font-medium">Total Cost</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
-                  <th className="px-4 py-3 font-medium text-right">Action</th>
+              <thead className="bg-zinc-50 text-zinc-500 border-b border-zinc-200">
+                <tr className="divide-x divide-zinc-200">
+                  <th className="px-4 py-3 font-medium"><div className="flex items-center gap-1.5"><Hash className="w-4 h-4 text-zinc-400" />PO Number</div></th>
+                  <th className="px-4 py-3 font-medium"><div className="flex items-center gap-1.5"><Building2 className="w-4 h-4 text-zinc-400" />Supplier</div></th>
+                  <th className="px-4 py-3 font-medium"><div className="flex items-center gap-1.5"><MapPin className="w-4 h-4 text-zinc-400" />Destination</div></th>
+                  <th className="px-4 py-3 font-medium"><div className="flex items-center gap-1.5"><Calendar className="w-4 h-4 text-zinc-400" />Expected Delivery</div></th>
+                  <th className="px-4 py-3 font-medium"><div className="flex items-center gap-1.5"><IndianRupee className="w-4 h-4 text-zinc-400" />Total Cost</div></th>
+                  <th className="px-4 py-3 font-medium"><div className="flex items-center gap-1.5"><Activity className="w-4 h-4 text-zinc-400" />Status</div></th>
                 </tr>
               </thead>
-              <tbody className="divide-y">
+              <tbody className="divide-y divide-zinc-200">
                 {filteredOrders.map((po) => {
                   const supplier = suppliers.find((s) => s.id === po.supplier_id);
                   const location = locations.find((l) => l.id === po.location_id);
                   return (
-                    <tr key={po.id} className="hover:bg-zinc-50/50">
+                    <tr key={po.id} onClick={() => router.push(`/purchase-orders/${po.id}`)} className="cursor-pointer hover:bg-zinc-50 divide-x divide-zinc-200">
                       <td className="px-4 py-3 font-medium text-zinc-900">{po.po_number}</td>
                       <td className="px-4 py-3 text-zinc-600">{supplier?.name || "Unknown"}</td>
                       <td className="px-4 py-3 text-zinc-600">{location?.name || "Unknown"}</td>
@@ -135,11 +174,6 @@ export function PurchaseOrderListTable({
                       </td>
                       <td className="px-4 py-3">
                         <StatusBadge status={po.status} />
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <Link href={`/purchase-orders/${po.id}`} className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 hover:bg-zinc-100 hover:text-zinc-900 h-8 px-3">
-                          View
-                        </Link>
                       </td>
                     </tr>
                   );

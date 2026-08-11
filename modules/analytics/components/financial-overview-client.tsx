@@ -43,7 +43,7 @@ export function FinancialOverviewClient({ overview }: FinancialOverviewClientPro
             <ShoppingCart className="w-24 h-24 text-emerald-600" />
           </div>
           <p className="text-sm font-semibold uppercase tracking-wider text-zinc-500 mb-2">Total Sales Revenue</p>
-          <p className="text-4xl font-bold text-[#587333]">₹{overview.totalSalesRevenue.toFixed(2)}</p>
+          <p className="text-4xl font-bold text-sky-700">₹{overview.totalSalesRevenue.toFixed(2)}</p>
         </div>
       </div>
 
@@ -54,8 +54,8 @@ export function FinancialOverviewClient({ overview }: FinancialOverviewClientPro
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-zinc-600">
-            <thead className="bg-zinc-50 text-xs uppercase text-zinc-500">
-              <tr>
+            <thead className="bg-zinc-50 border-b border-zinc-200 text-xs uppercase text-zinc-500">
+              <tr className="divide-x divide-zinc-200">
                 <th className="px-6 py-4 font-semibold">Goods Receipt</th>
                 <th className="px-6 py-4 font-semibold">Supplier</th>
                 <th className="px-6 py-4 font-semibold">Received Date</th>
@@ -72,9 +72,9 @@ export function FinancialOverviewClient({ overview }: FinancialOverviewClientPro
                 </tr>
               ) : (
                 overview.recentGrns.map((grn) => (
-                  <tr key={grn.id} className="hover:bg-zinc-50 transition-colors">
+                  <tr key={grn.id} className="hover:bg-zinc-50 transition-colors divide-x divide-zinc-200">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <Link href={`/receiving/${grn.id}`} className="font-medium text-[#587333] hover:underline">
+                      <Link href={`/receiving/${grn.id}`} className="font-medium text-sky-700 hover:underline">
                         {grn.grn_number}
                       </Link>
                     </td>

@@ -4,6 +4,7 @@ import { signOut } from "@/modules/auth/services/auth.actions";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { setActiveBranchCookie } from "@/shared/lib/branch.actions";
+import { Bell, Search, ChevronDown } from "lucide-react";
 
 interface Location {
   id: string;
@@ -30,59 +31,57 @@ export function TopNav({ locations, userFullName, initialBranchId }: TopNavProps
     });
   };
 
+  const activeBranchName = locations.find(l => l.id === activeBranch)?.name || "Select Branch";
+
   return (
-    <header className="flex h-16 shrink-0 items-center justify-between border-b border-zinc-200 bg-white px-6">
-      
-      {/* Left side: Branch Switcher */}
-      <div className="flex items-center gap-4">
-        <div className="flex flex-col">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Active Branch</span>
-          <select 
+    <header className="flex h-14 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 gap-4">
+
+      {/* Branch Switcher */}
+      <div className="flex items-center gap-1 min-w-0">
+        <div className="relative flex items-center">
+          <select
             value={activeBranch}
             onChange={handleBranchChange}
             disabled={isPending}
-            className="border-none bg-transparent p-0 text-sm font-semibold text-zinc-900 outline-none focus:ring-0 cursor-pointer disabled:opacity-50"
+            className="appearance-none bg-slate-50 border border-slate-200 rounded-md pl-3 pr-7 py-1.5 text-sm font-medium text-slate-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 disabled:opacity-50 max-w-[180px]"
           >
             {locations.length === 0 && <option value="">No branches</option>}
             {locations.map(loc => (
               <option key={loc.id} value={loc.id}>{loc.name}</option>
             ))}
           </select>
+          <ChevronDown className="pointer-events-none absolute right-2 h-3.5 w-3.5 text-slate-400" />
         </div>
       </div>
 
-      {/* Middle: Global Search (Placeholder) */}
-      <div className="flex-1 px-8 max-w-2xl">
+      {/* Search */}
+      <div className="flex-1 max-w-md">
         <div className="relative">
-          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-            <svg className="h-4 w-4 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </div>
+          <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <input
             type="text"
-            className="block w-full rounded-md border border-zinc-300 py-1.5 pl-10 pr-3 text-sm placeholder-zinc-400 focus:border-[#587333] focus:outline-none focus:ring-1 focus:ring-[#587333]"
+            className="block w-full rounded-md border border-slate-200 bg-slate-50 py-1.5 pl-9 pr-3 text-sm text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
             placeholder="Search..."
           />
         </div>
       </div>
 
-      {/* Right side: User Profile */}
-      <div className="flex items-center gap-4">
-        <button className="text-zinc-400 hover:text-zinc-600">
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-          </svg>
+      {/* Right: Notifications + User */}
+      <div className="flex items-center gap-3">
+        <button className="flex h-8 w-8 items-center justify-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors">
+          <Bell className="h-4 w-4" />
         </button>
 
-        <div className="flex items-center gap-3 pl-4 border-l border-zinc-200">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#587333] text-sm font-medium text-white">
+        <div className="flex items-center gap-2 pl-3 border-l border-slate-200">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sky-600 text-sm font-bold text-white shrink-0">
             {userFullName.charAt(0).toUpperCase() || "U"}
           </div>
-          <div className="flex flex-col">
-            <span className="text-sm font-medium text-zinc-900">{userFullName || "User"}</span>
+          <div className="flex flex-col min-w-0 hidden sm:flex">
+            <span className="text-sm font-medium text-slate-900 leading-tight truncate max-w-[120px]">
+              {userFullName || "User"}
+            </span>
             <form action={signOut}>
-              <button className="text-[11px] font-medium text-zinc-500 hover:text-red-600 text-left" type="submit">
+              <button className="text-[11px] font-medium text-slate-500 hover:text-red-600 text-left transition-colors" type="submit">
                 Sign out
               </button>
             </form>

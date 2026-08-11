@@ -14,7 +14,7 @@ function useMfaClient({ publishableKey, url }: MfaProps) {
 }
 
 function CodeInput({ code, onChange }: { code: string; onChange: (value: string) => void }) {
-  return <input autoComplete="one-time-code" className="w-full rounded-md border border-zinc-300 px-3 py-2 text-center font-mono text-lg tracking-[0.3em] outline-none focus:border-[#4a632a] focus:ring-2 focus:ring-zinc-200" inputMode="numeric" maxLength={6} onChange={(event) => onChange(event.target.value.replace(/\D/g, ""))} placeholder="000000" value={code} />;
+  return <input autoComplete="one-time-code" className="w-full rounded-lg border border-slate-200 bg-transparent px-4 py-2.5 text-center font-mono text-lg tracking-[0.3em] outline-none transition focus:border-sky-600 focus:ring-1 focus:ring-sky-600 placeholder:text-slate-400" inputMode="numeric" maxLength={6} onChange={(event) => onChange(event.target.value.replace(/\D/g, ""))} placeholder="000000" value={code} />;
 }
 
 export function MfaEnrollmentForm(props: MfaProps) {
@@ -68,7 +68,7 @@ export function MfaEnrollmentForm(props: MfaProps) {
     router.replace("/dashboard"); router.refresh();
   }
 
-  return <div className="space-y-5">{qrCode ? <><img alt="Authenticator setup QR code" className="mx-auto h-52 w-52" src={qrCode} /><p className="sr-only">Scan the displayed QR code with your authenticator app.</p></> : <p className="text-sm text-zinc-600">Preparing your QR code…</p>}<p className="text-sm text-zinc-600">Scan the QR code in Google Authenticator or another TOTP app. If needed, enter this setup key manually:</p>{secret ? <code className="block break-all rounded bg-zinc-100 p-3 text-xs">{secret}</code> : null}<CodeInput code={code} onChange={setCode} />{error ? <p className="text-sm text-red-700" role="alert">{error}</p> : null}<button className="w-full rounded-md bg-[#587333] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60" disabled={isVerifying || !factorId} onClick={verifyEnrollment} type="button">{isVerifying ? "Verifying…" : "Enable authenticator"}</button></div>;
+  return <div className="space-y-5">{qrCode ? <><img alt="Authenticator setup QR code" className="mx-auto h-52 w-52" src={qrCode} /><p className="sr-only">Scan the displayed QR code with your authenticator app.</p></> : <p className="text-sm text-zinc-600">Preparing your QR code…</p>}<p className="text-sm text-zinc-600">Scan the QR code in Google Authenticator or another TOTP app. If needed, enter this setup key manually:</p>{secret ? <code className="block break-all rounded bg-zinc-100 p-3 text-xs">{secret}</code> : null}<CodeInput code={code} onChange={setCode} />{error ? <p className="text-sm text-red-700" role="alert">{error}</p> : null}<button className="w-full rounded-md bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60" disabled={isVerifying || !factorId} onClick={verifyEnrollment} type="button">{isVerifying ? "Verifying…" : "Enable authenticator"}</button></div>;
 }
 
 export function MfaVerifyForm(props: MfaProps) {
@@ -92,6 +92,6 @@ export function MfaVerifyForm(props: MfaProps) {
     router.replace("/dashboard"); router.refresh();
   }
 
-  return <div className="space-y-5"><p className="text-sm text-zinc-600">Enter the current six-digit code from your authenticator app.</p><CodeInput code={code} onChange={setCode} />{error ? <p className="text-sm text-red-700" role="alert">{error}</p> : null}<button className="w-full rounded-md bg-[#587333] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60" disabled={isVerifying} onClick={verifyCode} type="button">{isVerifying ? "Verifying…" : "Verify and continue"}</button></div>;
+  return <div className="space-y-5"><CodeInput code={code} onChange={setCode} />{error ? <p className="text-sm text-red-700" role="alert">{error}</p> : null}<button className="w-full mt-2 rounded-lg bg-sky-600 px-4 py-3 text-[14px] font-semibold text-white transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-60 flex items-center justify-center gap-2" disabled={isVerifying} onClick={verifyCode} type="button">{isVerifying ? "Verifying…" : "Verify"}{!isVerifying && (<svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>)}</button></div>;
 }
 

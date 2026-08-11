@@ -10,6 +10,8 @@ export interface LedgerFilter {
   endDate?: string;
   page?: number;
   pageSize?: number;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
 }
 
 export async function getInventoryLedger(organizationId: string, filter: LedgerFilter) {
@@ -22,8 +24,18 @@ export async function getInventoryLedger(organizationId: string, filter: LedgerF
   let query = supabase
     .from("inventory_ledger")
     .select("*, locations(name), ingredients(name), units(symbol), profiles(full_name)", { count: "exact" })
-    .eq("organization_id", organizationId)
-    .order("created_at", { ascending: false });
+    .eq("organization_id", organizationId);
+
+  if (filter.sortBy === "ingredient") {
+    query = query.order("ingredient_id", { ascending: filter.sortOrder === "asc" }).order("created_at", { ascending: false });
+  } else if (filter.sortBy === "location") {
+    query = query.order("location_id", { ascending: filter.sortOrder === "asc" }).order("created_at", { ascending: false });
+  } else if (filter.sortBy === "type") {
+    query = query.order("transaction_type", { ascending: filter.sortOrder === "asc" }).order("created_at", { ascending: false });
+  } else {
+    // Default is created_at
+    query = query.order("created_at", { ascending: filter.sortOrder === "asc" });
+  }
 
   if (filter.locationId) {
     query = query.eq("location_id", filter.locationId);

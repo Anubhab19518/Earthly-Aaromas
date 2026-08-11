@@ -78,7 +78,10 @@ export function StockTransferDetailClient({
               <Edit2 className="mr-2 h-4 w-4" />
               Edit Details
             </button>
-            <form action={(fd) => { changeStockTransferStatus(fd); }}>
+            <form action={async (fd) => {
+              const res = await changeStockTransferStatus(fd);
+              if (res && res.message) alert(res.message);
+            }}>
               <input type="hidden" name="id" value={transfer.id} />
               <input type="hidden" name="status" value="SHIPPED" />
               <button type="submit" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors bg-blue-600 text-white hover:bg-blue-700 h-9 px-4 py-2">
@@ -86,7 +89,10 @@ export function StockTransferDetailClient({
                 Ship Transfer
               </button>
             </form>
-            <form action={(fd) => { changeStockTransferStatus(fd); }}>
+            <form action={async (fd) => {
+              const res = await changeStockTransferStatus(fd);
+              if (res && res.message) alert(res.message);
+            }}>
               <input type="hidden" name="id" value={transfer.id} />
               <input type="hidden" name="status" value="CANCELLED" />
               <button type="submit" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors bg-red-600 text-white hover:bg-red-700 h-9 px-4 py-2">
@@ -98,7 +104,10 @@ export function StockTransferDetailClient({
         )}
         {transfer.status === "SHIPPED" && activeBranchId === transfer.destination_location_id && (
           <div className="flex items-center gap-2">
-            <form action={(fd) => { receiveStockTransfer(fd); }}>
+            <form action={async (fd) => {
+              const res = await receiveStockTransfer(fd);
+              if (res && res.message) alert(res.message);
+            }}>
               <input type="hidden" name="id" value={transfer.id} />
               <button type="submit" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors bg-emerald-600 text-white hover:bg-emerald-700 h-9 px-4 py-2">
                 <CheckCircle className="mr-2 h-4 w-4" />
@@ -132,7 +141,7 @@ export function StockTransferDetailClient({
         <div className="flex items-center justify-between border-b px-6 py-4">
           <h2 className="text-lg font-medium text-zinc-900">Items</h2>
           {isDraft && activeBranchId === transfer.source_location_id && (
-            <button onClick={() => setIsAddingItem(true)} className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors bg-[#587333] text-zinc-50 hover:bg-[#587333]/90 h-8 px-3">
+            <button onClick={() => setIsAddingItem(true)} className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors bg-sky-600 text-zinc-50 hover:bg-sky-600/90 h-8 px-3">
               <Plus className="mr-2 h-4 w-4" />
               Add Item
             </button>

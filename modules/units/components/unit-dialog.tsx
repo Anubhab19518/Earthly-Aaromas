@@ -106,7 +106,7 @@ export function UnitDialog({ unit, units, open, onOpenChange }: UnitDialogProps)
               <label className="block text-sm font-medium text-zinc-700">Name *</label>
               <input
                 {...form.register("name")}
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
                 placeholder="e.g., Kilogram"
               />
               {(form.formState.errors as any).name && (
@@ -117,7 +117,7 @@ export function UnitDialog({ unit, units, open, onOpenChange }: UnitDialogProps)
               <label className="block text-sm font-medium text-zinc-700">Symbol *</label>
               <input
                 {...form.register("symbol")}
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
                 placeholder="e.g., kg"
               />
               {(form.formState.errors as any).symbol && (
@@ -130,7 +130,7 @@ export function UnitDialog({ unit, units, open, onOpenChange }: UnitDialogProps)
             <label className="block text-sm font-medium text-zinc-700">Measurement Category *</label>
             <select
               {...form.register("measurement_category")}
-              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
             >
               <option value="WEIGHT">Weight</option>
               <option value="VOLUME">Volume</option>
@@ -160,7 +160,7 @@ export function UnitDialog({ unit, units, open, onOpenChange }: UnitDialogProps)
                 <label className="block text-sm font-medium text-zinc-700">Base Unit Reference *</label>
                 <select
                   {...form.register("base_unit_id")}
-                  className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+                  className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
                 >
                   <option value="">Select base unit...</option>
                   {validBaseUnits.map((u) => (
@@ -179,7 +179,7 @@ export function UnitDialog({ unit, units, open, onOpenChange }: UnitDialogProps)
                   type="number"
                   step="any"
                   {...form.register("conversion_factor")}
-                  className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+                  className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
                   placeholder="e.g., 1000"
                 />
                 <p className="mt-1 text-xs text-zinc-500">How many base units equal 1 {form.watch("name") || "of this"}?</p>
@@ -194,7 +194,7 @@ export function UnitDialog({ unit, units, open, onOpenChange }: UnitDialogProps)
             <label className="block text-sm font-medium text-zinc-700">Status *</label>
             <select
               {...form.register("status")}
-              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
             >
               <option value="ACTIVE">Active</option>
               <option value="INACTIVE">Inactive</option>
@@ -215,7 +215,7 @@ export function UnitDialog({ unit, units, open, onOpenChange }: UnitDialogProps)
             <button
               type="submit"
               disabled={isPending}
-              className="rounded-md bg-[#587333] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+              className="rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
             >
               {isPending ? "Saving..." : "Save"}
             </button>

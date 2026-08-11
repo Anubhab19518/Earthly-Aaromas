@@ -8,11 +8,11 @@ export async function getFinancialOverview(organizationId: string) {
   // 1. Total PO Value
   const { data: pos } = await supabase
     .from("purchase_orders")
-    .select("total_amount")
+    .select("total_expected_cost")
     .eq("organization_id", organizationId)
     .in("status", ["APPROVED", "SENT", "PARTIAL", "COMPLETED"]);
 
-  const totalPoValue = pos?.reduce((acc, po) => acc + Number(po.total_amount), 0) || 0;
+  const totalPoValue = pos?.reduce((acc, po) => acc + Number(po.total_expected_cost), 0) || 0;
 
   // 2. Total GRN Value (from GRN items)
   // For a high level overview, we can approximate it or query items

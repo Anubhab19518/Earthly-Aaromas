@@ -105,7 +105,7 @@ export function TaxRatesPanel({ category, rates, open, onClose }: TaxRatesPanelP
                     type="number"
                     step="0.01"
                     {...form.register("rate_percentage", { valueAsNumber: true })}
-                    className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-1.5 text-sm outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+                    className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-1.5 text-sm outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
                   />
                   {form.formState.errors.rate_percentage && (
                     <p className="mt-1 text-xs text-red-600">{form.formState.errors.rate_percentage.message}</p>
@@ -116,7 +116,7 @@ export function TaxRatesPanel({ category, rates, open, onClose }: TaxRatesPanelP
                   <input
                     type="date"
                     {...form.register("effective_from")}
-                    className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-1.5 text-sm outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+                    className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-1.5 text-sm outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
                   />
                   {form.formState.errors.effective_from && (
                     <p className="mt-1 text-xs text-red-600">{form.formState.errors.effective_from.message}</p>
@@ -134,7 +134,7 @@ export function TaxRatesPanel({ category, rates, open, onClose }: TaxRatesPanelP
                   <button
                     type="submit"
                     disabled={isPending}
-                    className="rounded-md bg-[#587333] px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-60"
+                    className="rounded-md bg-sky-600 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-60"
                   >
                     {isPending ? "Saving..." : "Save Rate"}
                   </button>

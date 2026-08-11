@@ -97,7 +97,7 @@ export function OwnerOrderDetailClient({ order, items, payments }: OwnerOrderDet
               </div>
               <div className="flex justify-between text-base font-bold text-zinc-900 pt-2 border-t border-zinc-200 mt-2">
                 <span>Total</span>
-                <span className="text-[#587333]">₹{Number(order.grand_total).toFixed(2)}</span>
+                <span className="text-sky-700">₹{Number(order.grand_total).toFixed(2)}</span>
               </div>
             </div>
           </div>

@@ -81,7 +81,7 @@ export function MenuCategoryDialog({ open, onOpenChange, category }: MenuCategor
             <label className="block text-sm font-medium text-zinc-700">Name *</label>
             <input
               {...form.register("name")}
-              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
             />
             {form.formState.errors.name && (
               <p className="mt-1 text-sm text-red-600">{form.formState.errors.name.message}</p>
@@ -93,7 +93,7 @@ export function MenuCategoryDialog({ open, onOpenChange, category }: MenuCategor
             <textarea
               {...form.register("description")}
               rows={2}
-              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
             />
             {form.formState.errors.description && (
               <p className="mt-1 text-sm text-red-600">{form.formState.errors.description.message}</p>
@@ -126,7 +126,7 @@ export function MenuCategoryDialog({ open, onOpenChange, category }: MenuCategor
             <button
               type="submit"
               disabled={isPending}
-              className="rounded-md bg-[#587333] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+              className="rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
             >
               {isPending ? "Saving..." : "Save"}
             </button>

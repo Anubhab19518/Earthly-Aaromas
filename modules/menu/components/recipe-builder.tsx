@@ -51,7 +51,7 @@ export function RecipeBuilder({ variantId, recipeItems, ingredients, units, ingr
         </div>
         <button
           onClick={() => setIsDialogOpen(true)}
-          className="inline-flex items-center gap-2 rounded-md bg-[#587333] px-4 py-2 text-sm font-semibold text-white hover:bg-[#3a4f20]"
+          className="inline-flex items-center gap-2 rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700"
         >
           <Plus className="h-4 w-4" />
           Add Ingredient

@@ -6,6 +6,7 @@ import { Location } from "@/modules/locations/schemas/location.schema";
 import { Unit } from "@/modules/units/schemas/unit.schema";
 import { InventoryAlertPolicy } from "@/modules/inventory/schemas/alert-policy.schema";
 import { AlertPolicyDialog } from "./alert-policy-dialog";
+import { DeleteAlertPolicyDialog } from "./delete-alert-policy-dialog";
 
 interface AlertPoliciesPanelProps {
   ingredient: Ingredient;
@@ -26,6 +27,7 @@ export function AlertPoliciesPanel({
 }: AlertPoliciesPanelProps) {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editPolicy, setEditPolicy] = useState<InventoryAlertPolicy | null>(null);
+  const [deletePolicy, setDeletePolicy] = useState<InventoryAlertPolicy | null>(null);
 
   if (!open) return null;
 
@@ -40,7 +42,7 @@ export function AlertPoliciesPanel({
     <>
       <div className="fixed inset-0 z-40 bg-black/30" onClick={onClose} aria-hidden="true" />
 
-      <div className="fixed inset-y-0 right-0 z-50 flex w-full max-w-lg flex-col bg-white shadow-2xl">
+      <div className="fixed inset-y-0 right-0 z-50 flex w-full max-w-3xl flex-col bg-white shadow-2xl">
         <div className="flex items-center justify-between border-b border-zinc-200 px-6 py-4">
           <div>
             <h2 className="text-lg font-semibold text-zinc-900">Alert Policies</h2>
@@ -66,50 +68,46 @@ export function AlertPoliciesPanel({
               <p className="mt-1 text-xs">Add policies per location to get low stock warnings.</p>
             </div>
           ) : (
-            <div className="overflow-hidden rounded-lg border border-zinc-200">
-              <table className="min-w-full divide-y divide-zinc-200">
-                <thead className="bg-zinc-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
-                      Location
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
-                      Warning
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
-                      Critical
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
-                      OOS
-                    </th>
-                    <th className="relative px-4 py-3">
-                      <span className="sr-only">Actions</span>
-                    </th>
+            <div className="overflow-x-auto overflow-y-hidden rounded-xl border border-slate-200 bg-white shadow-[0_2px_4px_rgba(0,0,0,0.02)]">
+              <table className="w-full text-left text-sm text-slate-700">
+                <thead className="bg-[#f8fafc] border-b border-slate-200">
+                  <tr className="divide-x divide-slate-200">
+                    <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500">Location</th>
+                    <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500">Warning</th>
+                    <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500">Critical</th>
+                    <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500">OOS</th>
+                    <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-200 bg-white">
+                <tbody className="bg-white divide-y divide-slate-200">
                   {ingredientPolicies.map((policy) => {
                     const location = locations.find((l) => l.id === policy.location_id);
                     return (
-                      <tr key={policy.id} className="hover:bg-zinc-50">
-                        <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-zinc-900">
+                      <tr key={policy.id} className="hover:bg-slate-50 transition-colors divide-x divide-slate-200">
+                        <td className="px-6 py-4 whitespace-nowrap font-medium text-slate-900">
                           {location?.name || "Unknown Location"}
                         </td>
-                        <td className="whitespace-nowrap px-4 py-3 text-sm text-yellow-600 font-medium">
+                        <td className="px-6 py-4 whitespace-nowrap font-medium text-amber-600">
                           {policy.warning_level} {baseUnit.symbol}
                         </td>
-                        <td className="whitespace-nowrap px-4 py-3 text-sm text-red-600 font-medium">
+                        <td className="px-6 py-4 whitespace-nowrap font-medium text-rose-600">
                           {policy.critical_level} {baseUnit.symbol}
                         </td>
-                        <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-500 font-medium">
+                        <td className="px-6 py-4 whitespace-nowrap font-medium text-slate-500">
                           {policy.out_of_stock_level} {baseUnit.symbol}
                         </td>
-                        <td className="whitespace-nowrap px-4 py-3 text-right text-sm font-medium">
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <button
                             onClick={() => setEditPolicy(policy)}
-                            className="text-zinc-600 hover:text-zinc-900"
+                            className="mr-4 text-sky-600 hover:text-sky-900 transition-colors"
                           >
                             Edit
+                          </button>
+                          <button
+                            onClick={() => setDeletePolicy(policy)}
+                            className="text-rose-600 hover:text-rose-900 transition-colors"
+                          >
+                            Delete
                           </button>
                         </td>
                       </tr>
@@ -125,7 +123,7 @@ export function AlertPoliciesPanel({
           <button
             onClick={() => setIsAddOpen(true)}
             disabled={availableLocations.length === 0}
-            className="w-full rounded-md bg-[#587333] px-4 py-2 text-sm font-semibold text-white hover:bg-[#3a4f20] disabled:opacity-50"
+            className="w-full rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700 disabled:opacity-50"
           >
             {availableLocations.length === 0 ? "All locations configured" : "Add Policy for Location"}
           </button>
@@ -147,6 +145,13 @@ export function AlertPoliciesPanel({
         policy={editPolicy ?? undefined}
         open={!!editPolicy}
         onOpenChange={(open) => !open && setEditPolicy(null)}
+      />
+
+      <DeleteAlertPolicyDialog
+        open={!!deletePolicy}
+        onOpenChange={(open) => !open && setDeletePolicy(null)}
+        policy={deletePolicy}
+        locationName={locations.find((l) => l.id === deletePolicy?.location_id)?.name || "Unknown Location"}
       />
     </>
   );

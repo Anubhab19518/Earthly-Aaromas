@@ -154,7 +154,7 @@ export function PurchaseOrderDetailClient({
         <div className="flex items-center justify-between border-b px-6 py-4">
           <h2 className="text-lg font-medium text-zinc-900">Line Items</h2>
           {isDraft && (
-            <button onClick={() => setIsAddingItem(true)} className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors bg-[#587333] text-zinc-50 shadow hover:bg-[#587333]/90 h-8 px-3">
+            <button onClick={() => setIsAddingItem(true)} className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors bg-sky-600 text-zinc-50 shadow hover:bg-sky-600/90 h-8 px-3">
               <Plus className="mr-2 h-4 w-4" />
               Add Item
             </button>

@@ -32,7 +32,7 @@ export function PurchaseOrderForm({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
           <label htmlFor="supplierId" className="block text-sm font-medium text-zinc-700">Supplier <span className="text-red-500">*</span></label>
-          <select name="supplierId" defaultValue={po?.supplier_id || ""} required className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 bg-white text-sm shadow-sm focus:border-[#4a632a] focus:outline-none focus:ring-1 focus:ring-[#4a632a]">
+          <select name="supplierId" defaultValue={po?.supplier_id || ""} required className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 bg-white text-sm shadow-sm focus:border-sky-600 focus:outline-none focus:ring-1 focus:ring-[#4a632a]">
             <option value="">Select a supplier</option>
             {suppliers.map((s) => (
               <option key={s.id} value={s.id}>
@@ -44,7 +44,7 @@ export function PurchaseOrderForm({
 
         <div className="space-y-2">
           <label htmlFor="locationId" className="block text-sm font-medium text-zinc-700">Destination Warehouse <span className="text-red-500">*</span></label>
-          <select name="locationId" defaultValue={po?.location_id || ""} required className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 bg-white text-sm shadow-sm focus:border-[#4a632a] focus:outline-none focus:ring-1 focus:ring-[#4a632a]">
+          <select name="locationId" defaultValue={po?.location_id || ""} required className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 bg-white text-sm shadow-sm focus:border-sky-600 focus:outline-none focus:ring-1 focus:ring-[#4a632a]">
             <option value="">Select a warehouse</option>
             {locations.map((l) => (
               <option key={l.id} value={l.id}>
@@ -61,7 +61,7 @@ export function PurchaseOrderForm({
             name="expectedDeliveryDate"
             type="date"
             defaultValue={po?.expected_delivery_date || ""}
-            className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 bg-white text-sm shadow-sm focus:border-[#4a632a] focus:outline-none focus:ring-1 focus:ring-[#4a632a]"
+            className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 bg-white text-sm shadow-sm focus:border-sky-600 focus:outline-none focus:ring-1 focus:ring-[#4a632a]"
           />
         </div>
       </div>
@@ -73,7 +73,7 @@ export function PurchaseOrderForm({
           name="notes"
           placeholder="Any instructions for the supplier..."
           defaultValue={po?.notes || ""}
-          className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 bg-white text-sm shadow-sm focus:border-[#4a632a] focus:outline-none focus:ring-1 focus:ring-[#4a632a]"
+          className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 bg-white text-sm shadow-sm focus:border-sky-600 focus:outline-none focus:ring-1 focus:ring-[#4a632a]"
           rows={3}
         />
       </div>
@@ -87,7 +87,7 @@ export function PurchaseOrderForm({
         >
           Cancel
         </button>
-        <button type="submit" disabled={isPending} className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors bg-[#587333] text-zinc-50 shadow hover:bg-[#587333]/90 h-9 px-4 py-2 disabled:pointer-events-none disabled:opacity-50">
+        <button type="submit" disabled={isPending} className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors bg-sky-600 text-zinc-50 shadow hover:bg-sky-600/90 h-9 px-4 py-2 disabled:pointer-events-none disabled:opacity-50">
           {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {isEditing ? "Update Purchase Order" : "Create Purchase Order"}
         </button>

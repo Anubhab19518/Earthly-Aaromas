@@ -27,7 +27,7 @@ export function CategoriesClient({ categories }: CategoriesClientProps) {
       <div className="mb-6 flex items-center justify-end">
         <button
           onClick={handleAdd}
-          className="rounded-md bg-[#587333] px-4 py-2 text-sm font-semibold text-white hover:bg-[#587333]"
+          className="rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-600"
         >
           Add Category
         </button>
@@ -64,7 +64,7 @@ export function CategoriesClient({ categories }: CategoriesClientProps) {
                     <div className="flex justify-end gap-3">
                       <button
                         onClick={() => handleEdit(category)}
-                        className="text-[#587333] hover:text-[#4a632a]"
+                        className="text-sky-700 hover:text-sky-700"
                       >
                         Edit
                       </button>

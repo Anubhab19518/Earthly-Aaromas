@@ -37,19 +37,19 @@ export default async function EmployeeDashboardPage() {
         </div>
 
         {/* Status Card */}
-        <div className="rounded-2xl border border-[#b8d89b] bg-[#eaf1e2] p-8 text-center shadow-sm">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#587333] shadow-lg">
+        <div className="rounded-2xl border border-[#b8d89b] bg-sky-50 p-8 text-center shadow-sm">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-sky-600 shadow-lg">
             <svg className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                 d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
           <h2 className="text-2xl font-bold text-[#3a4f20]">Ready to Take Orders</h2>
-          <p className="mt-2 text-[#587333]">Your station is active and ready to serve customers.</p>
+          <p className="mt-2 text-sky-700">Your station is active and ready to serve customers.</p>
 
           <a
             href="/employee/pos"
-            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#587333] px-8 py-3 text-base font-semibold text-white shadow-md hover:bg-[#587333] transition-colors"
+            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-sky-600 px-8 py-3 text-base font-semibold text-white shadow-md hover:bg-sky-600 transition-colors"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}

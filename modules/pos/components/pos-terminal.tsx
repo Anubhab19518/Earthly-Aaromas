@@ -184,7 +184,7 @@ export function POSTerminal({ locationId, categories, items, variants, branchCon
                 onClick={() => setActiveCategoryId(cat.id)}
                 className={`whitespace-nowrap px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   activeCategoryId === cat.id
-                    ? "bg-[#eaf1e2] text-[#4a632a] shadow-sm border border-[#4a632a]/20"
+                    ? "bg-sky-50 text-sky-700 shadow-sm border border-sky-600/20"
                     : "bg-white text-[#42526E] border border-transparent hover:bg-[#EBECF0] hover:text-[#172B4D]"
                 }`}
               >
@@ -209,7 +209,7 @@ export function POSTerminal({ locationId, categories, items, variants, branchCon
                     </div>
                   ) : (
                     <div className="h-36 w-full shrink-0 bg-gradient-to-br from-[#f2f6ed] to-[#eaf1e2] border-b border-[#DFE1E6] flex items-center justify-center">
-                      <span className="text-4xl font-bold text-[#4a632a]/40">{item.name.charAt(0).toUpperCase()}</span>
+                      <span className="text-4xl font-bold text-sky-700/40">{item.name.charAt(0).toUpperCase()}</span>
                     </div>
                   )}
                   <div className="p-4 flex-1 flex flex-col">
@@ -262,7 +262,7 @@ export function POSTerminal({ locationId, categories, items, variants, branchCon
               placeholder="Customer name *"
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
-              className="w-full rounded-md border border-[#DFE1E6] pl-9 pr-3 py-2 text-sm text-[#172B4D] placeholder:text-[#5E6C84] focus:border-[#4a632a] focus:outline-none focus:ring-1 focus:ring-[#4a632a]"
+              className="w-full rounded-md border border-[#DFE1E6] pl-9 pr-3 py-2 text-sm text-[#172B4D] placeholder:text-[#5E6C84] focus:border-sky-600 focus:outline-none focus:ring-1 focus:ring-[#4a632a]"
             />
           </div>
           <div className="relative">
@@ -272,7 +272,7 @@ export function POSTerminal({ locationId, categories, items, variants, branchCon
               placeholder="Phone number (optional)"
               value={customerPhone}
               onChange={(e) => setCustomerPhone(e.target.value)}
-              className="w-full rounded-md border border-[#DFE1E6] pl-9 pr-3 py-2 text-sm text-[#172B4D] placeholder:text-[#5E6C84] focus:border-[#4a632a] focus:outline-none focus:ring-1 focus:ring-[#4a632a]"
+              className="w-full rounded-md border border-[#DFE1E6] pl-9 pr-3 py-2 text-sm text-[#172B4D] placeholder:text-[#5E6C84] focus:border-sky-600 focus:outline-none focus:ring-1 focus:ring-[#4a632a]"
             />
           </div>
         </div>
@@ -352,7 +352,7 @@ export function POSTerminal({ locationId, categories, items, variants, branchCon
           <button
             onClick={handlePlaceOrder}
             disabled={cart.length === 0 || isPending || !customerName.trim()}
-            className="w-full bg-[#4a632a] text-white font-semibold rounded-md py-3 hover:bg-[#3d5123] disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98] shadow-sm text-sm"
+            className="w-full bg-sky-600 text-white font-semibold rounded-md py-3 hover:bg-[#3d5123] disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98] shadow-sm text-sm"
           >
             {isPending ? "Placing Order..." : "Place Order"}
           </button>

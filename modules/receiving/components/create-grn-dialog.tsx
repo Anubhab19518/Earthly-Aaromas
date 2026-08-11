@@ -91,7 +91,7 @@ export function CreateGrnDialog({ suppliers, warehouseLocations, purchaseOrders,
               <label className="block text-sm font-medium text-zinc-700">Link Purchase Order (Optional)</label>
               <select
                 {...form.register("purchase_order_id")}
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
               >
                 <option value="">No Purchase Order (Manual GRN)</option>
                 {purchaseOrders.map((po) => (
@@ -104,7 +104,7 @@ export function CreateGrnDialog({ suppliers, warehouseLocations, purchaseOrders,
               <label className="block text-sm font-medium text-zinc-700">Supplier *</label>
               <select
                 {...form.register("supplier_id")}
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
               >
                 <option value="">Select supplier...</option>
                 {suppliers.map((s) => (
@@ -120,7 +120,7 @@ export function CreateGrnDialog({ suppliers, warehouseLocations, purchaseOrders,
               <label className="block text-sm font-medium text-zinc-700">Receiving Warehouse *</label>
               <select
                 {...form.register("warehouse_location_id")}
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
               >
                 <option value="">Select warehouse...</option>
                 {warehouseLocations.map((l) => (
@@ -136,7 +136,7 @@ export function CreateGrnDialog({ suppliers, warehouseLocations, purchaseOrders,
               <label className="block text-sm font-medium text-zinc-700">Invoice #</label>
               <input
                 {...form.register("invoice_number")}
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
                 placeholder="e.g., INV-2024-001"
               />
             </div>
@@ -146,7 +146,7 @@ export function CreateGrnDialog({ suppliers, warehouseLocations, purchaseOrders,
               <input
                 type="date"
                 {...form.register("invoice_date")}
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
               />
             </div>
 
@@ -155,7 +155,7 @@ export function CreateGrnDialog({ suppliers, warehouseLocations, purchaseOrders,
               <input
                 type="date"
                 {...form.register("received_date")}
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
               />
               {form.formState.errors.received_date && (
                 <p className="mt-1 text-sm text-red-600">{form.formState.errors.received_date.message}</p>
@@ -167,7 +167,7 @@ export function CreateGrnDialog({ suppliers, warehouseLocations, purchaseOrders,
               <textarea
                 {...form.register("remarks")}
                 rows={2}
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
               />
             </div>
           </div>
@@ -186,7 +186,7 @@ export function CreateGrnDialog({ suppliers, warehouseLocations, purchaseOrders,
             <button
               type="submit"
               disabled={isPending}
-              className="rounded-md bg-[#587333] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+              className="rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
             >
               {isPending ? "Creating..." : "Create GRN"}
             </button>

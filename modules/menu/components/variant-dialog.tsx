@@ -105,7 +105,7 @@ export function MenuVariantDialog({ open, onOpenChange, menuItemId, variant }: M
             <label className="block text-sm font-medium text-zinc-700">Variant Name * (e.g., Small, Medium)</label>
             <input
               {...form.register("name")}
-              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
             />
             {form.formState.errors.name && (
               <p className="mt-1 text-sm text-red-600">{form.formState.errors.name.message}</p>
@@ -118,7 +118,7 @@ export function MenuVariantDialog({ open, onOpenChange, menuItemId, variant }: M
               type="number"
               step="0.01"
               {...form.register("default_price", { valueAsNumber: true })}
-              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
             />
             {form.formState.errors.default_price && (
               <p className="mt-1 text-sm text-red-600">{form.formState.errors.default_price.message}</p>
@@ -130,7 +130,7 @@ export function MenuVariantDialog({ open, onOpenChange, menuItemId, variant }: M
               <label className="block text-sm font-medium text-zinc-700">SKU</label>
               <input
                 {...form.register("sku")}
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
               />
             </div>
             <div>
@@ -138,7 +138,7 @@ export function MenuVariantDialog({ open, onOpenChange, menuItemId, variant }: M
               <input
                 {...form.register("serving_size")}
                 placeholder="e.g., 200ml"
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
               />
             </div>
           </div>
@@ -148,7 +148,7 @@ export function MenuVariantDialog({ open, onOpenChange, menuItemId, variant }: M
             <input
               type="number"
               {...form.register("prep_time_mins", { valueAsNumber: true })}
-              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
             />
           </div>
 
@@ -178,7 +178,7 @@ export function MenuVariantDialog({ open, onOpenChange, menuItemId, variant }: M
             <button
               type="submit"
               disabled={isPending}
-              className="rounded-md bg-[#587333] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+              className="rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
             >
               {isPending ? "Saving..." : "Save"}
             </button>

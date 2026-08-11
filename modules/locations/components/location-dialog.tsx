@@ -101,7 +101,7 @@ export function LocationDialog({ location, locationTypes, locations, open, onOpe
             <label className="block text-sm font-medium text-zinc-700">Location Type *</label>
             <select
               {...form.register("location_type_id")}
-              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
               disabled={!!location}
             >
               <option value="">Select a type...</option>
@@ -121,7 +121,7 @@ export function LocationDialog({ location, locationTypes, locations, open, onOpe
               <label className="block text-sm font-medium text-zinc-700">Parent Warehouse *</label>
               <select
                 {...form.register("parent_id")}
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
               >
                 <option value="">Select a warehouse...</option>
                 {validParents.map((l) => (
@@ -141,7 +141,7 @@ export function LocationDialog({ location, locationTypes, locations, open, onOpe
               <label className="block text-sm font-medium text-zinc-700">Name *</label>
               <input
                 {...form.register("name")}
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
               />
               {form.formState.errors.name && (
                 <p className="mt-1 text-sm text-red-600">{form.formState.errors.name.message}</p>
@@ -151,7 +151,7 @@ export function LocationDialog({ location, locationTypes, locations, open, onOpe
               <label className="block text-sm font-medium text-zinc-700">Code *</label>
               <input
                 {...form.register("code")}
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
               />
               {form.formState.errors.code && (
                 <p className="mt-1 text-sm text-red-600">{form.formState.errors.code.message}</p>
@@ -163,7 +163,7 @@ export function LocationDialog({ location, locationTypes, locations, open, onOpe
             <label className="block text-sm font-medium text-zinc-700">Address</label>
             <input
               {...form.register("address")}
-              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
             />
           </div>
 
@@ -172,7 +172,7 @@ export function LocationDialog({ location, locationTypes, locations, open, onOpe
               <label className="block text-sm font-medium text-zinc-700">Phone</label>
               <input
                 {...form.register("phone")}
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
               />
             </div>
             <div>
@@ -180,7 +180,7 @@ export function LocationDialog({ location, locationTypes, locations, open, onOpe
               <input
                 {...form.register("email")}
                 type="email"
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
               />
               {form.formState.errors.email && (
                 <p className="mt-1 text-sm text-red-600">{form.formState.errors.email.message}</p>
@@ -192,7 +192,7 @@ export function LocationDialog({ location, locationTypes, locations, open, onOpe
             <label className="block text-sm font-medium text-zinc-700">Status *</label>
             <select
               {...form.register("status")}
-              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
             >
               <option value="ACTIVE">Active</option>
               <option value="INACTIVE">Inactive</option>
@@ -213,7 +213,7 @@ export function LocationDialog({ location, locationTypes, locations, open, onOpe
             <button
               type="submit"
               disabled={isPending}
-              className="rounded-md bg-[#587333] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+              className="rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
             >
               {isPending ? "Saving..." : "Save"}
             </button>

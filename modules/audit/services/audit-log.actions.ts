@@ -10,6 +10,8 @@ export interface AuditFilter {
   endDate?: string;
   page?: number;
   pageSize?: number;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
 }
 
 export async function getAuditLog(organizationId: string, filter: AuditFilter) {
@@ -22,8 +24,21 @@ export async function getAuditLog(organizationId: string, filter: AuditFilter) {
   let query = supabase
     .from("audit_log")
     .select("*, profiles(full_name)", { count: "exact" })
-    .eq("organization_id", organizationId)
-    .order("occurred_at", { ascending: false });
+    .eq("organization_id", organizationId);
+
+  // Apply sorting
+  if (filter.sortBy === "actor") {
+    // Note: sorting by related table column might not work natively via supabase js simple order for foreign tables
+    // If not, we fallback to occurred_at. We'll order by occurred_at for now unless it's entity_type.
+    query = query.order("occurred_at", { ascending: filter.sortOrder === "asc" });
+  } else if (filter.sortBy === "entity_type") {
+    query = query.order("entity_type", { ascending: filter.sortOrder === "asc" }).order("occurred_at", { ascending: false });
+  } else if (filter.sortBy === "action") {
+    query = query.order("action", { ascending: filter.sortOrder === "asc" }).order("occurred_at", { ascending: false });
+  } else {
+    // default
+    query = query.order("occurred_at", { ascending: filter.sortOrder === "asc" });
+  }
 
   if (filter.actorId) {
     query = query.eq("actor_id", filter.actorId);

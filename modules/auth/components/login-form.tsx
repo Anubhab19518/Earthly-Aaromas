@@ -1,52 +1,91 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 
 import { signIn } from "@/modules/auth/services/auth.actions";
 
 export function LoginForm() {
   const [state, action, isPending] = useActionState(signIn, null);
+  const [step, setStep] = useState<1 | 2>(1);
+  const [email, setEmail] = useState("");
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    if (step === 1) {
+      e.preventDefault();
+      if (email.trim()) setStep(2);
+    }
+  };
 
   return (
-    <form action={action} className="space-y-5" noValidate>
+    <form action={action} onSubmit={handleSubmit} className="space-y-4" noValidate>
       <div className="space-y-2">
-        <label className="text-sm font-medium" htmlFor="email">
-          Email address
+        <label className="text-[13px] font-semibold text-slate-700" htmlFor="email">
+          Email
         </label>
         <input
           autoComplete="email"
-          className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-[#4a632a] focus:ring-2 focus:ring-zinc-200"
+          className="w-full rounded-lg border border-slate-200 bg-transparent px-4 py-2.5 text-[14px] outline-none transition focus:border-sky-600 focus:ring-1 focus:ring-sky-600 placeholder:text-slate-400"
           id="email"
           name="email"
+          placeholder="name@company.com"
           required
           type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          readOnly={step === 2}
+          className={`w-full rounded-lg border border-slate-200 px-4 py-2.5 text-[14px] outline-none transition focus:border-sky-600 focus:ring-1 focus:ring-sky-600 placeholder:text-slate-400 ${step === 2 ? "bg-transparent text-slate-500" : "bg-transparent"}`}
         />
       </div>
-      <div className="space-y-2">
-        <label className="text-sm font-medium" htmlFor="password">
-          Password
-        </label>
-        <input
-          autoComplete="current-password"
-          className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-[#4a632a] focus:ring-2 focus:ring-zinc-200"
-          id="password"
-          name="password"
-          required
-          type="password"
-        />
-      </div>
+
+      {step === 2 && (
+        <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+          <label className="text-[13px] font-semibold text-slate-700" htmlFor="password">
+            Password
+          </label>
+          <input
+            autoComplete="current-password"
+            className="w-full rounded-lg border border-slate-200 bg-transparent px-4 py-2.5 text-[14px] outline-none transition focus:border-sky-600 focus:ring-1 focus:ring-sky-600 placeholder:text-slate-400"
+            id="password"
+            name="password"
+            placeholder="••••••••"
+            required
+            type="password"
+            autoFocus
+          />
+        </div>
+      )}
       {state?.message ? (
         <p aria-live="polite" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
           {state.message}
         </p>
       ) : null}
       <button
-        className="w-full rounded-md bg-[#587333] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#3a4f20] disabled:cursor-not-allowed disabled:opacity-60"
-        disabled={isPending}
+        className="w-full mt-2 rounded-lg bg-sky-600 px-4 py-3 text-[14px] font-semibold text-white transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-60 flex items-center justify-center gap-2"
+        disabled={isPending || (step === 1 && !email.trim())}
         type="submit"
       >
-        {isPending ? "Signing in…" : "Sign in"}
+        {step === 1 ? "Continue" : isPending ? "Signing in…" : "Sign in with Email"}
+        {!isPending && (
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        )}
       </button>
+
+      <div className="mt-8 text-center text-[13px] font-medium text-slate-500">
+        New to Earthly Aaromas? <a href="#" className="font-bold text-slate-900 hover:underline">Join now</a>
+      </div>
+
+      <div className="mt-16 text-center text-[11px] font-medium text-slate-400 space-y-2">
+        <p>© 2026 Earthly Aaromas. Built for modern hospitality.</p>
+        <div className="flex items-center justify-center gap-3">
+          <a href="#" className="hover:text-slate-600">Privacy</a>
+          <span>•</span>
+          <a href="#" className="hover:text-slate-600">Terms</a>
+          <span>•</span>
+          <a href="#" className="hover:text-slate-600">Support</a>
+        </div>
+      </div>
     </form>
   );
 }

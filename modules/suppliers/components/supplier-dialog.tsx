@@ -90,7 +90,7 @@ export function SupplierDialog({ supplier, open, onOpenChange }: SupplierDialogP
               <label className="block text-sm font-medium text-zinc-700">Name *</label>
               <input
                 {...form.register("name")}
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
                 placeholder="e.g., ABC Suppliers"
               />
               {form.formState.errors.name && (
@@ -102,7 +102,7 @@ export function SupplierDialog({ supplier, open, onOpenChange }: SupplierDialogP
               <label className="block text-sm font-medium text-zinc-700">GSTIN</label>
               <input
                 {...form.register("gstin")}
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a] uppercase"
+                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a] uppercase"
                 placeholder="e.g., 22AAAAA0000A1Z5"
               />
               {form.formState.errors.gstin && (
@@ -114,7 +114,7 @@ export function SupplierDialog({ supplier, open, onOpenChange }: SupplierDialogP
               <label className="block text-sm font-medium text-zinc-700">Phone</label>
               <input
                 {...form.register("phone")}
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
                 placeholder="e.g., +91 9876543210"
               />
               {form.formState.errors.phone && (
@@ -127,7 +127,7 @@ export function SupplierDialog({ supplier, open, onOpenChange }: SupplierDialogP
               <input
                 {...form.register("email")}
                 type="email"
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
                 placeholder="e.g., contact@abcsuppliers.com"
               />
               {form.formState.errors.email && (
@@ -140,7 +140,7 @@ export function SupplierDialog({ supplier, open, onOpenChange }: SupplierDialogP
               <textarea
                 {...form.register("address")}
                 rows={2}
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
                 placeholder="Full address..."
               />
             </div>
@@ -150,7 +150,7 @@ export function SupplierDialog({ supplier, open, onOpenChange }: SupplierDialogP
               <textarea
                 {...form.register("notes")}
                 rows={2}
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
                 placeholder="Optional notes..."
               />
             </div>
@@ -159,7 +159,7 @@ export function SupplierDialog({ supplier, open, onOpenChange }: SupplierDialogP
               <label className="block text-sm font-medium text-zinc-700">Status *</label>
               <select
                 {...form.register("status")}
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
               >
                 <option value="ACTIVE">Active</option>
                 <option value="INACTIVE">Inactive</option>
@@ -181,7 +181,7 @@ export function SupplierDialog({ supplier, open, onOpenChange }: SupplierDialogP
             <button
               type="submit"
               disabled={isPending}
-              className="rounded-md bg-[#587333] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+              className="rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
             >
               {isPending ? "Saving..." : "Save"}
             </button>

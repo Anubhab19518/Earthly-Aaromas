@@ -85,7 +85,7 @@ export function RecipeItemDialog({ open, onOpenChange, variantId, ingredients, u
               required
               value={selectedIngredientId}
               onChange={(e) => setSelectedIngredientId(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
             >
               <option value="">Select ingredient...</option>
               {ingredients.map((i) => (
@@ -103,7 +103,7 @@ export function RecipeItemDialog({ open, onOpenChange, variantId, ingredients, u
                 step="0.01"
                 min="0.01"
                 required
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
               />
             </div>
             <div>
@@ -112,7 +112,7 @@ export function RecipeItemDialog({ open, onOpenChange, variantId, ingredients, u
                 name="unit_id"
                 required
                 disabled={!selectedIngredientId}
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a] disabled:bg-zinc-100 disabled:text-zinc-500"
+                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a] disabled:bg-zinc-100 disabled:text-zinc-500"
               >
                 <option value="">
                   {selectedIngredientId
@@ -148,7 +148,7 @@ export function RecipeItemDialog({ open, onOpenChange, variantId, ingredients, u
             <button
               type="submit"
               disabled={isPending}
-              className="rounded-md bg-[#587333] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+              className="rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
             >
               {isPending ? "Adding..." : "Add to Recipe"}
             </button>

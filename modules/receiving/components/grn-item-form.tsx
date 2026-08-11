@@ -126,7 +126,7 @@ export function GrnItemForm({ grnId, ingredients, conversions, units, taxCategor
             <label className="block text-sm font-medium text-zinc-700">Ingredient *</label>
             <select
               {...form.register("ingredient_id")}
-              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
             >
               <option value="">Select ingredient...</option>
               {ingredients.map((i) => (
@@ -143,7 +143,7 @@ export function GrnItemForm({ grnId, ingredients, conversions, units, taxCategor
             <select
               {...form.register("purchase_unit_id")}
               disabled={!selectedIngredient}
-              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a] disabled:bg-zinc-50"
+              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a] disabled:bg-zinc-50"
             >
               <option value="">Select unit...</option>
               {eligibleUnits.map((u) => (
@@ -166,7 +166,7 @@ export function GrnItemForm({ grnId, ingredients, conversions, units, taxCategor
                 type="number"
                 step="any"
                 {...form.register("received_quantity", { valueAsNumber: true })}
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
               />
               {form.formState.errors.received_quantity && (
                 <p className="mt-1 text-sm text-red-600">{form.formState.errors.received_quantity.message}</p>
@@ -193,7 +193,7 @@ export function GrnItemForm({ grnId, ingredients, conversions, units, taxCategor
                 type="number"
                 step="0.01"
                 {...form.register("unit_cost", { valueAsNumber: true })}
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
               />
               {form.formState.errors.unit_cost && (
                 <p className="mt-1 text-sm text-red-600">{form.formState.errors.unit_cost.message}</p>
@@ -204,7 +204,7 @@ export function GrnItemForm({ grnId, ingredients, conversions, units, taxCategor
               <label className="block text-sm font-medium text-zinc-700">Tax Category</label>
               <select
                 {...form.register("tax_category_id")}
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
               >
                 <option value="">No Tax</option>
                 {taxCategories.map((t) => (
@@ -239,7 +239,7 @@ export function GrnItemForm({ grnId, ingredients, conversions, units, taxCategor
               <button
                 type="submit"
                 disabled={isPending}
-                className="rounded-md bg-[#587333] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+                className="rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
               >
                 {isPending ? "Saving..." : "Save Item"}
               </button>

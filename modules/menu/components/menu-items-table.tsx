@@ -66,12 +66,12 @@ export function MenuItemsTable({ items, categories, taxCategories }: Props) {
               placeholder="Search items..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="h-9 w-64 rounded-md border border-zinc-300 pl-9 pr-3 text-sm outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+              className="h-9 w-64 rounded-md border border-zinc-300 pl-9 pr-3 text-sm outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
             />
           </div>
           <button
             onClick={() => setIsDialogOpen(true)}
-            className="inline-flex h-9 items-center gap-2 rounded-md bg-[#587333] px-4 text-sm font-semibold text-white hover:bg-[#3a4f20]"
+            className="inline-flex h-9 items-center gap-2 rounded-md bg-sky-600 px-4 text-sm font-semibold text-white hover:bg-sky-700"
           >
             <Plus className="h-4 w-4" />
             Add Item

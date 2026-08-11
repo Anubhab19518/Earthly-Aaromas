@@ -149,7 +149,7 @@ export function ConversionsPanel({
         <div className="border-t border-zinc-200 px-6 py-4">
           <button
             onClick={() => setIsAddOpen(true)}
-            className="w-full rounded-md bg-[#587333] px-4 py-2 text-sm font-semibold text-white hover:bg-[#3a4f20]"
+            className="w-full rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700"
           >
             Add Conversion
           </button>

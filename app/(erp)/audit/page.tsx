@@ -42,6 +42,8 @@ export default async function AuditLogPage({
   const actorId = typeof resolvedParams.actor_id === "string" ? resolvedParams.actor_id : undefined;
   const action = typeof resolvedParams.action === "string" ? resolvedParams.action : undefined;
   const entityType = typeof resolvedParams.entity_type === "string" ? resolvedParams.entity_type : undefined;
+  const sortBy = typeof resolvedParams.sort_by === "string" ? resolvedParams.sort_by : undefined;
+  const sortOrder = typeof resolvedParams.sort_order === "string" ? (resolvedParams.sort_order as "asc" | "desc") : undefined;
   
   // Fetch log data
   const result = await getAuditLog(orgId, {
@@ -50,6 +52,8 @@ export default async function AuditLogPage({
     actorId,
     action,
     entityType,
+    sortBy,
+    sortOrder,
   });
 
   // Fetch profiles for filter options
@@ -57,12 +61,23 @@ export default async function AuditLogPage({
     .from("profiles")
     .select("id, full_name, email");
 
+  // Fetch metadata for JSON formatting
+  const [
+    { data: ingredients },
+    { data: units },
+    { data: locations }
+  ] = await Promise.all([
+    supabase.from("ingredients").select("id, name"),
+    supabase.from("units").select("id, name, symbol"),
+    supabase.from("locations").select("id, name"),
+  ]);
+
   // Fetch unique entity types for filter
   const { data: uniqueEntityTypes } = (await supabase
     .rpc("get_unique_entity_types", { p_org_id: orgId })) as any;
 
   return (
-    <div className="mx-auto max-w-7xl">
+    <div className="mx-auto w-full">
       <AuditLogClient 
         initialData={result.data}
         totalCount={result.totalCount}
@@ -70,6 +85,9 @@ export default async function AuditLogPage({
         currentPage={page}
         profiles={profiles || []}
         entityTypes={uniqueEntityTypes || []}
+        ingredients={ingredients || []}
+        units={units || []}
+        locations={locations || []}
       />
     </div>
   );

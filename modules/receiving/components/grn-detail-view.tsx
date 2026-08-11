@@ -163,7 +163,7 @@ export function GrnDetailView({
           {isDraft && !grn.purchase_order_id && (
             <button
               onClick={() => setIsAddOpen(true)}
-              className="rounded-md bg-[#587333] px-4 py-2 text-sm font-semibold text-white hover:bg-[#3a4f20]"
+              className="rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700"
             >
               Add Item
             </button>

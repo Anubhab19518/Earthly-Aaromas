@@ -109,7 +109,7 @@ export function ConversionDialog({
             <label className="block text-sm font-medium text-zinc-700">From Unit *</label>
             <select
               {...form.register("from_unit_id")}
-              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
             >
               <option value="">Select unit...</option>
               {eligibleFromUnits.map((u) => (
@@ -153,7 +153,7 @@ export function ConversionDialog({
               {...form.register("conversion_factor", {
                 setValueAs: (v) => (v === "" || v === undefined ? undefined : Number(v)),
               })}
-              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
               placeholder="e.g., 1000"
             />
             {form.watch("from_unit_id") && baseUnit && (
@@ -174,7 +174,7 @@ export function ConversionDialog({
             <label className="block text-sm font-medium text-zinc-700">Notes</label>
             <input
               {...form.register("notes")}
-              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
               placeholder="e.g., Packed tightly"
             />
           </div>
@@ -193,7 +193,7 @@ export function ConversionDialog({
             <button
               type="submit"
               disabled={isPending}
-              className="rounded-md bg-[#587333] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+              className="rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
             >
               {isPending ? "Saving..." : "Save"}
             </button>

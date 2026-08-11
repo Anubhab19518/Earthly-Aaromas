@@ -71,12 +71,12 @@ export default async function ErpLayout({ children }: Readonly<{ children: React
   const activeBranchId = cookieStore.get("active_branch_id")?.value || locations?.[0]?.id || "";
 
   return (
-    <div className="flex h-screen overflow-hidden bg-zinc-50 font-sans text-zinc-950">
+    <div className="flex h-screen overflow-hidden bg-slate-50 font-sans text-slate-900">
       <Sidebar />
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="flex flex-1 flex-col overflow-hidden min-w-0">
         <TopNav locations={locations || []} userFullName={profile?.full_name || ""} initialBranchId={activeBranchId} />
-        <main className="flex-1 overflow-y-auto p-8">
-          <div className="mx-auto max-w-7xl">
+        <main className="flex-1 overflow-y-auto p-5">
+          <div className="w-full">
             {children}
           </div>
         </main>

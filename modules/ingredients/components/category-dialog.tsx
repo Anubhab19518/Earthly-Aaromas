@@ -73,7 +73,7 @@ export function CategoryDialog({ category, open, onOpenChange }: CategoryDialogP
             <label className="block text-sm font-medium text-zinc-700">Name *</label>
             <input
               {...form.register("name")}
-              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
               placeholder="e.g., Dairy"
             />
             {form.formState.errors.name && (
@@ -86,7 +86,7 @@ export function CategoryDialog({ category, open, onOpenChange }: CategoryDialogP
             <textarea
               {...form.register("description")}
               rows={3}
-              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
               placeholder="Optional description"
             />
           </div>
@@ -105,7 +105,7 @@ export function CategoryDialog({ category, open, onOpenChange }: CategoryDialogP
             <button
               type="submit"
               disabled={isPending}
-              className="rounded-md bg-[#587333] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+              className="rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
             >
               {isPending ? "Saving..." : "Save"}
             </button>

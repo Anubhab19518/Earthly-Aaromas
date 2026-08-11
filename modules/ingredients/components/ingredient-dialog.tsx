@@ -116,7 +116,7 @@ export function IngredientDialog({ ingredient, categories, units, open, onOpenCh
               <label className="block text-sm font-medium text-zinc-700">Name *</label>
               <input
                 {...form.register("name")}
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
                 placeholder="e.g., Milk"
               />
               {form.formState.errors.name && (
@@ -127,7 +127,7 @@ export function IngredientDialog({ ingredient, categories, units, open, onOpenCh
               <label className="block text-sm font-medium text-zinc-700">SKU *</label>
               <input
                 {...form.register("sku")}
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
                 placeholder="e.g., MLK-01"
               />
               {form.formState.errors.sku && (
@@ -140,7 +140,7 @@ export function IngredientDialog({ ingredient, categories, units, open, onOpenCh
             <label className="block text-sm font-medium text-zinc-700">Category *</label>
             <select
               {...form.register("category_id")}
-              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
             >
               <option value="">Select category...</option>
               {categories.map((c) => (
@@ -159,7 +159,7 @@ export function IngredientDialog({ ingredient, categories, units, open, onOpenCh
               <label className="block text-sm font-medium text-zinc-700">Base Unit *</label>
               <select
                 {...form.register("base_unit_id")}
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
               >
                 <option value="">Select base unit...</option>
                 {units.map((u) => (
@@ -176,7 +176,7 @@ export function IngredientDialog({ ingredient, categories, units, open, onOpenCh
               <label className="block text-sm font-medium text-zinc-700">Default Purchase Unit</label>
               <select
                 {...form.register("default_purchase_unit_id")}
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
                 disabled={!selectedBaseUnit}
               >
                 <option value="">Select purchase unit...</option>
@@ -199,7 +199,7 @@ export function IngredientDialog({ ingredient, categories, units, open, onOpenCh
                 type="number"
                 step="any"
                 {...form.register("standard_cost", { valueAsNumber: true })}
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
               />
               {form.formState.errors.standard_cost && (
                 <p className="mt-1 text-sm text-red-600">{form.formState.errors.standard_cost.message}</p>
@@ -211,7 +211,7 @@ export function IngredientDialog({ ingredient, categories, units, open, onOpenCh
                 type="number"
                 step="any"
                 {...form.register("min_stock", { valueAsNumber: true })}
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
               />
               {form.formState.errors.min_stock && (
                 <p className="mt-1 text-sm text-red-600">{form.formState.errors.min_stock.message}</p>
@@ -223,7 +223,7 @@ export function IngredientDialog({ ingredient, categories, units, open, onOpenCh
                 type="number"
                 step="any"
                 {...form.register("max_stock", { valueAsNumber: true })}
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
               />
               {form.formState.errors.max_stock && (
                 <p className="mt-1 text-sm text-red-600">{form.formState.errors.max_stock.message}</p>
@@ -247,7 +247,7 @@ export function IngredientDialog({ ingredient, categories, units, open, onOpenCh
             <label className="block text-sm font-medium text-zinc-700">Status *</label>
             <select
               {...form.register("status")}
-              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
             >
               <option value="ACTIVE">Active</option>
               <option value="INACTIVE">Inactive</option>
@@ -268,7 +268,7 @@ export function IngredientDialog({ ingredient, categories, units, open, onOpenCh
             <button
               type="submit"
               disabled={isPending}
-              className="rounded-md bg-[#587333] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+              className="rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
             >
               {isPending ? "Saving..." : "Save"}
             </button>

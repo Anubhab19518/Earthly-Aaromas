@@ -86,7 +86,7 @@ export function InviteEmployeeDialog({ roles, locations, open, onOpenChange }: I
             <div className="mt-6 flex justify-end">
               <button
                 onClick={() => onOpenChange(false)}
-                className="rounded-md bg-[#587333] px-4 py-2 text-sm font-semibold text-white"
+                className="rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white"
               >
                 Close
               </button>
@@ -99,7 +99,7 @@ export function InviteEmployeeDialog({ roles, locations, open, onOpenChange }: I
               <input
                 type="email"
                 {...form.register("email")}
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
                 placeholder="employee@earthlyaaromas.com"
               />
               {form.formState.errors.email && (
@@ -111,7 +111,7 @@ export function InviteEmployeeDialog({ roles, locations, open, onOpenChange }: I
               <label className="block text-sm font-medium text-zinc-700">Role *</label>
               <select
                 {...form.register("role_id")}
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
               >
                 <option value="">Select a role...</option>
                 {roles.filter(r => r.code !== "OWNER").map((r) => (
@@ -127,7 +127,7 @@ export function InviteEmployeeDialog({ roles, locations, open, onOpenChange }: I
               <label className="block text-sm font-medium text-zinc-700">Assigned Branch (Optional)</label>
               <select
                 {...form.register("location_id")}
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
               >
                 <option value="">All Branches</option>
                 {locations.map((l) => (
@@ -150,7 +150,7 @@ export function InviteEmployeeDialog({ roles, locations, open, onOpenChange }: I
               <button
                 type="submit"
                 disabled={isPending}
-                className="rounded-md bg-[#587333] px-4 py-2 text-sm font-semibold text-white hover:bg-[#587333] disabled:opacity-60"
+                className="rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-600 disabled:opacity-60"
               >
                 {isPending ? "Generating Invite..." : "Send Invitation"}
               </button>

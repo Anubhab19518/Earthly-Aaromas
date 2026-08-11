@@ -90,7 +90,7 @@ export function OwnerOrdersClient({
             <div>
               <label className="block text-xs font-medium text-zinc-700 mb-1">Shop</label>
               <select
-                className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-[#587333] focus:outline-none focus:ring-1 focus:ring-[#587333]"
+                className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
                 value={locationId}
                 onChange={(e) => {
                   setLocationId(e.target.value);
@@ -110,7 +110,7 @@ export function OwnerOrdersClient({
             <input
               type="text"
               placeholder="e.g. ORD-001"
-              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-[#587333] focus:outline-none focus:ring-1 focus:ring-[#587333]"
+              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
               value={orderNumber}
               onChange={(e) => setOrderNumber(e.target.value)}
               onBlur={() => updateFilters("order_number", orderNumber)}
@@ -123,7 +123,7 @@ export function OwnerOrdersClient({
             <input
               type="text"
               placeholder="Search name"
-              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-[#587333] focus:outline-none focus:ring-1 focus:ring-[#587333]"
+              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
               onBlur={() => updateFilters("customer_name", customerName)}
@@ -134,7 +134,7 @@ export function OwnerOrdersClient({
           <div>
             <label className="block text-xs font-medium text-zinc-700 mb-1">Status</label>
             <select
-              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-[#587333] focus:outline-none focus:ring-1 focus:ring-[#587333]"
+              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
               value={status}
               onChange={(e) => {
                 setStatus(e.target.value);

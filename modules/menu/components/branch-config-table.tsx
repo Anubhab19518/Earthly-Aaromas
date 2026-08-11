@@ -133,7 +133,7 @@ function ConfigRow({
             checked={isAvailable}
             onChange={(e) => setIsAvailable(e.target.checked)}
           />
-          <div className="h-5 w-9 rounded-full bg-zinc-200 after:absolute after:left-[2px] after:top-[2px] after:h-4 after:w-4 after:rounded-full after:border after:border-zinc-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-[#587333] peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#4a632a] peer-focus:ring-offset-2"></div>
+          <div className="h-5 w-9 rounded-full bg-zinc-200 after:absolute after:left-[2px] after:top-[2px] after:h-4 after:w-4 after:rounded-full after:border after:border-zinc-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-sky-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#4a632a] peer-focus:ring-offset-2"></div>
         </label>
       </td>
       <td className="px-6 py-4">
@@ -143,7 +143,7 @@ function ConfigRow({
           placeholder={`Default (₹${defaultPrice})`}
           value={priceOverride}
           onChange={(e) => setPriceOverride(e.target.value)}
-          className="h-8 w-32 rounded-md border border-zinc-300 px-2 text-sm outline-none focus:border-[#4a632a] focus:ring-1 focus:ring-[#4a632a]"
+          className="h-8 w-32 rounded-md border border-zinc-300 px-2 text-sm outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
           disabled={!isAvailable}
         />
       </td>
@@ -152,7 +152,7 @@ function ConfigRow({
           <button
             onClick={() => onSave(isAvailable, priceOverride)}
             disabled={isSaving}
-            className="inline-flex h-8 items-center justify-center rounded-md bg-[#587333] px-3 text-xs font-medium text-white hover:bg-[#3a4f20] disabled:opacity-60"
+            className="inline-flex h-8 items-center justify-center rounded-md bg-sky-600 px-3 text-xs font-medium text-white hover:bg-sky-700 disabled:opacity-60"
           >
             {isSaving ? <Loader2 className="h-3 w-3 animate-spin" /> : "Save"}
           </button>

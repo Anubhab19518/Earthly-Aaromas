@@ -3,52 +3,104 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
+import { useState, useEffect } from "react";
+import {
+  LayoutDashboard,
+  ScrollText,
+  BarChart3,
+  ShoppingCart,
+  Package,
+  BookOpen,
+  ArrowLeftRight,
+  ClipboardList,
+  Truck,
+  MapPin,
+  FlaskConical,
+  Ruler,
+  ReceiptText,
+  Users,
+  UtensilsCrossed,
+  ChevronRight,
+  ChevronLeft,
+  FileText,
+} from "lucide-react";
 
 interface NavItem {
   name: string;
   href: string;
-  icon?: any;
+  icon: React.ElementType;
   disabled?: boolean;
 }
 
-const DASHBOARD_NAV: NavItem[] = [
-  { name: "Overview", href: "/dashboard" },
-  { name: "Audit Log", href: "/audit" },
-  { name: "Financial Overview", href: "/financial" },
+interface NavSection {
+  title: string;
+  items: NavItem[];
+}
+
+const NAV_SECTIONS: NavSection[] = [
+  {
+    title: "Dashboard",
+    items: [
+      { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
+      { name: "Audit Log", href: "/audit", icon: ScrollText },
+      { name: "Financial", href: "/financial", icon: BarChart3 },
+    ],
+  },
+  {
+    title: "Sales",
+    items: [
+      { name: "Orders", href: "/orders", icon: ShoppingCart },
+    ],
+  },
+  {
+    title: "Inventory",
+    items: [
+      { name: "Snapshot", href: "/inventory", icon: Package },
+      { name: "Ledger", href: "/inventory/ledger", icon: BookOpen },
+      { name: "Stock Transfers", href: "/stock-transfers", icon: ArrowLeftRight },
+      { name: "Purchase Orders", href: "/purchase-orders", icon: ClipboardList },
+      { name: "Goods Receipts", href: "/receiving", icon: FileText },
+    ],
+  },
+  {
+    title: "Master Data",
+    items: [
+      { name: "Locations", href: "/locations", icon: MapPin },
+      { name: "Suppliers", href: "/suppliers", icon: Truck },
+      { name: "Ingredients", href: "/ingredients", icon: FlaskConical },
+      { name: "Units", href: "/units", icon: Ruler },
+      { name: "Tax Categories", href: "/taxes", icon: ReceiptText },
+      { name: "Team", href: "/team", icon: Users },
+      { name: "Menu", href: "/menu", icon: UtensilsCrossed },
+    ],
+  },
 ];
 
-const MASTER_DATA_NAV: NavItem[] = [
-  { name: "Locations", href: "/locations" },
-  { name: "Units", href: "/units" },
-  { name: "Ingredient Categories", href: "/ingredients/categories" },
-  { name: "Ingredients", href: "/ingredients" },
-  { name: "Suppliers", href: "/suppliers" },
-  { name: "Tax Categories", href: "/taxes" },
-  { name: "Team Management", href: "/team" },
-  { name: "Menu Management", href: "/menu" },
-];
-
-const INVENTORY_NAV: NavItem[] = [
-  { name: "Purchase Orders", href: "/purchase-orders" },
-  { name: "Goods Receipts", href: "/receiving" },
-  { name: "Stock Transfers", href: "/stock-transfers" },
-  { name: "Inventory Snapshot", href: "/inventory" },
-  { name: "Inventory Ledger", href: "/inventory/ledger" },
-];
-
-const SALES_NAV: NavItem[] = [
-  { name: "Orders Monitoring", href: "/orders" },
-];
-
-function NavLink({ item }: { item: NavItem }) {
+function NavItemLink({
+  item,
+  isExpanded,
+  onClick,
+}: {
+  item: NavItem;
+  isExpanded: boolean;
+  onClick?: () => void;
+}) {
   const pathname = usePathname();
-  const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
+  const isActive =
+    pathname === item.href ||
+    (item.href !== "/dashboard" && pathname.startsWith(item.href));
+  const Icon = item.icon;
 
   if (item.disabled) {
     return (
-      <div className="flex items-center justify-between px-3 py-2 text-sm font-medium text-zinc-400 cursor-not-allowed">
-        <span>{item.name}</span>
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-300 border border-zinc-200 rounded px-1.5 py-0.5">Soon</span>
+      <div
+        title={item.name}
+        className={`flex items-center gap-3 rounded-md px-2 py-2 text-slate-400 cursor-not-allowed ${
+          isExpanded ? "w-full" : "w-10 justify-center"
+        }`}
+      >
+        <Icon className="h-4 w-4 shrink-0" />
+        {isExpanded && <span className="text-sm truncate">{item.name}</span>}
       </div>
     );
   }
@@ -56,55 +108,130 @@ function NavLink({ item }: { item: NavItem }) {
   return (
     <Link
       href={item.href}
-      className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+      title={!isExpanded ? item.name : undefined}
+      onClick={onClick}
+      className={`flex items-center gap-3 rounded-md px-2 py-2 text-sm font-medium transition-colors ${
+        isExpanded ? "w-full" : "w-10 justify-center"
+      } ${
         isActive
-          ? "bg-[#eaf1e2] text-[#4a632a]"
-          : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
+          ? "bg-sky-50 text-sky-700"
+          : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
       }`}
     >
-      {item.name}
+      <Icon className={`h-4 w-4 shrink-0 ${isActive ? "text-sky-600" : ""}`} />
+      {isExpanded && <span className="truncate">{item.name}</span>}
     </Link>
   );
 }
 
 export function Sidebar() {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("sidebar-expanded");
+      if (stored !== null) setIsExpanded(stored === "true");
+    } catch {}
+  }, []);
+
+  const toggle = () => {
+    setIsExpanded(prev => {
+      const next = !prev;
+      try { localStorage.setItem("sidebar-expanded", String(next)); } catch {}
+      return next;
+    });
+  };
+
+  const collapse = () => {
+    setIsExpanded(false);
+    try { localStorage.setItem("sidebar-expanded", "false"); } catch {}
+  };
+
   return (
-    <div className="flex h-full w-64 flex-col border-r border-zinc-200 bg-white">
-      <div className="flex h-24 shrink-0 items-center justify-center border-b border-zinc-200 p-4">
-        <div className="relative h-full w-full flex items-center justify-center">
-          <Image src="/logo.png" alt="Earthly Aaromas" fill className="object-contain" priority />
+    <>
+      {/* 
+        Fixed spacer — always 64px wide in the flex layout.
+        Content NEVER shifts when sidebar opens/closes.
+      */}
+      <div className="w-16 shrink-0" />
+
+      {/* Backdrop — click outside to collapse */}
+      {isExpanded && (
+        <div
+          className="fixed inset-0 z-30 bg-black/10"
+          onClick={collapse}
+        />
+      )}
+
+      {/* 
+        Actual sidebar — fixed position, overlays content when expanded.
+        Collapsed = 64px (w-16), Expanded = 240px (w-60), all on top of content.
+      */}
+      <div
+        className={`fixed left-0 top-0 h-full z-40 flex flex-col border-r border-slate-200 bg-white transition-[width] duration-200 ease-in-out ${
+          isExpanded ? "w-60 shadow-2xl" : "w-16"
+        }`}
+      >
+        {/* Logo header */}
+        <div
+          className={`flex h-14 shrink-0 items-center border-b border-slate-200 ${
+            isExpanded ? "px-4 gap-3" : "justify-center px-2"
+          }`}
+        >
+          <div className="relative h-8 w-8 shrink-0">
+            <Image src="/logo.png" alt="Earthly Aaromas" fill className="object-contain" priority />
+          </div>
+          {isExpanded && (
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-slate-900 leading-tight truncate">Tea Chain</p>
+              <p className="text-[10px] text-slate-500 leading-tight truncate">ERP Platform</p>
+            </div>
+          )}
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-4">
+          {NAV_SECTIONS.map((section, sIdx) => (
+            <div key={section.title} className="space-y-0.5">
+              {isExpanded ? (
+                <p className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  {section.title}
+                </p>
+              ) : (
+                sIdx > 0 && <div className="h-px bg-slate-100 my-2" />
+              )}
+              {section.items.map(item => (
+                <NavItemLink
+                  key={item.href}
+                  item={item}
+                  isExpanded={isExpanded}
+                  onClick={isExpanded ? collapse : undefined}
+                />
+              ))}
+            </div>
+          ))}
+        </nav>
+
+        {/* Expand / Collapse toggle */}
+        <div className="border-t border-slate-200 p-2">
+          <button
+            onClick={toggle}
+            title={isExpanded ? "Collapse sidebar" : "Expand sidebar"}
+            className={`flex items-center gap-2 rounded-md px-2 py-2 text-sm font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-colors ${
+              isExpanded ? "w-full" : "w-10 justify-center"
+            }`}
+          >
+            {isExpanded ? (
+              <>
+                <ChevronLeft className="h-4 w-4 shrink-0" />
+                <span>Collapse</span>
+              </>
+            ) : (
+              <ChevronRight className="h-4 w-4 shrink-0" />
+            )}
+          </button>
         </div>
       </div>
-      
-      <nav className="flex-1 space-y-8 px-4 py-6 overflow-y-auto">
-        <div className="space-y-1">
-          <h3 className="px-3 text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-2">Dashboard</h3>
-          {DASHBOARD_NAV.map((item) => (
-            <NavLink key={item.name} item={item} />
-          ))}
-        </div>
-        
-        <div className="space-y-1">
-          <h3 className="px-3 text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-2">Sales</h3>
-          {SALES_NAV.map((item) => (
-            <NavLink key={item.name} item={item} />
-          ))}
-        </div>
-
-        <div className="space-y-1">
-          <h3 className="px-3 text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-2">Inventory</h3>
-          {INVENTORY_NAV.map((item) => (
-            <NavLink key={item.name} item={item} />
-          ))}
-        </div>
-
-        <div className="space-y-1">
-          <h3 className="px-3 text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-2">Master Data</h3>
-          {MASTER_DATA_NAV.map((item) => (
-            <NavLink key={item.name} item={item} />
-          ))}
-        </div>
-      </nav>
-    </div>
+    </>
   );
 }

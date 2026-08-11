@@ -20,7 +20,7 @@ export function ShopAnalyticsSection({ analytics }: ShopAnalyticsProps) {
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-bold tracking-tight text-zinc-900 flex items-center gap-2">
-          <TrendingUp className="h-5 w-5 text-[#587333]" />
+          <TrendingUp className="h-5 w-5 text-sky-700" />
           Shop Sales & Analytics
         </h3>
         <p className="mt-1 text-sm text-zinc-500">Real-time performance metrics for today</p>
@@ -30,7 +30,7 @@ export function ShopAnalyticsSection({ analytics }: ShopAnalyticsProps) {
         {/* Revenue */}
         <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-            <IndianRupee className="w-24 h-24 text-[#587333]" />
+            <IndianRupee className="w-24 h-24 text-sky-700" />
           </div>
           <p className="text-sm font-medium text-zinc-500">Today's Revenue</p>
           <p className="text-3xl font-bold text-zinc-900 mt-2">₹{analytics.todaysRevenue.toFixed(2)}</p>
@@ -104,7 +104,7 @@ export function ShopAnalyticsSection({ analytics }: ShopAnalyticsProps) {
                       <p className="text-xs text-zinc-500 mt-0.5">{v.quantity} units sold</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-bold text-[#587333]">₹{v.revenue.toFixed(2)}</p>
+                      <p className="text-sm font-bold text-sky-700">₹{v.revenue.toFixed(2)}</p>
                     </div>
                   </li>
                 ))}

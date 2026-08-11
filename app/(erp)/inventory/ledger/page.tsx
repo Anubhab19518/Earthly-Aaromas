@@ -43,6 +43,8 @@ export default async function InventoryLedgerPage({
   const locationId = activeBranchId || (typeof resolvedParams.location_id === "string" ? resolvedParams.location_id : undefined);
   const ingredientId = typeof resolvedParams.ingredient_id === "string" ? resolvedParams.ingredient_id : undefined;
   const transactionType = typeof resolvedParams.transaction_type === "string" ? resolvedParams.transaction_type : undefined;
+  const sortBy = typeof resolvedParams.sort_by === "string" ? resolvedParams.sort_by : undefined;
+  const sortOrder = typeof resolvedParams.sort_order === "string" ? (resolvedParams.sort_order as "asc" | "desc") : undefined;
   
   // Fetch ledger data
   const result = await getInventoryLedger(orgId, {
@@ -51,6 +53,8 @@ export default async function InventoryLedgerPage({
     locationId,
     ingredientId,
     transactionType,
+    sortBy,
+    sortOrder,
   });
 
   // Fetch filter options
@@ -60,7 +64,7 @@ export default async function InventoryLedgerPage({
   ]);
 
   return (
-    <div className="mx-auto max-w-7xl">
+    <div className="mx-auto w-full">
       <InventoryLedgerClient 
         initialData={result.data}
         totalCount={result.totalCount}

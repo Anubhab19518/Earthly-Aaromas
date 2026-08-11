@@ -41,7 +41,7 @@ export function StockTransferItemForm({
 
       <div className="space-y-2">
         <label htmlFor="ingredientId" className="block text-sm font-medium text-zinc-700">Ingredient <span className="text-red-500">*</span></label>
-        <select name="ingredientId" required className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 bg-white text-sm shadow-sm focus:border-[#4a632a] focus:outline-none focus:ring-1 focus:ring-[#4a632a]">
+        <select name="ingredientId" required className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 bg-white text-sm shadow-sm focus:border-sky-600 focus:outline-none focus:ring-1 focus:ring-[#4a632a]">
           <option value="">Select ingredient</option>
           {ingredients.map((i) => (
             <option key={i.id} value={i.id}>
@@ -54,11 +54,11 @@ export function StockTransferItemForm({
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <label htmlFor="quantity" className="block text-sm font-medium text-zinc-700">Quantity <span className="text-red-500">*</span></label>
-          <input id="quantity" name="quantity" type="number" step="0.001" min="0.001" required className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 bg-white text-sm shadow-sm focus:border-[#4a632a] focus:outline-none focus:ring-1 focus:ring-[#4a632a]" />
+          <input id="quantity" name="quantity" type="number" step="0.001" min="0.001" required className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 bg-white text-sm shadow-sm focus:border-sky-600 focus:outline-none focus:ring-1 focus:ring-[#4a632a]" />
         </div>
         <div className="space-y-2">
           <label htmlFor="unitId" className="block text-sm font-medium text-zinc-700">Unit <span className="text-red-500">*</span></label>
-          <select name="unitId" required className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 bg-white text-sm shadow-sm focus:border-[#4a632a] focus:outline-none focus:ring-1 focus:ring-[#4a632a]">
+          <select name="unitId" required className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 bg-white text-sm shadow-sm focus:border-sky-600 focus:outline-none focus:ring-1 focus:ring-[#4a632a]">
             <option value="">Select unit</option>
             {units.map((u) => (
               <option key={u.id} value={u.id}>
@@ -78,7 +78,7 @@ export function StockTransferItemForm({
         >
           Cancel
         </button>
-        <button type="submit" disabled={isPending} className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors bg-[#587333] text-zinc-50 shadow hover:bg-[#587333]/90 h-9 px-4 py-2 disabled:pointer-events-none disabled:opacity-50">
+        <button type="submit" disabled={isPending} className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors bg-sky-600 text-zinc-50 shadow hover:bg-sky-600/90 h-9 px-4 py-2 disabled:pointer-events-none disabled:opacity-50">
           {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Add Item
         </button>
