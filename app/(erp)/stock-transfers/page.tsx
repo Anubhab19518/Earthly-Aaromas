@@ -61,13 +61,11 @@ export default async function StockTransfersPage() {
   }
 
   return (
-    <section>
-      <StockTransferListTable
-        transfers={filteredTransfers || []}
-        locations={locations || []}
-        activeBranchId={activeBranchId}
-        canCreate={canCreate}
-      />
-    </section>
+    <StockTransferListTable
+      transfers={filteredTransfers || []}
+      locations={locations || []}
+      activeBranchId={activeBranchId}
+      canCreate={canCreate}
+    />
   );
 }

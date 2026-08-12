@@ -89,8 +89,8 @@ export function AlertPolicyDialog({ ingredient, baseUnit, locations, policy, ope
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 animate-in fade-in duration-150">
+      <div className="relative w-full max-w-[440px] overflow-hidden rounded-md border border-slate-200/90 bg-white shadow-xl animate-in zoom-in-95 duration-150">
         <h2 className="text-xl font-semibold">{policy ? "Edit Alert Policy" : "Add Alert Policy"}</h2>
         <p className="mt-1 text-sm text-zinc-500">
           Ingredient: <span className="font-medium text-zinc-800">{ingredient.name}</span> <br/>

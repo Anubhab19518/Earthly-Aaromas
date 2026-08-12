@@ -113,9 +113,9 @@ export function RevenueChart({ initialData, orgId, locationId }: RevenueChartPro
     : null;
 
   return (
-    <div className="rounded-xl bg-white border border-slate-100 overflow-hidden">
+    <div className="rounded-xl bg-white border border-slate-200/80 shadow-2xs overflow-hidden">
       {/* ── Card header ────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-slate-50">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200/80">
         <h3 className="text-sm font-semibold text-slate-900">Revenue Analytics</h3>
         {/* Range pills */}
         <div className="flex items-center rounded-full border border-slate-200 overflow-hidden bg-slate-50 text-xs">
@@ -140,7 +140,7 @@ export function RevenueChart({ initialData, orgId, locationId }: RevenueChartPro
       <div className="flex" style={{ opacity: isPending ? 0.6 : 1 }}>
 
         {/* LEFT PANEL — legend + insight + CTA */}
-        <div className="w-72 shrink-0 flex flex-col justify-between p-6 border-r border-slate-50">
+        <div className="w-72 shrink-0 flex flex-col justify-between p-6 border-r border-slate-200/80">
           {/* Legend */}
           <div className="space-y-3">
             <div className="flex items-center gap-3">
@@ -154,7 +154,7 @@ export function RevenueChart({ initialData, orgId, locationId }: RevenueChartPro
           </div>
 
           {/* Insight card */}
-          <div className="mt-6 rounded-lg bg-slate-50 border border-slate-100 p-4">
+          <div className="mt-6 rounded-lg bg-slate-50 border border-slate-200/80 p-4">
             <p className="text-sm text-slate-500 leading-relaxed">
               Track daily revenue trends and forecast to plan inventory and staffing.
             </p>

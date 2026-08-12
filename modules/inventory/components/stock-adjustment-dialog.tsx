@@ -3,6 +3,7 @@
 import { useTransition, useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { X, SlidersHorizontal } from "lucide-react";
 import { createStockAdjustment } from "@/modules/inventory/services/inventory.actions";
 import { StockAdjustmentFormValues, stockAdjustmentFormSchema } from "@/modules/inventory/schemas/inventory.schema";
 import { Ingredient } from "@/modules/ingredients/schemas/ingredient.schema";
@@ -72,106 +73,149 @@ export function StockAdjustmentDialog({ ingredients, locations, units, open, onO
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
-        <h2 className="text-xl font-semibold">Opening Stock / Stock Adjustment</h2>
-        <p className="mt-1 text-sm text-zinc-500">
-          Manually adjust inventory. This will post directly to the immutable ledger.
-        </p>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 animate-in fade-in duration-150">
+      <div className="relative w-full max-w-[440px] overflow-hidden rounded-md border border-slate-200/90 bg-white shadow-xl animate-in zoom-in-95 duration-150 text-slate-800 font-sans">
+        
+        {/* Minimal Header */}
+        <div className="flex items-center justify-between border-b border-slate-200/80 px-6 py-4">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-200/60">
+              <SlidersHorizontal className="h-4 w-4" />
+            </div>
+            <h2 className="text-base font-bold text-slate-900 tracking-tight">Adjust stock</h2>
+          </div>
+          <button
+            type="button"
+            onClick={() => onOpenChange(false)}
+            className="rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors cursor-pointer"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
 
-        <form onSubmit={form.handleSubmit(onSubmit)} className="mt-6 space-y-4">
+        {/* Minimal Single-Column Form */}
+        <form onSubmit={form.handleSubmit(onSubmit)} className="p-6 space-y-4">
+          {/* Location */}
           <div>
-            <label className="block text-sm font-medium text-zinc-700">Location *</label>
+            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              Location <span className="text-rose-500">*</span>
+            </label>
             <select
               {...form.register("location_id")}
-              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
+              className="w-full rounded-md border border-slate-200/90 bg-slate-50/50 px-3 py-2 text-xs text-slate-800 outline-none focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-500/20 transition-all cursor-pointer"
             >
-              <option value="">Select location...</option>
+              <option value="">Select location</option>
               {locations.map((loc) => (
-                <option key={loc.id} value={loc.id}>{loc.name}</option>
+                <option key={loc.id} value={loc.id}>
+                  {loc.name}
+                </option>
               ))}
             </select>
             {form.formState.errors.location_id && (
-              <p className="mt-1 text-sm text-red-600">{form.formState.errors.location_id.message}</p>
+              <p className="mt-1 text-[11px] font-medium text-rose-600">
+                {form.formState.errors.location_id.message}
+              </p>
             )}
           </div>
 
+          {/* Ingredient */}
           <div>
-            <label className="block text-sm font-medium text-zinc-700">Ingredient *</label>
+            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              Ingredient <span className="text-rose-500">*</span>
+            </label>
             <select
               {...form.register("ingredient_id")}
-              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
+              className="w-full rounded-md border border-slate-200/90 bg-slate-50/50 px-3 py-2 text-xs text-slate-800 outline-none focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-500/20 transition-all cursor-pointer"
             >
-              <option value="">Select ingredient...</option>
+              <option value="">Select ingredient</option>
               {ingredients.map((ing) => (
-                <option key={ing.id} value={ing.id}>{ing.name}</option>
+                <option key={ing.id} value={ing.id}>
+                  {ing.name}
+                </option>
               ))}
             </select>
             {form.formState.errors.ingredient_id && (
-              <p className="mt-1 text-sm text-red-600">{form.formState.errors.ingredient_id.message}</p>
+              <p className="mt-1 text-[11px] font-medium text-rose-600">
+                {form.formState.errors.ingredient_id.message}
+              </p>
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-zinc-700">Reason *</label>
-              <select
-                {...form.register("reason")}
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
-              >
-                <option value="ADJUSTMENT">General Adjustment</option>
-                <option value="OPENING_STOCK">Opening Stock</option>
-                <option value="DAMAGE">Damage</option>
-                <option value="EXPIRY">Expiry</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-zinc-700">
-                Quantity Change {baseUnit ? `(${baseUnit.symbol})` : ""} *
-              </label>
-              <input
-                type="number"
-                step="any"
-                {...form.register("quantity_change", { valueAsNumber: true })}
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
-                placeholder="Use - for deductions"
-              />
-              {form.formState.errors.quantity_change && (
-                <p className="mt-1 text-sm text-red-600">{form.formState.errors.quantity_change.message}</p>
-              )}
-            </div>
+          {/* Reason */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              Reason <span className="text-rose-500">*</span>
+            </label>
+            <select
+              {...form.register("reason")}
+              className="w-full rounded-md border border-slate-200/90 bg-slate-50/50 px-3 py-2 text-xs text-slate-800 outline-none focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-500/20 transition-all cursor-pointer"
+            >
+              <option value="ADJUSTMENT">General Adjustment</option>
+              <option value="OPENING_STOCK">Opening Stock</option>
+              <option value="DAMAGE">Damage</option>
+              <option value="EXPIRY">Expiry</option>
+            </select>
           </div>
 
+          {/* Quantity Change */}
           <div>
-            <label className="block text-sm font-medium text-zinc-700">Notes / Remarks (Optional)</label>
+            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              Quantity change {baseUnit ? `(${baseUnit.symbol})` : ""} <span className="text-rose-500">*</span>
+            </label>
+            <input
+              type="number"
+              step="any"
+              {...form.register("quantity_change", { valueAsNumber: true })}
+              className="w-full rounded-md border border-slate-200/90 bg-slate-50/50 px-3 py-2 text-xs text-slate-800 outline-none focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-500/20 transition-all"
+              placeholder="Use + for addition, - for deduction"
+            />
+            {form.formState.errors.quantity_change && (
+              <p className="mt-1 text-[11px] font-medium text-rose-600">
+                {form.formState.errors.quantity_change.message}
+              </p>
+            )}
+          </div>
+
+          {/* Notes / Remarks */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              Notes / remarks <span className="text-slate-400 font-normal">(optional)</span>
+            </label>
             <textarea
               {...form.register("remarks")}
               rows={2}
-              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
-              placeholder="e.g., Found 2 extra boxes during stock take"
+              className="w-full rounded-md border border-slate-200/90 bg-slate-50/50 px-3 py-2 text-xs text-slate-800 placeholder:text-slate-400 outline-none focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-500/20 transition-all resize-none"
+              placeholder="Add optional context..."
             />
             {form.formState.errors.remarks && (
-              <p className="mt-1 text-sm text-red-600">{form.formState.errors.remarks.message}</p>
+              <p className="mt-1 text-[11px] font-medium text-rose-600">
+                {form.formState.errors.remarks.message}
+              </p>
             )}
           </div>
 
-          {errorMsg && <p className="text-sm text-red-600">{errorMsg}</p>}
+          {errorMsg && (
+            <p className="text-xs font-medium text-rose-600 bg-rose-50 p-2.5 rounded-md border border-rose-200">
+              {errorMsg}
+            </p>
+          )}
 
-          <div className="mt-6 flex justify-end gap-3">
+          {/* Minimal Action Buttons */}
+          <div className="pt-2 flex items-center justify-end gap-2">
             <button
               type="button"
               onClick={() => onOpenChange(false)}
-              className="rounded-md px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100"
               disabled={isPending}
+              className="rounded-md border border-slate-200/80 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isPending || !selectedIngredient}
-              className="rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+              className="rounded-md bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60 transition-colors shadow-2xs cursor-pointer"
             >
-              {isPending ? "Posting..." : "Post Adjustment"}
+              {isPending ? "Posting..." : "Post adjustment"}
             </button>
           </div>
         </form>
@@ -179,4 +223,3 @@ export function StockAdjustmentDialog({ ingredients, locations, units, open, onO
     </div>
   );
 }
-

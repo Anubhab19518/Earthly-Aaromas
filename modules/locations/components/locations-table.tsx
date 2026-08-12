@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Hash, MapPin, Tag, Network, Activity } from "lucide-react";
+import { Hash, MapPin, Tag, Network, Activity, Building2, Plus } from "lucide-react";
 import { Location, LocationType } from "@/modules/locations/schemas/location.schema";
 import { LocationDialog } from "./location-dialog";
 import { DeleteLocationDialog } from "./delete-location-dialog";
 import { TableToolbar } from "@/shared/components/ui/table-toolbar";
+import { ErpPageHeader } from "@/shared/components/layout/erp-page-header";
 
 type LocationWithRelations = Location & {
   location_types: { code: string; name: string };
@@ -41,19 +42,30 @@ export function LocationsTable({ locations, locationTypes }: LocationsTableProps
   });
 
   return (
-    <div>
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-medium text-zinc-900">Locations</h2>
-          <p className="text-sm text-zinc-500">Manage your warehouses, shops, and other facilities.</p>
-        </div>
-        <button
-          onClick={() => setIsAddOpen(true)}
-          className="rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700"
-        >
-          Add Location
-        </button>
-      </div>
+    <div className="space-y-6">
+      {/* Sticky ERP Page Header */}
+      <ErpPageHeader
+        category="Master Data & Workspaces"
+        title="Workspaces & Locations Directory"
+        description="Manage central warehouses, retail shops, counters, and organizational branch hierarchies"
+        icon={Building2}
+        iconBgColor="bg-indigo-600 text-white"
+        tabs={[
+          { id: "locations-table", label: "Branches & Warehouses", icon: MapPin, count: locations.length },
+        ]}
+        actions={
+          <button
+            type="button"
+            onClick={() => setIsAddOpen(true)}
+            className="flex items-center gap-1.5 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 transition-colors shadow-2xs cursor-pointer"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            <span>Add Location</span>
+          </button>
+        }
+      />
+
+      <div id="locations-table" className="space-y-4">
 
       <TableToolbar 
         sortOptions={sortOptions}
@@ -157,6 +169,7 @@ export function LocationsTable({ locations, locationTypes }: LocationsTableProps
         onOpenChange={(open) => !open && setDeleteLocation(null)}
         location={deleteLocation}
       />
+      </div>
     </div>
   );
 }

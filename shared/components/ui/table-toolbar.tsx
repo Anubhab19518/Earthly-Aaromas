@@ -67,7 +67,7 @@ export function TableToolbar({
           
           {showSortOptions && (
             <div className="absolute right-0 top-10 z-50 min-w-[200px] rounded-xl border border-slate-200 bg-white shadow-lg py-1">
-              <p className="px-4 py-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">Sort By</p>
+              <p className="px-4 py-2 text-xs font-semibold text-slate-500">Sort by</p>
               {sortOptions.map((opt) => (
                 <button
                   key={opt.value}
@@ -129,7 +129,7 @@ export function TableToolbar({
 
           {showColumns && (
             <div className="absolute right-0 top-10 z-50 min-w-[180px] rounded-xl border border-slate-200 bg-white shadow-lg py-1">
-              <p className="px-4 py-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">Columns</p>
+              <p className="px-4 py-2 text-xs font-semibold text-slate-500">Columns</p>
               {columns.map((col) => (
                 <label
                   key={col.key}

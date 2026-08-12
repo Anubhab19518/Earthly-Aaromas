@@ -14,22 +14,37 @@ import { StockTransferForm } from "./stock-transfer-form";
 import { StockTransferItemForm } from "./stock-transfer-item-form";
 
 function StatusBadge({ status }: { status: string }) {
-  const styles: Record<string, string> = {
-    DRAFT: "bg-zinc-100 text-zinc-700 border-zinc-200",
-    SHIPPED: "bg-blue-50 text-blue-700 border-blue-200",
-    RECEIVED: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    CANCELLED: "bg-red-50 text-red-700 border-red-200",
-  };
-
-  return (
-    <span
-      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${
-        styles[status] || styles.DRAFT
-      }`}
-    >
-      {status}
-    </span>
-  );
+  switch (status) {
+    case "SHIPPED":
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200/80 whitespace-nowrap shadow-2xs">
+          <span className="h-1.5 w-1.5 rounded-full bg-blue-500 shrink-0" />
+          <span>Shipped</span>
+        </span>
+      );
+    case "RECEIVED":
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/80 whitespace-nowrap shadow-2xs">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
+          <span>Received</span>
+        </span>
+      );
+    case "CANCELLED":
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200/80 whitespace-nowrap shadow-2xs">
+          <span className="h-1.5 w-1.5 rounded-full bg-rose-500 shrink-0" />
+          <span>Cancelled</span>
+        </span>
+      );
+    case "DRAFT":
+    default:
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200 whitespace-nowrap shadow-2xs">
+          <span className="h-1.5 w-1.5 rounded-full bg-slate-400 shrink-0" />
+          <span>Draft</span>
+        </span>
+      );
+  }
 }
 
 export function StockTransferDetailClient({

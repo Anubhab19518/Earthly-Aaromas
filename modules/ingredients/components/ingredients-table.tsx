@@ -13,6 +13,7 @@ import { AlertPoliciesPanel } from "@/modules/inventory/components/alert-policie
 import { Location } from "@/modules/locations/schemas/location.schema";
 import { InventoryAlertPolicy } from "@/modules/inventory/schemas/alert-policy.schema";
 import { TableToolbar } from "@/shared/components/ui/table-toolbar";
+import { ErpPageHeader } from "@/shared/components/layout/erp-page-header";
 
 interface IngredientsTableProps {
   ingredients: Ingredient[];
@@ -84,27 +85,41 @@ export function IngredientsTable({
   });
 
   return (
-    <div>
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-medium text-zinc-900">Ingredients</h2>
-          <p className="text-sm text-zinc-500">Manage your organization's ingredients master list.</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setIsCategoryOpen(true)}
-            className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50"
-          >
-            Manage Categories
-          </button>
-          <button
-            onClick={() => setIsAddOpen(true)}
-            className="rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-600"
-          >
-            Add Ingredient
-          </button>
-        </div>
-      </div>
+    <div className="space-y-6">
+      {/* Sticky ERP Page Header */}
+      <ErpPageHeader
+        category="Master Data & Inventory"
+        title="Raw Materials & Ingredients Master"
+        description="Catalog raw materials, SKUs, standard costs, yield percentages, and base measurement units"
+        icon={Package}
+        iconBgColor="bg-emerald-600 text-white"
+        tabs={[
+          { id: "ingredients-table", label: "Ingredients Master", icon: Package, count: ingredients.length },
+          { id: "ingredients-categories", label: "Categories", icon: Tag, count: categories.length },
+        ]}
+        actions={
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setIsCategoryOpen(true)}
+              className="flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+            >
+              <Tag className="h-3.5 w-3.5 text-slate-400" />
+              <span>Categories</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsAddOpen(true)}
+              className="flex items-center gap-1.5 rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 transition-colors shadow-2xs cursor-pointer"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <span>Add Ingredient</span>
+            </button>
+          </div>
+        }
+      />
+
+      <div id="ingredients-table" className="space-y-4">
 
       <TableToolbar 
         sortOptions={sortOptions}
@@ -307,6 +322,7 @@ export function IngredientsTable({
           onClose={() => setAlertsIngredient(null)}
         />
       )}
+      </div>
     </div>
   );
 }

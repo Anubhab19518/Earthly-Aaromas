@@ -4,8 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
-import { Plus, Search, FileText, Hash, Building2, MapPin, Calendar, IndianRupee, Activity } from "lucide-react";
+import { Plus, Search, FileText, Hash, Building2, MapPin, Calendar, IndianRupee, Activity, ShoppingBag } from "lucide-react";
 import { TableToolbar } from "@/shared/components/ui/table-toolbar";
+import { ErpPageHeader } from "@/shared/components/layout/erp-page-header";
 
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
@@ -80,16 +81,31 @@ export function PurchaseOrderListTable({
   });
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">Purchase Orders</h1>
-        {canCreate && (
-          <Link href="/purchase-orders/new" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-sky-600 text-zinc-50 shadow hover:bg-sky-600/90 h-9 px-4 py-2">
-            <Plus className="mr-2 h-4 w-4" />
-            New Purchase Order
-          </Link>
-        )}
-      </div>
+    <div className="space-y-6">
+      {/* Sticky ERP Page Header */}
+      <ErpPageHeader
+        category="Procurement & Purchasing"
+        title="Purchase Orders Directory"
+        description="Create, track, and manage raw material purchase orders sent to approved suppliers"
+        icon={FileText}
+        iconBgColor="bg-sky-600 text-white"
+        tabs={[
+          { id: "pos-table", label: "Purchase Orders Master", icon: FileText, count: purchaseOrders.length },
+        ]}
+        actions={
+          canCreate ? (
+            <Link
+              href="/purchase-orders/new"
+              className="flex items-center gap-1.5 rounded-md bg-sky-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-sky-700 transition-colors shadow-2xs cursor-pointer"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <span>New PO</span>
+            </Link>
+          ) : undefined
+        }
+      />
+
+      <div id="pos-table" className="space-y-4">
 
       <TableToolbar 
         sortOptions={sortOptions}
@@ -182,6 +198,7 @@ export function PurchaseOrderListTable({
             </table>
           </div>
         )}
+      </div>
       </div>
     </div>
   );

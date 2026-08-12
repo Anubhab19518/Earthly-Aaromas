@@ -1,10 +1,29 @@
 "use client";
 
-import React, { useState } from "react";
-import { format } from "date-fns";
+import React, { useState, useMemo } from "react";
+import { format, formatDistanceToNow } from "date-fns";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { Filter, ChevronDown, ChevronRight, Calendar, User, Zap, Layers, Hash } from "lucide-react";
-import { TableToolbar } from "@/shared/components/ui/table-toolbar";
+import { 
+  Search, 
+  X, 
+  Check, 
+  Copy, 
+  Layers, 
+  ArrowUpDown, 
+  ChevronDown, 
+  ChevronRight, 
+  User, 
+  Zap, 
+  Package,
+  ShoppingCart,
+  FileText,
+  Utensils,
+  ShieldCheck,
+  RotateCcw,
+  ArrowRight,
+  ClipboardList
+} from "lucide-react";
+import { ErpPageHeader } from "@/shared/components/layout/erp-page-header";
 
 interface AuditLogClientProps {
   initialData: any[];
@@ -12,10 +31,18 @@ interface AuditLogClientProps {
   totalPages: number;
   currentPage: number;
   profiles: any[];
-  entityTypes?: any[]; // optional
+  entityTypes?: string[];
   ingredients?: any[];
   units?: any[];
   locations?: any[];
+}
+
+export interface DiffEntry {
+  key: string;
+  formattedKey: string;
+  status: "added" | "removed" | "modified" | "unchanged";
+  oldVal?: any;
+  newVal?: any;
 }
 
 export function AuditLogClient({
@@ -24,6 +51,7 @@ export function AuditLogClient({
   totalPages,
   currentPage,
   profiles,
+  entityTypes = [],
   ingredients = [],
   units = [],
   locations = [],
@@ -32,36 +60,61 @@ export function AuditLogClient({
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
-  const [actorId, setActorId] = useState(searchParams.get("actor_id") || "");
-  const [action, setAction] = useState(searchParams.get("action") || "");
-  const [entityType, setEntityType] = useState(searchParams.get("entity_type") || "");
-  const [showFilters, setShowFilters] = useState(false);
-  
+  // State
+  const [activeTab, setActiveTab] = useState<"all" | "inventory" | "orders" | "catalog">("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [actorIdFilter, setActorIdFilter] = useState(searchParams.get("actor_id") || "all");
+  const [actionFilter, setActionFilter] = useState(searchParams.get("action") || "all");
+  const [entityTypeFilter, setEntityTypeFilter] = useState(searchParams.get("entity_type") || "all");
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [copiedItem, setCopiedItem] = useState<string | null>(null);
   const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
 
-  const toggleRow = (id: string) => {
-    setExpandedRows(prev => ({
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
+
+  const handleCopy = (text: string, label: string) => {
+    if (!text) return;
+    navigator.clipboard.writeText(text);
+    setCopiedItem(text);
+    showToast(`Copied ${label} to clipboard`);
+    setTimeout(() => setCopiedItem(null), 2000);
+  };
+
+  const toggleRow = (id: string, hasChanges: boolean) => {
+    if (!hasChanges) return;
+    setExpandedRows((prev) => ({
       ...prev,
-      [id]: !prev[id]
+      [id]: !prev[id],
     }));
   };
 
-  const updateFilters = (key: string, value: string) => {
+  const updateFilters = (updates: Record<string, string>) => {
     const params = new URLSearchParams(searchParams.toString());
-    if (value) {
-      params.set(key, value);
-    } else {
-      params.delete(key);
-    }
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value && value !== "all") {
+        params.set(key, value);
+      } else {
+        params.delete(key);
+      }
+    });
     params.set("page", "1");
     router.push(`${pathname}?${params.toString()}`);
   };
 
-  const handleSortChange = (value: string) => {
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
     const params = new URLSearchParams(searchParams.toString());
-    const [by, order] = value.split("-");
-    params.set("sort_by", by);
-    params.set("sort_order", order);
+    if (value === "all" || !value) {
+      params.delete("sort_by");
+      params.delete("sort_order");
+    } else {
+      const [by, order] = value.split("-");
+      params.set("sort_by", by);
+      params.set("sort_order", order);
+    }
     params.set("page", "1");
     router.push(`${pathname}?${params.toString()}`);
   };
@@ -73,280 +126,731 @@ export function AuditLogClient({
     router.push(`${pathname}?${params.toString()}`);
   };
 
-  const activeSort = searchParams.get("sort_by") 
+  const activeSort = searchParams.get("sort_by")
     ? `${searchParams.get("sort_by")}-${searchParams.get("sort_order") || "desc"}`
     : "date-desc";
 
-  const sortOptions = [
-    { label: "Date (Newest)", value: "date-desc" },
-    { label: "Date (Oldest)", value: "date-asc" },
-    { label: "Actor (A-Z)", value: "actor-asc" },
-    { label: "Actor (Z-A)", value: "actor-desc" },
-    { label: "Entity Type (A-Z)", value: "entity_type-asc" },
-    { label: "Action (A-Z)", value: "action-asc" },
-  ];
+  // Filter dataset by search and active tab
+  const filteredData = useMemo(() => {
+    return initialData.filter((row) => {
+      // Tab domain filtering
+      if (activeTab === "inventory") {
+        const invTypes = ["inventory_ledger", "goods_receipts", "stock_transfers"];
+        if (!invTypes.includes(row.entity_type)) return false;
+      } else if (activeTab === "orders") {
+        const orderTypes = ["sales_orders", "purchase_orders"];
+        if (!orderTypes.includes(row.entity_type)) return false;
+      } else if (activeTab === "catalog") {
+        const catalogTypes = ["menu_variants", "ingredients", "units", "locations"];
+        if (!catalogTypes.includes(row.entity_type)) return false;
+      }
 
+      // Search query filtering
+      if (!searchQuery.trim()) return true;
+      const q = searchQuery.toLowerCase();
+      const actorName = row.profiles?.full_name || "System";
+      const actorEmail = row.profiles?.email || "";
+      const actionStr = row.action || "";
+      const entityTypeStr = row.entity_type || "";
+      const entityIdStr = row.formatted_entity_id || row.entity_id || "";
+
+      return (
+        actorName.toLowerCase().includes(q) ||
+        actorEmail.toLowerCase().includes(q) ||
+        actionStr.toLowerCase().includes(q) ||
+        entityTypeStr.toLowerCase().includes(q) ||
+        entityIdStr.toLowerCase().includes(q)
+      );
+    });
+  }, [initialData, activeTab, searchQuery]);
+
+  // Tab counters
+  const tabCounts = useMemo(() => {
+    let inventory = 0;
+    let orders = 0;
+    let catalog = 0;
+
+    initialData.forEach((row) => {
+      const et = row.entity_type;
+      if (["inventory_ledger", "goods_receipts", "stock_transfers"].includes(et)) inventory++;
+      else if (["sales_orders", "purchase_orders"].includes(et)) orders++;
+      else if (["menu_variants", "ingredients", "units", "locations"].includes(et)) catalog++;
+    });
+
+    return { all: totalCount, inventory, orders, catalog };
+  }, [initialData, totalCount]);
+
+  // Unique actions for drop-down filter
+  const availableActions = useMemo(() => {
+    const set = new Set<string>();
+    initialData.forEach((d) => d.action && set.add(d.action));
+    return Array.from(set);
+  }, [initialData]);
+
+  // Dynamic available entity types
+  const availableEntityTypes = useMemo(() => {
+    const set = new Set<string>([
+      "inventory_ledger",
+      "goods_receipts",
+      "stock_transfers",
+      "sales_orders",
+      "purchase_orders",
+      "ingredients",
+      "menu_variants",
+    ]);
+    entityTypes.forEach((t) => set.add(t));
+    initialData.forEach((d) => d.entity_type && set.add(d.entity_type));
+    return Array.from(set);
+  }, [entityTypes, initialData]);
+
+  // Helper to format payload data object into clean label/value pairs
   const formatData = (data: any, entityType: string) => {
-    if (!data || typeof data !== 'object') return data;
-    
-    // Create a copy to modify
+    if (!data || typeof data !== "object") return data;
     const formatted = { ...data };
 
-    // Map common IDs to names
     if (formatted.ingredient_id) {
-      const ingredient = ingredients.find(i => i.id === formatted.ingredient_id);
-      if (ingredient) formatted.ingredient = ingredient.name;
+      const ing = ingredients.find((i) => i.id === formatted.ingredient_id);
+      if (ing) formatted.Ingredient = ing.name;
       delete formatted.ingredient_id;
     }
     if (formatted.location_id) {
-      const location = locations.find(l => l.id === formatted.location_id);
-      if (location) formatted.location = location.name;
+      const loc = locations.find((l) => l.id === formatted.location_id);
+      if (loc) formatted.Location = loc.name;
       delete formatted.location_id;
     }
     if (formatted.unit_id) {
-      const unit = units.find(u => u.id === formatted.unit_id);
-      if (unit) formatted.unit = `${unit.name} (${unit.symbol})`;
+      const unit = units.find((u) => u.id === formatted.unit_id);
+      if (unit) formatted.Unit = `${unit.name} (${unit.symbol})`;
       delete formatted.unit_id;
     }
     if (formatted.actor_id) {
-      const actor = profiles.find(p => p.id === formatted.actor_id);
-      if (actor) formatted.actor = actor.full_name || actor.email;
+      const actor = profiles.find((p) => p.id === formatted.actor_id);
+      if (actor) formatted.Actor = actor.full_name || actor.email;
       delete formatted.actor_id;
     }
 
-    // Special case for inventory ledger
     if (entityType === "inventory_ledger") {
       const simplified: any = {};
-      if (formatted.ingredient) simplified.Item = formatted.ingredient;
-      
-      const unitStr = formatted.unit ? ` ${formatted.unit}` : "";
-
+      if (formatted.Ingredient) simplified.Item = formatted.Ingredient;
+      const unitStr = formatted.Unit ? ` ${formatted.Unit}` : "";
       if (formatted.quantity_change !== undefined) {
-        simplified.Change = `${formatted.quantity_change > 0 ? '+' : ''}${formatted.quantity_change}${unitStr}`;
-      } 
-      if (formatted.total_quantity_on_hand !== undefined) {
-        simplified["Total Quantity"] = `${formatted.total_quantity_on_hand}${unitStr}`;
+        simplified["Quantity Change"] = `${formatted.quantity_change > 0 ? "+" : ""}${formatted.quantity_change}${unitStr}`;
       }
-      
-      // Include transaction type if present
+      if (formatted.total_quantity_on_hand !== undefined) {
+        simplified["Total On Hand"] = `${formatted.total_quantity_on_hand}${unitStr}`;
+      }
       if (formatted.transaction_type) {
         simplified["Transaction Type"] = formatted.transaction_type;
       }
-      
       return simplified;
     }
 
     return formatted;
   };
 
-  const renderDataAsText = (data: any) => {
-    if (!data) return <span className="text-slate-400 italic">No data</span>;
-    if (typeof data !== 'object') return <span className="text-slate-700">{String(data)}</span>;
+  // Helper to check if a row has expandable diff payload data
+  const checkHasChanges = (row: any) => {
+    const formattedOld = formatData(row.old_data, row.entity_type);
+    const formattedNew = formatData(row.new_data, row.entity_type);
 
-    const entries = Object.entries(data);
-    if (entries.length === 0) return <span className="text-slate-400 italic">Empty</span>;
+    const hasOld = formattedOld && typeof formattedOld === "object" && Object.keys(formattedOld).length > 0;
+    const hasNew = formattedNew && typeof formattedNew === "object" && Object.keys(formattedNew).length > 0;
 
+    return Boolean(hasOld || hasNew);
+  };
+
+  // Compute attribute diff entries
+  const computeDiffEntries = (oldObj: any, newObj: any): DiffEntry[] => {
+    const oldData = oldObj && typeof oldObj === "object" ? oldObj : {};
+    const newData = newObj && typeof newObj === "object" ? newObj : {};
+
+    const allKeys = Array.from(new Set([...Object.keys(oldData), ...Object.keys(newData)]));
+
+    return allKeys.map((key) => {
+      const formattedKey = key
+        .split("_")
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+        .join(" ");
+
+      const hasOld = Object.prototype.hasOwnProperty.call(oldData, key) && oldData[key] !== null && oldData[key] !== undefined;
+      const hasNew = Object.prototype.hasOwnProperty.call(newData, key) && newData[key] !== null && newData[key] !== undefined;
+
+      const oldVal = hasOld ? oldData[key] : undefined;
+      const newVal = hasNew ? newData[key] : undefined;
+
+      if (!hasOld && hasNew) {
+        return { key, formattedKey, status: "added", newVal };
+      }
+      if (hasOld && !hasNew) {
+        return { key, formattedKey, status: "removed", oldVal };
+      }
+      if (String(oldVal) !== String(newVal)) {
+        return { key, formattedKey, status: "modified", oldVal, newVal };
+      }
+      return { key, formattedKey, status: "unchanged", oldVal, newVal };
+    });
+  };
+
+  // Helper to get entity icon
+  const getEntityIcon = (type: string) => {
+    switch (type) {
+      case "inventory_ledger":
+      case "stock_transfers":
+        return <Package className="h-3.5 w-3.5 text-indigo-600" />;
+      case "goods_receipts":
+      case "purchase_orders":
+        return <FileText className="h-3.5 w-3.5 text-blue-600" />;
+      case "sales_orders":
+        return <ShoppingCart className="h-3.5 w-3.5 text-emerald-600" />;
+      case "menu_variants":
+      case "ingredients":
+        return <Utensils className="h-3.5 w-3.5 text-amber-600" />;
+      default:
+        return <Layers className="h-3.5 w-3.5 text-slate-500" />;
+    }
+  };
+
+  // Action Status Badge (Title Case, clean single line)
+  const renderActionBadge = (actionStr: string) => {
+    const uppercaseAction = actionStr.toUpperCase();
+    const formattedText = actionStr
+      .split("_")
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+      .join(" ");
+
+    // Green Lozenge for Success / Post / Done / Create
+    if (uppercaseAction.includes("CREATE") || uppercaseAction.includes("POST") || uppercaseAction.includes("ADD") || uppercaseAction.includes("COMPLETED")) {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/80 whitespace-nowrap shadow-2xs">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
+          <span>{formattedText}</span>
+        </span>
+      );
+    }
+
+    // Blue/Amber Lozenge for In Progress / Update / Edit / Ready
+    if (uppercaseAction.includes("UPDATE") || uppercaseAction.includes("EDIT") || uppercaseAction.includes("ADJUST") || uppercaseAction.includes("READY")) {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200/80 whitespace-nowrap shadow-2xs">
+          <span className="h-1.5 w-1.5 rounded-full bg-blue-500 shrink-0" />
+          <span>{formattedText}</span>
+        </span>
+      );
+    }
+
+    // Red/Rose Lozenge for Delete / Cancel / Remove
+    if (uppercaseAction.includes("DELETE") || uppercaseAction.includes("CANCEL") || uppercaseAction.includes("REMOVE")) {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200/80 whitespace-nowrap shadow-2xs">
+          <span className="h-1.5 w-1.5 rounded-full bg-rose-500 shrink-0" />
+          <span>{formattedText}</span>
+        </span>
+      );
+    }
+
+    // Slate Lozenge for General / System Actions
     return (
-      <ul className="space-y-2">
-        {entries.map(([key, value]) => {
-          // Format key: replace underscores with spaces, capitalize words
-          const formattedKey = key.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
-          
-          return (
-            <li key={key} className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-3">
-              <span className="font-semibold text-slate-500 min-w-[120px]">{formattedKey}:</span>
-              <span className="text-slate-900 font-medium break-all">{value !== null && value !== undefined ? String(value) : "N/A"}</span>
-            </li>
-          );
-        })}
-      </ul>
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200 whitespace-nowrap shadow-2xs">
+        <span className="h-1.5 w-1.5 rounded-full bg-slate-400 shrink-0" />
+        <span>{formattedText}</span>
+      </span>
     );
   };
 
-  const ENTITY_TYPES = [
-    "purchase_orders",
-    "goods_receipts",
-    "stock_transfers",
-    "sales_orders",
-    "inventory_ledger",
-    "menu_variants",
-    "ingredients"
-  ];
-
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Audit & Activity Log</h1>
-          <p className="mt-1 text-sm text-zinc-500">Owner monitoring of all system activities</p>
-        </div>
-      </div>
-
-      <TableToolbar 
-        onFilter={() => setShowFilters(!showFilters)} 
-        sortOptions={sortOptions}
-        activeSort={activeSort}
-        onSortChange={handleSortChange}
-      />
-
-      {/* Filters */}
-      {showFilters && (
-      <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">
-        <div className="flex items-center gap-2 mb-4 text-sm font-semibold text-zinc-900">
-          <Filter className="h-4 w-4 text-zinc-500" />
-          Filters
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-xs font-medium text-zinc-700 mb-1">Actor</label>
-            <select
-              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
-              value={actorId}
-              onChange={(e) => {
-                setActorId(e.target.value);
-                updateFilters("actor_id", e.target.value);
-              }}
-            >
-              <option value="">All Actors</option>
-              {profiles.map(p => (
-                <option key={p.id} value={p.id}>{p.full_name} ({p.email})</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-zinc-700 mb-1">Action</label>
-            <input
-              type="text"
-              placeholder="e.g. CREATE, UPDATE"
-              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
-              value={action}
-              onChange={(e) => setAction(e.target.value)}
-              onBlur={() => updateFilters("action", action)}
-              onKeyDown={(e) => e.key === "Enter" && updateFilters("action", action)}
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-zinc-700 mb-1">Entity Type</label>
-            <select
-              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
-              value={entityType}
-              onChange={(e) => {
-                setEntityType(e.target.value);
-                updateFilters("entity_type", e.target.value);
-              }}
-            >
-              <option value="">All Entities</option>
-              {ENTITY_TYPES.map(type => (
-                <option key={type} value={type}>{type}</option>
-              ))}
-            </select>
-          </div>
-          </div>
+    <div className="space-y-4 max-w-7xl mx-auto font-sans text-slate-800">
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-5 right-5 z-[100] flex items-center gap-2 rounded-md bg-slate-900 px-3.5 py-2.5 text-xs font-medium text-white shadow-xl animate-in slide-in-from-bottom-2 duration-150">
+          <Check className="h-3.5 w-3.5 text-emerald-400" />
+          <span>{toastMessage}</span>
         </div>
       )}
 
-      {/* Audit Log Table */}
-      <div className="rounded-xl border border-slate-200 bg-white shadow-[0_2px_4px_rgba(0,0,0,0.02)] overflow-hidden">
+      {/* Sticky ERP Page Header */}
+      <ErpPageHeader
+        category="Security & Compliance"
+        title="System Audit Trail & Security Logs"
+        description="Immutable system-wide event log, user action history, inventory movement audits, and data mutations"
+        icon={ShieldCheck}
+        iconBgColor="bg-slate-800 text-white"
+        tabs={[
+          { id: "audit-trail", label: "Audit Trail Ledger", icon: ShieldCheck, count: totalCount },
+        ]}
+      />
+
+      {/* Main Container */}
+      <div id="audit-trail" className="bg-white rounded-lg border border-slate-200/80 shadow-2xs overflow-hidden">
+        
+        {/* Navigation View Tabs */}
+        <div className="flex items-center gap-1 bg-slate-50/80 px-3 pt-2 overflow-x-auto select-none border-b border-slate-200/80">
+          <button
+            onClick={() => setActiveTab("all")}
+            className={`flex items-center gap-1.5 rounded-t-md px-3.5 py-2 text-xs font-medium transition-all ${
+              activeTab === "all"
+                ? "bg-white text-slate-900 border-t-2 border-t-indigo-600 border-x border-b-white font-semibold -mb-px z-10 shadow-2xs"
+                : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/40"
+            }`}
+          >
+            <ShieldCheck className="h-3.5 w-3.5 text-slate-500" />
+            <span>All activities</span>
+            <span className="rounded-full bg-slate-100 px-2 py-0.2 text-[10px] font-mono font-semibold text-slate-500">
+              {tabCounts.all}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("inventory")}
+            className={`flex items-center gap-1.5 rounded-t-md px-3.5 py-2 text-xs font-medium transition-all ${
+              activeTab === "inventory"
+                ? "bg-white text-slate-900 border-t-2 border-t-indigo-600 border-x border-b-white font-semibold -mb-px z-10 shadow-2xs"
+                : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/40"
+            }`}
+          >
+            <Package className="h-3.5 w-3.5 text-indigo-500" />
+            <span>Inventory log</span>
+            <span className="rounded-full bg-slate-100 px-2 py-0.2 text-[10px] font-mono font-semibold text-slate-500">
+              {tabCounts.inventory}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("orders")}
+            className={`flex items-center gap-1.5 rounded-t-md px-3.5 py-2 text-xs font-medium transition-all ${
+              activeTab === "orders"
+                ? "bg-white text-slate-900 border-t-2 border-t-indigo-600 border-x border-b-white font-semibold -mb-px z-10 shadow-2xs"
+                : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/40"
+            }`}
+          >
+            <ShoppingCart className="h-3.5 w-3.5 text-emerald-500" />
+            <span>Orders & Purchasing</span>
+            <span className="rounded-full bg-slate-100 px-2 py-0.2 text-[10px] font-mono font-semibold text-slate-500">
+              {tabCounts.orders}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("catalog")}
+            className={`flex items-center gap-1.5 rounded-t-md px-3.5 py-2 text-xs font-medium transition-all ${
+              activeTab === "catalog"
+                ? "bg-white text-slate-900 border-t-2 border-t-indigo-600 border-x border-b-white font-semibold -mb-px z-10 shadow-2xs"
+                : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/40"
+            }`}
+          >
+            <Utensils className="h-3.5 w-3.5 text-amber-500" />
+            <span>Catalog & Master Data</span>
+            <span className="rounded-full bg-slate-100 px-2 py-0.2 text-[10px] font-mono font-semibold text-slate-500">
+              {tabCounts.catalog}
+            </span>
+          </button>
+        </div>
+
+        {/* Filter Control Toolbar */}
+        <div className="flex flex-col gap-2.5 border-b border-slate-200/80 bg-white px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between text-xs">
+          <div className="flex items-center gap-2 overflow-x-auto py-0.5">
+            
+            {/* Actor Filter Dropdown */}
+            <div className="flex items-center rounded-md border border-slate-200 bg-slate-50/60 px-2.5 py-1 hover:bg-slate-100 transition-colors">
+              <User className="h-3.5 w-3.5 text-slate-400 mr-1.5 shrink-0" />
+              <select
+                value={actorIdFilter}
+                onChange={(e) => {
+                  setActorIdFilter(e.target.value);
+                  updateFilters({ actor_id: e.target.value });
+                }}
+                className="bg-transparent font-medium text-slate-700 outline-none cursor-pointer text-xs"
+              >
+                <option value="all">Actor: All Users</option>
+                {profiles.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.full_name || p.email}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Entity Type Filter Dropdown */}
+            <div className="flex items-center rounded-md border border-slate-200 bg-slate-50/60 px-2.5 py-1 hover:bg-slate-100 transition-colors">
+              <Layers className="h-3.5 w-3.5 text-slate-400 mr-1.5 shrink-0" />
+              <select
+                value={entityTypeFilter}
+                onChange={(e) => {
+                  setEntityTypeFilter(e.target.value);
+                  updateFilters({ entity_type: e.target.value });
+                }}
+                className="bg-transparent font-medium text-slate-700 outline-none cursor-pointer text-xs"
+              >
+                <option value="all">Entity: All Types</option>
+                {availableEntityTypes.map((type) => (
+                  <option key={type} value={type}>
+                    {type.split("_").map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ")}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Action Filter Dropdown */}
+            <div className="flex items-center rounded-md border border-slate-200 bg-slate-50/60 px-2.5 py-1 hover:bg-slate-100 transition-colors">
+              <Zap className="h-3.5 w-3.5 text-slate-400 mr-1.5 shrink-0" />
+              <select
+                value={actionFilter}
+                onChange={(e) => {
+                  setActionFilter(e.target.value);
+                  updateFilters({ action: e.target.value });
+                }}
+                className="bg-transparent font-medium text-slate-700 outline-none cursor-pointer text-xs"
+              >
+                <option value="all">Action: All Actions</option>
+                {availableActions.map((act) => (
+                  <option key={act} value={act}>
+                    {act.split("_").map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ")}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Sort Selector */}
+            <div className="flex items-center rounded-md border border-slate-200 bg-slate-50/60 px-2.5 py-1 hover:bg-slate-100 transition-colors">
+              <ArrowUpDown className="h-3.5 w-3.5 text-slate-400 mr-1.5 shrink-0" />
+              <select
+                value={activeSort}
+                onChange={handleSortChange}
+                className="bg-transparent font-medium text-slate-700 outline-none cursor-pointer text-xs"
+              >
+                <option value="date-desc">Sort: Date (Newest)</option>
+                <option value="date-asc">Sort: Date (Oldest)</option>
+                <option value="entity_type-asc">Sort: Entity (A-Z)</option>
+                <option value="action-asc">Sort: Action (A-Z)</option>
+              </select>
+            </div>
+
+            {/* Reset filters button */}
+            {(actorIdFilter !== "all" || entityTypeFilter !== "all" || actionFilter !== "all" || searchQuery) && (
+              <button
+                onClick={() => {
+                  setActorIdFilter("all");
+                  setEntityTypeFilter("all");
+                  setActionFilter("all");
+                  setSearchQuery("");
+                  router.push(pathname);
+                }}
+                className="flex items-center gap-1 px-2.5 py-1 font-medium text-indigo-600 hover:text-indigo-800 cursor-pointer rounded hover:bg-indigo-50"
+              >
+                <RotateCcw className="h-3 w-3" />
+                <span>Reset</span>
+              </button>
+            )}
+          </div>
+
+          {/* Search Box */}
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by actor, entity or reference..."
+              className="w-full rounded-md border border-slate-200 bg-slate-50/50 pl-8 pr-7 py-1.5 text-xs text-slate-800 placeholder:text-slate-400 outline-none focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-500/20 transition-all"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-2.5 top-2 text-slate-400 hover:text-slate-600"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Data Table */}
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-slate-700">
-              <thead className="bg-[#f8fafc] border-b border-slate-200">
-                <tr className="divide-x divide-slate-200">
-                  <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500 w-12"></th>
-                  <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500"><div className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" />Date &amp; Time</div></th>
-                  <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500"><div className="flex items-center gap-1.5"><User className="w-3.5 h-3.5" />Actor</div></th>
-                  <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500"><div className="flex items-center gap-1.5"><Zap className="w-3.5 h-3.5" />Action</div></th>
-                  <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500"><div className="flex items-center gap-1.5"><Layers className="w-3.5 h-3.5" />Entity Type</div></th>
-                  <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500"><div className="flex items-center gap-1.5"><Hash className="w-3.5 h-3.5" />Entity ID</div></th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-slate-200">
-              {initialData.length === 0 ? (
+          <table className="w-full text-left border-collapse font-sans">
+            <thead>
+              <tr className="border-b border-slate-200/90 bg-slate-50/60 text-xs font-semibold text-slate-700">
+                <th className="py-2.5 px-3 border-r border-slate-200/80 w-8 text-center"></th>
+                <th className="py-2.5 px-4 border-r border-slate-200/80 whitespace-nowrap">Timestamp</th>
+                <th className="py-2.5 px-4 border-r border-slate-200/80 whitespace-nowrap">Action Status</th>
+                <th className="py-2.5 px-4 border-r border-slate-200/80 whitespace-nowrap">Reference Key / ID</th>
+                <th className="py-2.5 px-4 border-r border-slate-200/80 whitespace-nowrap">Actor</th>
+                <th className="py-2.5 px-4 border-r border-slate-200/80 whitespace-nowrap">Entity Category</th>
+                <th className="py-2.5 px-4 text-right whitespace-nowrap w-16">Details</th>
+              </tr>
+            </thead>
+
+            <tbody className="divide-y divide-slate-200/80 text-xs">
+              {filteredData.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
-                    No activity logs found.
+                  <td colSpan={7} className="py-12 text-center text-slate-400 font-normal">
+                    No activity logs match the selected criteria.
                   </td>
                 </tr>
               ) : (
-                initialData.map((row) => {
-                  let actionClass = "text-slate-600";
-                  if (row.action.includes("CREATE") || row.action.includes("POST")) actionClass = "text-[#254f8a] font-bold";
-                  else if (row.action.includes("UPDATE")) actionClass = "text-amber-600 font-bold";
-                  else if (row.action.includes("DELETE") || row.action.includes("CANCEL")) actionClass = "text-rose-600 font-bold";
-                  else actionClass = "text-slate-600 font-bold";
+                filteredData.map((row) => {
+                  const hasChanges = checkHasChanges(row);
+                  const isExpanded = hasChanges && !!expandedRows[row.id];
+                  const actorName = row.profiles?.full_name || "System Automations";
+                  const actorEmail = row.profiles?.email || "";
+                  const initials = actorName
+                    .split(" ")
+                    .map((n: string) => n[0])
+                    .join("")
+                    .substring(0, 2)
+                    .toUpperCase();
+
+                  const rawEntityId = row.entity_id || "";
+                  const formattedEntityId = row.formatted_entity_id || rawEntityId || "-";
+                  const dateObj = new Date(row.occurred_at);
+
+                  const displayEntityId =
+                    formattedEntityId.length > 32
+                      ? `${formattedEntityId.substring(0, 10)}...${formattedEntityId.substring(formattedEntityId.length - 6)}`
+                      : formattedEntityId;
+
+                  const formattedOld = formatData(row.old_data, row.entity_type);
+                  const formattedNew = formatData(row.new_data, row.entity_type);
+                  const diffEntries = computeDiffEntries(formattedOld, formattedNew);
 
                   return (
-                  <React.Fragment key={row.id}>
-                    <tr className="hover:bg-slate-50 transition-colors cursor-pointer divide-x divide-slate-200" onClick={() => toggleRow(row.id)}>
-                      <td className="px-6 py-4 whitespace-nowrap text-slate-400 text-center">
-                        {expandedRows[row.id] ? <ChevronDown className="h-4 w-4 inline-block hover:text-slate-600" /> : <ChevronRight className="h-4 w-4 inline-block hover:text-slate-600" />}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="font-medium text-slate-900">{format(new Date(row.occurred_at), "MMM d, yyyy")}</div>
-                        <div className="text-[11px] text-slate-500">{format(new Date(row.occurred_at), "h:mm:ss a").toLowerCase()}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap font-medium text-slate-900">
-                        {row.profiles?.full_name || "System"}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={actionClass}>
-                          {row.action.split('_').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ')}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-slate-600">
-                        {row.entity_type.split('_').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ')}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap font-medium text-[#254f8a]">
-                        {row.formatted_entity_id || row.entity_id || "-"}
-                      </td>
-                    </tr>
-                    {expandedRows[row.id] && (
-                      <tr className="bg-[#f8fafc] border-b border-slate-200">
-                        <td colSpan={6} className="px-6 py-6">
-                          <div className="grid grid-cols-2 gap-8">
-                            <div>
-                              <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-2">Old Data</h4>
-                              <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-[13px] overflow-x-auto text-slate-700 max-h-64">
-                                {row.old_data ? renderDataAsText(formatData(row.old_data, row.entity_type)) : <span className="text-slate-400 italic">No previous data</span>}
-                              </div>
-                            </div>
-                            <div>
-                              <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-2">New Data</h4>
-                              <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-[13px] overflow-x-auto text-slate-700 max-h-64">
-                                {row.new_data ? renderDataAsText(formatData(row.new_data, row.entity_type)) : <span className="text-slate-400 italic">No new data</span>}
-                              </div>
-                            </div>
+                    <React.Fragment key={`audit-row-${row.id}`}>
+                      <tr
+                        onClick={() => toggleRow(row.id, hasChanges)}
+                        className={`h-11 border-b border-slate-200/80 transition-colors group ${
+                          hasChanges ? "cursor-pointer hover:bg-slate-50/80" : "bg-white cursor-default opacity-90"
+                        } ${isExpanded ? "bg-slate-50 font-medium" : ""}`}
+                      >
+                        {/* Expansion Icon / Disabled Indicator */}
+                        <td className="py-2 px-3 border-r border-slate-200/80 text-center text-slate-400">
+                          {hasChanges ? (
+                            isExpanded ? (
+                              <ChevronDown className="h-3.5 w-3.5 inline-block text-indigo-600" />
+                            ) : (
+                              <ChevronRight className="h-3.5 w-3.5 inline-block group-hover:text-slate-700" />
+                            )
+                          ) : (
+                            <span className="text-slate-300 select-none text-[11px]">—</span>
+                          )}
+                        </td>
+
+                        {/* Timestamp */}
+                        <td className="py-2 px-4 border-r border-slate-200/80 whitespace-nowrap">
+                          <div className="flex items-baseline gap-1.5 text-xs text-slate-800 font-sans">
+                            <span className="font-semibold">{format(dateObj, "MMM d, yyyy")}</span>
+                            <span className="text-slate-500 text-[11px]">
+                              {format(dateObj, "h:mm:ss a")}
+                            </span>
+                            <span className="text-slate-400 text-[11px] font-normal">
+                              ({formatDistanceToNow(dateObj, { addSuffix: false })} ago)
+                            </span>
                           </div>
                         </td>
+
+                        {/* Action Status */}
+                        <td className="py-2 px-4 border-r border-slate-200/80 whitespace-nowrap">
+                          {renderActionBadge(row.action)}
+                        </td>
+
+                        {/* Reference Key / ID */}
+                        <td className="py-2 px-4 border-r border-slate-200/80 whitespace-nowrap">
+                          <div className="group/ref flex items-center justify-between gap-1.5">
+                            <span
+                              title={formattedEntityId}
+                              className="font-sans text-xs font-medium text-slate-800 whitespace-nowrap"
+                            >
+                              {displayEntityId}
+                            </span>
+                            {rawEntityId && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCopy(rawEntityId, "Entity ID");
+                                }}
+                                className="opacity-0 group-hover/ref:opacity-100 flex h-5 w-5 shrink-0 items-center justify-center rounded border border-slate-200 bg-white text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-all cursor-pointer shadow-2xs"
+                                title="Copy Entity ID"
+                              >
+                                {copiedItem === rawEntityId ? (
+                                  <Check className="h-3 w-3 text-emerald-600" />
+                                ) : (
+                                  <Copy className="h-3 w-3" />
+                                )}
+                              </button>
+                            )}
+                          </div>
+                        </td>
+
+                        {/* Actor */}
+                        <td className="py-2 px-4 border-r border-slate-200/80 whitespace-nowrap">
+                          <div className="group/actor flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-1.5">
+                              <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-[10px] font-semibold text-indigo-700 border border-indigo-200/60">
+                                {initials || "SY"}
+                              </div>
+                              <span className="font-medium text-slate-800 text-xs whitespace-nowrap">
+                                {actorName}
+                              </span>
+                            </div>
+                            {actorEmail && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCopy(actorEmail, actorEmail);
+                                }}
+                                className="opacity-0 group-hover/actor:opacity-100 flex h-5 w-5 shrink-0 items-center justify-center rounded border border-slate-200 bg-white text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-all cursor-pointer shadow-2xs"
+                                title="Copy email"
+                              >
+                                {copiedItem === actorEmail ? (
+                                  <Check className="h-3 w-3 text-emerald-600" />
+                                ) : (
+                                  <Copy className="h-3 w-3" />
+                                )}
+                              </button>
+                            )}
+                          </div>
+                        </td>
+
+                        {/* Entity Category */}
+                        <td className="py-2 px-4 border-r border-slate-200/80 whitespace-nowrap">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium text-slate-700 bg-slate-50 border border-slate-200/90 whitespace-nowrap shadow-2xs">
+                            {getEntityIcon(row.entity_type)}
+                            <span>
+                              {row.entity_type
+                                .split("_")
+                                .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+                                .join(" ")}
+                            </span>
+                          </span>
+                        </td>
+
+                        {/* Inspect Column */}
+                        <td className="py-2 px-4 text-right whitespace-nowrap">
+                          {hasChanges ? (
+                            <span className="text-xs font-medium text-indigo-600 hover:text-indigo-800 hover:underline">
+                              {isExpanded ? "Collapse" : "Inspect"}
+                            </span>
+                          ) : (
+                            <span className="text-xs font-normal text-slate-300 select-none">
+                              No details
+                            </span>
+                          )}
+                        </td>
                       </tr>
-                    )}
-                  </React.Fragment>
+
+                      {/* Business ERP Activity Breakdown Drawer (Clean Font-Sans, Airbnb Cereal Aesthetic) */}
+                      {isExpanded && hasChanges && (
+                        <tr className="bg-slate-50/70 border-b border-slate-200">
+                          <td colSpan={7} className="px-5 py-4 font-sans">
+                            <div className="space-y-3">
+                              {/* Header bar of drawer */}
+                              <div className="flex items-center justify-between border-b border-slate-200/80 pb-2.5">
+                                <div className="flex items-center gap-2 text-xs font-semibold text-slate-800">
+                                  <ClipboardList className="h-4 w-4 text-indigo-600" />
+                                  <span>Activity Change Breakdown</span>
+                                  <span className="text-[11px] font-medium text-slate-600 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-md">
+                                    {row.entity_type
+                                      .split("_")
+                                      .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+                                      .join(" ")}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* ERP Inventory & Master Data Attribute Breakdown Table */}
+                              <div className="rounded-lg border border-slate-200/90 bg-white overflow-hidden shadow-2xs font-sans text-xs">
+                                <div className="bg-slate-50/80 border-b border-slate-200/80 px-4 py-2 flex items-center justify-between text-xs text-slate-600 font-medium">
+                                  <span>Record Field</span>
+                                  <span>Value &amp; Status Transition</span>
+                                </div>
+
+                                <div className="divide-y divide-slate-200/80">
+                                  {diffEntries.map((item) => (
+                                    <div key={item.key} className="flex flex-col sm:flex-row text-xs font-sans">
+                                      {/* Field Name */}
+                                      <div className="sm:w-52 shrink-0 bg-slate-50/40 px-4 py-3 border-r border-slate-200/80 font-medium text-slate-800 flex items-center">
+                                        {item.formattedKey}
+                                      </div>
+
+                                      {/* Transition / State representation */}
+                                      <div className="flex-1 bg-white px-4 py-2.5 flex items-center gap-2 flex-wrap text-xs">
+                                        {item.status === "modified" && (
+                                          <div className="flex items-center gap-2 flex-wrap w-full">
+                                            {/* Previous Value */}
+                                            <div className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-slate-100/80 px-3 py-1 text-xs text-slate-700 font-normal">
+                                              <span className="text-[11px] text-slate-400 font-medium">Previous:</span>
+                                              <span>{String(item.oldVal)}</span>
+                                            </div>
+
+                                            {/* Transition Arrow */}
+                                            <ArrowRight className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+
+                                            {/* Updated Value */}
+                                            <div className="inline-flex items-center gap-1.5 rounded-md border border-emerald-200/80 bg-emerald-50/80 px-3 py-1 text-xs text-emerald-800 font-medium">
+                                              <span className="text-[11px] text-emerald-600/80 font-medium">Updated:</span>
+                                              <span>{String(item.newVal)}</span>
+                                            </div>
+                                          </div>
+                                        )}
+
+                                        {item.status === "added" && (
+                                          <div className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-800 font-medium">
+                                            <span className="text-[11px] text-slate-500 font-normal">Added:</span>
+                                            <span>{String(item.newVal)}</span>
+                                          </div>
+                                        )}
+
+                                        {item.status === "removed" && (
+                                          <div className="inline-flex items-center gap-1.5 rounded-md border border-rose-200/80 bg-rose-50/80 px-3 py-1 text-xs text-rose-800 font-medium">
+                                            <span className="text-[11px] text-rose-500 font-normal">Removed:</span>
+                                            <span className="line-through">{String(item.oldVal)}</span>
+                                          </div>
+                                        )}
+
+                                        {item.status === "unchanged" && (
+                                          <div className="text-slate-700 font-normal px-1 py-0.5">
+                                            {String(item.newVal ?? item.oldVal)}
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
                   );
                 })
               )}
             </tbody>
           </table>
         </div>
-        
-        {/* Pagination */}
+
+        {/* Pagination Footer */}
         {totalPages > 1 && (
-          <div className="border-t border-zinc-200 px-6 py-4 flex items-center justify-between">
-            <span className="text-sm text-zinc-500">
-              Showing <span className="font-medium text-zinc-900">{(currentPage - 1) * 20 + 1}</span> to <span className="font-medium text-zinc-900">{Math.min(currentPage * 20, totalCount)}</span> of <span className="font-medium text-zinc-900">{totalCount}</span> entries
+          <div className="border-t border-slate-200/80 bg-slate-50/60 px-4 py-3 flex items-center justify-between text-xs text-slate-600 font-sans">
+            <span>
+              Showing <span className="font-semibold text-slate-900">{(currentPage - 1) * 20 + 1}</span> to{" "}
+              <span className="font-semibold text-slate-900">{Math.min(currentPage * 20, totalCount)}</span> of{" "}
+              <span className="font-semibold text-slate-900">{totalCount}</span> entries
             </span>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed shadow-2xs transition-colors"
               >
                 Previous
               </button>
+              <span className="text-xs font-mono text-slate-500 px-1">
+                Page {currentPage} of {totalPages}
+              </span>
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed shadow-2xs transition-colors"
               >
                 Next
               </button>

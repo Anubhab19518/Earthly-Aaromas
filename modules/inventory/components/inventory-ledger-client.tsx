@@ -185,15 +185,15 @@ export function InventoryLedgerClient({
       <div className="rounded-xl border border-slate-200 bg-white shadow-[0_2px_4px_rgba(0,0,0,0.02)] overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-slate-700">
-            <thead className="bg-[#f8fafc] border-b border-slate-200">
-              <tr className="divide-x divide-slate-200">
-                <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500"><div className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" />Date &amp; Time</div></th>
-                <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500"><div className="flex items-center gap-1.5"><Package className="w-3.5 h-3.5" />Ingredient</div></th>
-                <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500"><div className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" />Location</div></th>
-                <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500"><div className="flex items-center gap-1.5"><RefreshCw className="w-3.5 h-3.5" />Transaction Type</div></th>
-                <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500 text-right"><div className="flex items-center gap-1.5 justify-end"><TrendingDown className="w-3.5 h-3.5" />Change</div></th>
-                <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500"><div className="flex items-center gap-1.5"><Link2 className="w-3.5 h-3.5" />Reference</div></th>
-                <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500"><div className="flex items-center gap-1.5"><User className="w-3.5 h-3.5" />Performed By</div></th>
+            <thead className="bg-slate-50/70 border-b border-slate-200/80">
+              <tr className="divide-x divide-slate-200/80">
+                <th className="px-5 py-3 text-xs font-semibold text-slate-700"><div className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5 text-slate-400" />Date &amp; Time</div></th>
+                <th className="px-5 py-3 text-xs font-semibold text-slate-700"><div className="flex items-center gap-1.5"><Package className="w-3.5 h-3.5 text-slate-400" />Ingredient</div></th>
+                <th className="px-5 py-3 text-xs font-semibold text-slate-700"><div className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 text-slate-400" />Location</div></th>
+                <th className="px-5 py-3 text-xs font-semibold text-slate-700"><div className="flex items-center gap-1.5"><RefreshCw className="w-3.5 h-3.5 text-slate-400" />Transaction Type</div></th>
+                <th className="px-5 py-3 text-xs font-semibold text-slate-700 text-right"><div className="flex items-center gap-1.5 justify-end"><TrendingDown className="w-3.5 h-3.5 text-slate-400" />Change</div></th>
+                <th className="px-5 py-3 text-xs font-semibold text-slate-700"><div className="flex items-center gap-1.5"><Link2 className="w-3.5 h-3.5 text-slate-400" />Reference</div></th>
+                <th className="px-5 py-3 text-xs font-semibold text-slate-700"><div className="flex items-center gap-1.5"><User className="w-3.5 h-3.5 text-slate-400" />Performed By</div></th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-slate-200">
@@ -240,7 +240,7 @@ export function InventoryLedgerClient({
                     <td className="px-6 py-4 whitespace-nowrap">
                       {row.reference_type && (
                         <div className="flex flex-col gap-0.5">
-                          <span className="text-[10px] uppercase font-bold text-slate-400">{row.reference_type.replace("_", " ")}</span>
+                          <span className="text-[11px] capitalize font-medium text-slate-500">{row.reference_type.replace("_", " ")}</span>
                           {row.reference_id ? (
                             <Link href={getReferenceLink(row.reference_type, row.reference_id)} className="text-[13px] font-medium text-[#254f8a] hover:underline">
                               {row.formatted_reference || row.reference_id.substring(0, 8) + "..."}

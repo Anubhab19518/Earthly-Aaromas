@@ -4,8 +4,9 @@ import { useState } from "react";
 import { Supplier } from "@/modules/suppliers/schemas/supplier.schema";
 import { SupplierDialog } from "./supplier-dialog";
 import { DeleteSupplierDialog } from "./delete-supplier-dialog";
-import { Building2, Phone, FileText, Activity } from "lucide-react";
+import { Building2, Phone, FileText, Activity, Truck, Plus } from "lucide-react";
 import { TableToolbar } from "@/shared/components/ui/table-toolbar";
+import { ErpPageHeader } from "@/shared/components/layout/erp-page-header";
 
 interface SuppliersTableProps {
   suppliers: Supplier[];
@@ -26,21 +27,30 @@ export function SuppliersTable({ suppliers }: SuppliersTableProps) {
   });
 
   return (
-    <div>
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-medium text-zinc-900">Suppliers</h2>
-          <p className="text-sm text-zinc-500">Manage your organization's suppliers.</p>
-        </div>
-        <div className="flex items-center gap-3">
+    <div className="space-y-6">
+      {/* Sticky ERP Page Header */}
+      <ErpPageHeader
+        category="Vendor & Procurement"
+        title="Suppliers & Vendor Directory"
+        description="Maintain approved vendor records, GSTIN details, payment terms, and contact information"
+        icon={Truck}
+        iconBgColor="bg-violet-600 text-white"
+        tabs={[
+          { id: "suppliers-table", label: "Supplier Directory", icon: Truck, count: suppliers.length },
+        ]}
+        actions={
           <button
+            type="button"
             onClick={() => setIsAddOpen(true)}
-            className="rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700"
+            className="flex items-center gap-1.5 rounded-md bg-violet-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-violet-700 transition-colors shadow-2xs cursor-pointer"
           >
-            Add Supplier
+            <Plus className="h-3.5 w-3.5" />
+            <span>Add Supplier</span>
           </button>
-        </div>
-      </div>
+        }
+      />
+
+      <div id="suppliers-table" className="space-y-4">
 
       <TableToolbar onSort={(dir) => setSortDir(dir)} />
 
@@ -134,6 +144,7 @@ export function SuppliersTable({ suppliers }: SuppliersTableProps) {
         onOpenChange={(open) => !open && setDeleteSupplier(null)}
         supplier={deleteSupplier}
       />
+      </div>
     </div>
   );
 }

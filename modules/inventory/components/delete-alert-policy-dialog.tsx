@@ -37,7 +37,7 @@ export function DeleteAlertPolicyDialog({
 
   return (
     <>
-      <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm" onClick={() => onOpenChange(false)} aria-hidden="true" />
+      <div className="fixed inset-0 z-50 bg-slate-900/60 animate-in fade-in duration-150" onClick={() => onOpenChange(false)} aria-hidden="true" />
       <div className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-xl bg-white p-6 shadow-xl">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-lg font-semibold text-zinc-900">

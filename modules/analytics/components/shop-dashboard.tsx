@@ -1,6 +1,7 @@
 "use client";
 
-import { ShoppingCart, IndianRupee, TrendingUp, Users, Star, Activity } from "lucide-react";
+import { ShoppingCart, IndianRupee, TrendingUp, Users, Star, Activity, Store, BarChart2 } from "lucide-react";
+import { ErpPageHeader } from "@/shared/components/layout/erp-page-header";
 import { RevenueChart } from "./revenue-chart";
 import { IngredientPieChart } from "./ingredient-pie-chart";
 import Link from "next/link";
@@ -57,15 +58,15 @@ function MetricCard({
   iconColor?: string;
 }) {
   return (
-    <div className="rounded-xl bg-white border border-slate-100 p-5">
+    <div className="rounded-xl bg-white border border-slate-200/80 shadow-2xs p-5">
       <div className="flex items-start justify-between">
-        <p className="text-xs font-medium text-slate-400">{title}</p>
+        <p className="text-xs font-semibold text-slate-500">{title}</p>
         <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${iconBg}`}>
           <Icon className={`h-4 w-4 ${iconColor}`} />
         </div>
       </div>
-      <p className="mt-3 text-2xl font-bold text-slate-900 leading-none">{value}</p>
-      <p className="mt-1.5 text-xs text-slate-400">{subtitle}</p>
+      <p className="mt-3 text-2xl font-bold text-slate-900 tracking-tight leading-none">{value}</p>
+      <p className="mt-1.5 text-xs text-slate-500 font-medium">{subtitle}</p>
     </div>
   );
 }
@@ -86,21 +87,31 @@ export function ShopDashboard({
   topItems,
 }: ShopDashboardProps) {
   return (
-    <div className="space-y-4">
-      {/* Page header */}
-      <div>
-        <h1 className="text-lg font-bold text-slate-900">Dashboard</h1>
-        <p className="text-xs text-slate-400 mt-0.5">{locationName} — Shop Overview</p>
-      </div>
+    <div className="space-y-3 max-w-7xl mx-auto font-sans text-slate-800">
+      {/* Sticky ERP Page Header */}
+      <ErpPageHeader
+        category="Store Operations"
+        title={`${locationName} Outlet Dashboard`}
+        description="Live POS sales tracking, daily order totals, customer retention, and stock replenishment"
+        icon={Store}
+        iconBgColor="bg-amber-500 text-white"
+        shopNameOverride={locationName}
+        tabs={[
+          { id: "shop-metrics", label: "Metrics Overview", icon: Activity },
+          { id: "shop-revenue", label: "Sales Revenue Trend", icon: TrendingUp },
+          { id: "shop-products", label: "Top Selling Menu", icon: Star, count: topItems.length },
+          { id: "shop-stock", label: "Inventory & Ledger", icon: ShoppingCart },
+        ]}
+      />
 
       {/* ── Main 2-column grid ───────────────────────────── */}
-      <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-3">
 
         {/* LEFT COLUMN */}
-        <div className="space-y-6 min-w-0">
+        <div className="space-y-3 min-w-0">
 
           {/* 3 Metric cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <div id="shop-metrics" className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <MetricCard
               title="Total Orders"
               value={totalOrders.toString()}
@@ -126,24 +137,26 @@ export function ShopDashboard({
           </div>
 
           {/* Revenue dot chart */}
-          <RevenueChart initialData={revenueData} orgId={orgId} locationId={locationId} />
+          <div id="shop-revenue">
+            <RevenueChart initialData={revenueData} orgId={orgId} locationId={locationId} />
+          </div>
 
           {/* Bottom row: Retention + Top Items */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 
             {/* Customer Retention */}
-            <div className="rounded-xl bg-white border border-slate-100 p-5">
+            <div className="rounded-xl bg-white border border-slate-200/80 shadow-2xs p-5">
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <h3 className="text-sm font-semibold text-slate-900">Customer Retention</h3>
-                  <p className="text-xs text-slate-400 mt-0.5">Returning customer rate</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Returning customer rate</p>
                 </div>
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-50">
                   <Users className="h-4 w-4 text-rose-500" />
                 </div>
               </div>
               {totalCustomers === 0 ? (
-                <p className="text-sm text-slate-400">No customer data available.</p>
+                <p className="text-xs text-slate-500 font-medium">No customer data available.</p>
               ) : (
                 <>
                   <p className="text-3xl font-bold text-slate-900 mb-3">{retentionRate}%</p>
@@ -153,7 +166,7 @@ export function ShopDashboard({
                       style={{ width: `${retentionRate}%` }}
                     />
                   </div>
-                  <div className="flex justify-between text-[11px] text-slate-400">
+                  <div className="flex justify-between text-xs text-slate-500 font-medium">
                     <span>{returningCustomers} returning</span>
                     <span>{totalCustomers} total</span>
                   </div>
@@ -162,18 +175,18 @@ export function ShopDashboard({
             </div>
 
             {/* Top Menu Items */}
-            <div className="rounded-xl bg-white border border-slate-100 p-5">
+            <div id="shop-products" className="rounded-xl bg-white border border-slate-200/80 shadow-2xs p-5">
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <h3 className="text-sm font-semibold text-slate-900">Top Menu Items</h3>
-                  <p className="text-xs text-slate-400 mt-0.5">Most sold variants this week</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Most sold variants this week</p>
                 </div>
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-50">
                   <Star className="h-4 w-4 text-amber-500" />
                 </div>
               </div>
               {topItems.length === 0 ? (
-                <p className="text-sm text-slate-400">No sales data available.</p>
+                <p className="text-xs text-slate-500 font-medium">No sales data available.</p>
               ) : (
                 <div className="space-y-3">
                   {topItems.map((item, idx) => (
@@ -202,13 +215,13 @@ export function ShopDashboard({
         </div>
 
         {/* RIGHT COLUMN — matches LoopAI right panel */}
-        <div className="flex flex-col h-full gap-4">
+        <div className="flex flex-col h-full gap-3">
 
           {/* Recent Movements — "Priority tasks" equivalent */}
-          <div className="rounded-2xl bg-white border border-slate-100 overflow-hidden shrink-0 p-2">
+          <div className="rounded-xl bg-white border border-slate-200/80 shadow-2xs overflow-hidden shrink-0 p-2">
             <div className="flex items-center justify-between px-3 pt-3 pb-2">
-              <span className="text-[15px] font-bold text-slate-800">Recent Inventory</span>
-              <Link href="/inventory/ledger" className="text-[13px] font-medium text-indigo-600 hover:text-indigo-700">
+              <span className="text-sm font-semibold text-slate-900">Recent Inventory</span>
+              <Link href="/inventory/ledger" className="text-xs font-semibold text-indigo-600 hover:text-indigo-700">
                 See all
               </Link>
             </div>
@@ -226,21 +239,21 @@ export function ShopDashboard({
                   >
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center flex-wrap gap-x-2.5 gap-y-1">
-                        <span className={`text-[15px] font-black ${m.quantity > 0 ? "text-emerald-600" : "text-rose-600"}`}>
+                        <span className={`text-sm font-bold ${m.quantity > 0 ? "text-emerald-600" : "text-rose-600"}`}>
                           {m.quantity > 0 ? "↑" : "↓"}
                         </span>
-                        <span className="text-[14px] font-bold text-slate-800 tracking-tight">{m.ingredientName}</span>
+                        <span className="text-sm font-semibold text-slate-900 tracking-tight">{m.ingredientName}</span>
                         
-                        <div className="flex items-center gap-1.5 text-[12px] text-slate-500 font-medium">
+                        <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
                           <svg className="w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
                           <span>{format(new Date(m.date), "MMM d")}</span>
                         </div>
                         
-                        <div className={`flex items-center gap-1.5 text-[12px] font-bold ${m.quantity > 0 ? "text-emerald-600" : "text-rose-600"}`}>
+                        <div className={`flex items-center gap-1.5 text-xs font-semibold ${m.quantity > 0 ? "text-emerald-600" : "text-rose-600"}`}>
                           <span>{Math.abs(m.quantity).toFixed(1)} {m.unit || ""}</span>
                         </div>
                       </div>
-                      <p className="text-[12px] text-slate-500 mt-1 font-medium truncate">
+                      <p className="text-xs text-slate-500 mt-1 font-medium truncate">
                         {m.locationName} • {MOVEMENT_LABELS[m.movementType] || m.movementType}
                       </p>
                     </div>

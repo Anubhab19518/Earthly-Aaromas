@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/shared/lib/supabase/server";
 import { MenuCategoriesTable } from "@/modules/menu/components/menu-categories-table";
 import { MenuItemsTable } from "@/modules/menu/components/menu-items-table";
+import { ErpPageHeader } from "@/shared/components/layout/erp-page-header";
+import { Utensils, Tag } from "lucide-react";
 
 export default async function MenuPage() {
   const supabase = await createClient();
@@ -49,22 +51,31 @@ export default async function MenuPage() {
   ]);
 
   return (
-    <section className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-zinc-900">Menu Management</h1>
-          <p className="mt-1 text-sm text-zinc-500">
-            Configure menu categories and items.
-          </p>
-        </div>
+    <section className="space-y-6">
+      {/* Sticky ERP Page Header */}
+      <ErpPageHeader
+        category="Products & Catalog"
+        title="Menu Catalog & Recipes"
+        description="Configure menu categories, dish variants, prices, and tax rate associations"
+        icon={Utensils}
+        iconBgColor="bg-amber-500 text-white"
+        tabs={[
+          { id: "menu-items", label: "Menu Items", icon: Utensils, count: (items || []).length },
+          { id: "menu-categories", label: "Categories", icon: Tag, count: (categories || []).length },
+        ]}
+      />
+
+      <div id="menu-items">
+        <MenuItemsTable 
+          items={items || []} 
+          categories={categories || []} 
+          taxCategories={taxCategories || []} 
+        />
       </div>
 
-      <MenuCategoriesTable categories={categories || []} />
-      <MenuItemsTable 
-        items={items || []} 
-        categories={categories || []} 
-        taxCategories={taxCategories || []} 
-      />
+      <div id="menu-categories">
+        <MenuCategoriesTable categories={categories || []} />
+      </div>
     </section>
   );
 }

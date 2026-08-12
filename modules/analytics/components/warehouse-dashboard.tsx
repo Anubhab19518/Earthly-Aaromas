@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import { Package, ClipboardList, Truck, Maximize2, X } from "lucide-react";
+import { Package, ClipboardList, Truck, Maximize2, X, Warehouse, Activity, TrendingUp } from "lucide-react";
+import { ErpPageHeader } from "@/shared/components/layout/erp-page-header";
 import Link from "next/link";
 import { InventoryMovementChart } from "./inventory-movement-chart";
 
@@ -83,15 +84,15 @@ function MetricCard({
   href?: string;
 }) {
   const inner = (
-    <div className="rounded-xl bg-white border border-slate-100 p-5 h-full">
+    <div className="rounded-xl bg-white border border-slate-200/80 shadow-2xs p-5 h-full">
       <div className="flex items-start justify-between">
-        <p className="text-xs font-medium text-slate-400">{title}</p>
+        <p className="text-xs font-semibold text-slate-500">{title}</p>
         <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${iconBg}`}>
           <Icon className={`h-4 w-4 ${iconColor}`} />
         </div>
       </div>
-      <p className="mt-3 text-2xl font-bold text-slate-900 leading-none">{value}</p>
-      {subtitle && <p className="mt-1.5 text-xs text-slate-400">{subtitle}</p>}
+      <p className="mt-3 text-2xl font-bold text-slate-900 tracking-tight leading-none">{value}</p>
+      {subtitle && <p className="mt-1.5 text-xs text-slate-500 font-medium">{subtitle}</p>}
     </div>
   );
   if (href) return <Link href={href} className="block h-full hover:opacity-90 transition-opacity">{inner}</Link>;
@@ -125,21 +126,31 @@ export function WarehouseDashboard({
   }, [isExpanded]);
 
   return (
-    <div className="space-y-4">
-      {/* Page Header */}
-      <div>
-        <h1 className="text-lg font-bold text-slate-900">Dashboard</h1>
-        <p className="text-xs text-slate-400 mt-0.5">{locationName} — Warehouse Overview</p>
-      </div>
+    <div className="space-y-3 max-w-7xl mx-auto font-sans text-slate-800">
+      {/* Sticky ERP Page Header */}
+      <ErpPageHeader
+        category="Warehouse Management"
+        title={`${locationName} Dashboard`}
+        description="Centralized inventory tracking, purchase order fulfillment, supplier receipts, and stock ledger movements"
+        icon={Warehouse}
+        iconBgColor="bg-sky-600 text-white"
+        shopNameOverride={locationName}
+        tabs={[
+          { id: "wh-metrics", label: "KPI Overview", icon: Activity },
+          { id: "wh-movements", label: "Movement Analytics", icon: TrendingUp },
+          { id: "wh-grns", label: "Goods Receipts", icon: ClipboardList, count: recentGrns.length },
+          { id: "wh-stock", label: "Stock Levels", icon: Package, count: inventoryItemsCount },
+        ]}
+      />
 
       {/* ── Main 2-column grid ───────────────────────────── */}
-      <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-3">
 
         {/* LEFT COLUMN */}
-        <div className="space-y-6 min-w-0">
+        <div className="space-y-3 min-w-0">
 
           {/* 3 Metric cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <div id="wh-metrics" className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <MetricCard
               title="Inventory Items"
               value={inventoryItemsCount.toString()}
@@ -168,25 +179,27 @@ export function WarehouseDashboard({
           </div>
 
           {/* Inventory Movement Chart (Moved to left column) */}
-          <InventoryMovementChart
-            orgId={orgId}
-            locationId={locationId}
-            ingredients={inventoryIngredients}
-          />
+          <div id="wh-movements">
+            <InventoryMovementChart
+              orgId={orgId}
+              locationId={locationId}
+              ingredients={inventoryIngredients}
+            />
+          </div>
 
           {/* Stock Levels Visualization */}
-          <div className="rounded-xl bg-white border border-slate-100 p-5">
+          <div id="wh-stock" className="rounded-xl bg-white border border-slate-200/80 shadow-2xs p-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
               <div>
-                <h3 className="text-[16px] font-bold text-slate-800">Inventory Stock Levels</h3>
-                <p className="text-[13px] text-slate-500 mt-0.5">Current stock vs configured thresholds</p>
+                <h3 className="text-sm font-semibold text-slate-900">Inventory Stock Levels</h3>
+                <p className="text-xs text-slate-500 mt-0.5 font-medium">Current stock vs configured thresholds</p>
               </div>
               <div className="flex flex-wrap items-center gap-4">
                 <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-red-500"/><span className="text-[12px] font-medium text-slate-600">Out of Stock</span></div>
-                  <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-orange-500"/><span className="text-[12px] font-medium text-slate-600">Critical</span></div>
-                  <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-amber-400"/><span className="text-[12px] font-medium text-slate-600">Warning</span></div>
-                  <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-sky-500"/><span className="text-[12px] font-medium text-slate-600">Healthy</span></div>
+                  <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-red-500"/><span className="text-xs font-medium text-slate-600">Out of Stock</span></div>
+                  <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-orange-500"/><span className="text-xs font-medium text-slate-600">Critical</span></div>
+                  <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-amber-400"/><span className="text-xs font-medium text-slate-600">Warning</span></div>
+                  <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-sky-500"/><span className="text-xs font-medium text-slate-600">Healthy</span></div>
                 </div>
                 <button
                   onClick={() => setIsExpanded(true)}
@@ -199,7 +212,7 @@ export function WarehouseDashboard({
             </div>
 
             {stockLevels.length === 0 ? (
-              <div className="flex h-32 items-center justify-center text-sm text-slate-400">
+              <div className="flex h-32 items-center justify-center text-xs text-slate-500 font-medium">
                 No inventory data available.
               </div>
             ) : (
@@ -245,16 +258,16 @@ export function WarehouseDashboard({
                     <div key={item.name} className="group">
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
-                          <span className="text-[15px] font-bold text-slate-800">{item.name}</span>
-                          <span className="text-[13px] text-slate-400 ml-1">{fullUnit !== item.unit ? `${fullUnit} (${item.unit})` : item.unit}</span>
-                          {!item.hasPolicy && <span className="text-[11px] font-medium bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full ml-2">No thresholds</span>}
+                          <span className="text-sm font-semibold text-slate-900">{item.name}</span>
+                          <span className="text-xs text-slate-500 ml-1 font-medium">{fullUnit !== item.unit ? `${fullUnit} (${item.unit})` : item.unit}</span>
+                          {!item.hasPolicy && <span className="text-[10px] font-semibold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full ml-2">No thresholds</span>}
                         </div>
                         <div className="flex items-center gap-4">
-                          <span className="text-[16px] font-bold text-sky-600">
+                          <span className="text-sm font-bold text-sky-600">
                             {item.current.toLocaleString("en-US", { maximumFractionDigits: 1 })} {item.unit}
                           </span>
                           {item.hasPolicy && (
-                            <span className={`text-[11px] font-bold px-2 py-1 rounded ${statusBadge}`}>
+                            <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-md ${statusBadge}`}>
                               {statusText}
                             </span>
                           )}
@@ -338,13 +351,13 @@ export function WarehouseDashboard({
         </div>
 
         {/* RIGHT COLUMN — matches Shop dashboard right panel */}
-        <div className="flex flex-col h-full justify-between">
+        <div className="flex flex-col h-full gap-3">
 
           {/* Recent Movements — styled identically to Shop's "Recent Inventory" */}
-          <div className="rounded-2xl bg-white border border-slate-100 overflow-hidden shrink-0 p-2">
+          <div className="rounded-xl bg-white border border-slate-200/80 shadow-2xs overflow-hidden shrink-0 p-2">
             <div className="flex items-center justify-between px-3 pt-3 pb-2">
-              <span className="text-[15px] font-bold text-slate-800">Recent Inventory</span>
-              <Link href="/inventory/ledger" className="text-[13px] font-medium text-indigo-600 hover:text-indigo-700">
+              <span className="text-sm font-semibold text-slate-900">Recent Inventory</span>
+              <Link href="/inventory/ledger" className="text-xs font-semibold text-indigo-600 hover:text-indigo-700">
                 See all
               </Link>
             </div>
@@ -362,21 +375,21 @@ export function WarehouseDashboard({
                   >
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center flex-wrap gap-x-2.5 gap-y-1">
-                        <span className={`text-[15px] font-black ${m.quantity > 0 ? "text-emerald-600" : "text-rose-600"}`}>
+                        <span className={`text-sm font-bold ${m.quantity > 0 ? "text-emerald-600" : "text-rose-600"}`}>
                           {m.quantity > 0 ? "↑" : "↓"}
                         </span>
-                        <span className="text-[14px] font-bold text-slate-800 tracking-tight">{m.ingredientName}</span>
+                        <span className="text-sm font-semibold text-slate-900 tracking-tight">{m.ingredientName}</span>
                         
-                        <div className="flex items-center gap-1.5 text-[12px] text-slate-500 font-medium">
+                        <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
                           <svg className="w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
                           <span>{format(new Date(m.date), "MMM d")}</span>
                         </div>
                         
-                        <div className={`flex items-center gap-1.5 text-[12px] font-bold ${m.quantity > 0 ? "text-emerald-600" : "text-rose-600"}`}>
+                        <div className={`flex items-center gap-1.5 text-xs font-semibold ${m.quantity > 0 ? "text-emerald-600" : "text-rose-600"}`}>
                           <span>{Math.abs(m.quantity).toFixed(1)} {m.unit || ""}</span>
                         </div>
                       </div>
-                      <p className="text-[12px] text-slate-500 mt-1 font-medium truncate">
+                      <p className="text-xs text-slate-500 mt-1 font-medium truncate">
                         {m.locationName} · {MOVEMENT_TYPE_LABELS[m.movementType] || m.movementType}
                       </p>
                     </div>
@@ -390,10 +403,10 @@ export function WarehouseDashboard({
           </div>
 
           {/* Recent GRNs — styled identically to Recent Inventory above */}
-          <div className="rounded-2xl bg-white border border-slate-100 overflow-hidden shrink-0 p-2">
+          <div id="wh-grns" className="rounded-xl bg-white border border-slate-200/80 shadow-2xs overflow-hidden shrink-0 p-2">
             <div className="flex items-center justify-between px-3 pt-3 pb-2">
-              <span className="text-[15px] font-bold text-slate-800">Recent GRNs</span>
-              <Link href="/receiving" className="text-[13px] font-medium text-indigo-600 hover:text-indigo-700">
+              <span className="text-sm font-semibold text-slate-900">Recent GRNs</span>
+              <Link href="/receiving" className="text-xs font-semibold text-indigo-600 hover:text-indigo-700">
                 See all
               </Link>
             </div>
@@ -411,20 +424,20 @@ export function WarehouseDashboard({
                   >
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center flex-wrap gap-x-2.5 gap-y-1">
-                        <span className="text-[14px] font-bold text-slate-800 tracking-tight">{grn.grn_number}</span>
+                        <span className="text-sm font-semibold text-slate-900 tracking-tight">{grn.grn_number}</span>
                         
-                        <div className="flex items-center gap-1.5 text-[12px] text-slate-500 font-medium">
+                        <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
                           <svg className="w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
                           <span>{format(new Date(grn.received_date), "MMM d")}</span>
                         </div>
 
-                        <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${
+                        <span className={`text-[11px] font-semibold px-1.5 py-0.5 rounded ${
                           grn.status === "POSTED" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
                         }`}>
                           {grn.status}
                         </span>
                       </div>
-                      <p className="text-[12px] text-slate-500 mt-1 font-medium truncate">
+                      <p className="text-xs text-slate-500 mt-1 font-medium truncate">
                         {grn.supplierName}
                       </p>
                     </div>

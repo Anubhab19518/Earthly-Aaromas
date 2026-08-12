@@ -125,7 +125,7 @@ function NavItemLink({
 }
 
 export function Sidebar() {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
 
   useEffect(() => {
     try {
@@ -142,96 +142,70 @@ export function Sidebar() {
     });
   };
 
-  const collapse = () => {
-    setIsExpanded(false);
-    try { localStorage.setItem("sidebar-expanded", "false"); } catch {}
-  };
-
   return (
-    <>
-      {/* 
-        Fixed spacer — always 64px wide in the flex layout.
-        Content NEVER shifts when sidebar opens/closes.
-      */}
-      <div className="w-16 shrink-0" />
-
-      {/* Backdrop — click outside to collapse */}
-      {isExpanded && (
-        <div
-          className="fixed inset-0 z-30 bg-black/10"
-          onClick={collapse}
-        />
-      )}
-
-      {/* 
-        Actual sidebar — fixed position, overlays content when expanded.
-        Collapsed = 64px (w-16), Expanded = 240px (w-60), all on top of content.
-      */}
+    <aside
+      className={`h-full shrink-0 flex flex-col border-r border-slate-200 bg-white transition-[width] duration-200 ease-in-out select-none ${
+        isExpanded ? "w-60" : "w-16"
+      }`}
+    >
+      {/* Logo header */}
       <div
-        className={`fixed left-0 top-0 h-full z-40 flex flex-col border-r border-slate-200 bg-white transition-[width] duration-200 ease-in-out ${
-          isExpanded ? "w-60 shadow-2xl" : "w-16"
+        className={`flex h-14 shrink-0 items-center border-b border-slate-200 ${
+          isExpanded ? "px-4 gap-3" : "justify-center px-2"
         }`}
       >
-        {/* Logo header */}
-        <div
-          className={`flex h-14 shrink-0 items-center border-b border-slate-200 ${
-            isExpanded ? "px-4 gap-3" : "justify-center px-2"
+        <div className="relative h-8 w-8 shrink-0">
+          <Image src="/logo.png" alt="Earthly Aaromas" fill className="object-contain" priority />
+        </div>
+        {isExpanded && (
+          <div className="min-w-0">
+            <p className="text-xs font-bold text-slate-900 leading-tight truncate">Tea Chain</p>
+            <p className="text-[10px] text-slate-500 leading-tight truncate">ERP Platform</p>
+          </div>
+        )}
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-4">
+        {NAV_SECTIONS.map((section, sIdx) => (
+          <div key={section.title} className="space-y-0.5">
+            {isExpanded ? (
+              <p className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                {section.title}
+              </p>
+            ) : (
+              sIdx > 0 && <div className="h-px bg-slate-100 my-2" />
+            )}
+            {section.items.map(item => (
+              <NavItemLink
+                key={item.href}
+                item={item}
+                isExpanded={isExpanded}
+              />
+            ))}
+          </div>
+        ))}
+      </nav>
+
+      {/* Expand / Collapse toggle */}
+      <div className="border-t border-slate-200 p-2">
+        <button
+          onClick={toggle}
+          title={isExpanded ? "Collapse sidebar" : "Expand sidebar"}
+          className={`flex items-center gap-2 rounded-md px-2 py-2 text-sm font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-colors ${
+            isExpanded ? "w-full" : "w-10 justify-center"
           }`}
         >
-          <div className="relative h-8 w-8 shrink-0">
-            <Image src="/logo.png" alt="Earthly Aaromas" fill className="object-contain" priority />
-          </div>
-          {isExpanded && (
-            <div className="min-w-0">
-              <p className="text-xs font-bold text-slate-900 leading-tight truncate">Tea Chain</p>
-              <p className="text-[10px] text-slate-500 leading-tight truncate">ERP Platform</p>
-            </div>
+          {isExpanded ? (
+            <>
+              <ChevronLeft className="h-4 w-4 shrink-0" />
+              <span>Collapse</span>
+            </>
+          ) : (
+            <ChevronRight className="h-4 w-4 shrink-0" />
           )}
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-4">
-          {NAV_SECTIONS.map((section, sIdx) => (
-            <div key={section.title} className="space-y-0.5">
-              {isExpanded ? (
-                <p className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                  {section.title}
-                </p>
-              ) : (
-                sIdx > 0 && <div className="h-px bg-slate-100 my-2" />
-              )}
-              {section.items.map(item => (
-                <NavItemLink
-                  key={item.href}
-                  item={item}
-                  isExpanded={isExpanded}
-                  onClick={isExpanded ? collapse : undefined}
-                />
-              ))}
-            </div>
-          ))}
-        </nav>
-
-        {/* Expand / Collapse toggle */}
-        <div className="border-t border-slate-200 p-2">
-          <button
-            onClick={toggle}
-            title={isExpanded ? "Collapse sidebar" : "Expand sidebar"}
-            className={`flex items-center gap-2 rounded-md px-2 py-2 text-sm font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-colors ${
-              isExpanded ? "w-full" : "w-10 justify-center"
-            }`}
-          >
-            {isExpanded ? (
-              <>
-                <ChevronLeft className="h-4 w-4 shrink-0" />
-                <span>Collapse</span>
-              </>
-            ) : (
-              <ChevronRight className="h-4 w-4 shrink-0" />
-            )}
-          </button>
-        </div>
+        </button>
       </div>
-    </>
+    </aside>
   );
 }

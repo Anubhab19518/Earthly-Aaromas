@@ -30,9 +30,6 @@ export default async function FinancialOverviewPage() {
   const orgId = membership.organization_id;
   const overview = await getFinancialOverview(orgId);
 
-  return (
-    <div className="mx-auto max-w-7xl">
-      <FinancialOverviewClient overview={overview} />
-    </div>
-  );
+  return <FinancialOverviewClient overview={overview} />;
 }
+

@@ -4,8 +4,9 @@ import { useState } from "react";
 import { Unit } from "@/modules/units/schemas/unit.schema";
 import { UnitDialog } from "./unit-dialog";
 import { DeleteUnitDialog } from "./delete-unit-dialog";
-import { Scale, Hash, Tag, ArrowRightLeft, Activity } from "lucide-react";
+import { Scale, Hash, Tag, ArrowRightLeft, Activity, Plus } from "lucide-react";
 import { TableToolbar } from "@/shared/components/ui/table-toolbar";
+import { ErpPageHeader } from "@/shared/components/layout/erp-page-header";
 
 interface UnitsTableProps {
   units: Unit[];
@@ -41,19 +42,30 @@ export function UnitsTable({ units }: UnitsTableProps) {
   };
 
   return (
-    <div>
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-medium text-zinc-900">Units of Measurement</h2>
-          <p className="text-sm text-zinc-500">Manage global units and their conversions.</p>
-        </div>
-        <button
-          onClick={() => setIsAddOpen(true)}
-          className="rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700"
-        >
-          Add Unit
-        </button>
-      </div>
+    <div className="space-y-6">
+      {/* Sticky ERP Page Header */}
+      <ErpPageHeader
+        category="Global Master Data"
+        title="Units of Measurement (UOM)"
+        description="Standardize base measurement units, volume/weight symbols, and global conversion formulas"
+        icon={Scale}
+        iconBgColor="bg-[#254f8a] text-white"
+        tabs={[
+          { id: "units-table", label: "Units Directory", icon: Scale, count: units.length },
+        ]}
+        actions={
+          <button
+            type="button"
+            onClick={() => setIsAddOpen(true)}
+            className="flex items-center gap-1.5 rounded-md bg-[#254f8a] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#1e4070] transition-colors shadow-2xs cursor-pointer"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            <span>Add Unit</span>
+          </button>
+        }
+      />
+
+      <div id="units-table" className="space-y-4">
 
       <TableToolbar 
         sortOptions={sortOptions}
@@ -159,6 +171,7 @@ export function UnitsTable({ units }: UnitsTableProps) {
         onOpenChange={(open) => !open && setDeleteUnit(null)}
         unit={deleteUnit}
       />
+      </div>
     </div>
   );
 }

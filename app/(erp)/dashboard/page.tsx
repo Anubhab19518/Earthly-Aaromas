@@ -12,6 +12,8 @@ import {
 import { getWarehouseIngredients } from "@/modules/analytics/services/warehouse-analytics.actions";
 import { ShopDashboard } from "@/modules/analytics/components/shop-dashboard";
 import { WarehouseDashboard } from "@/modules/analytics/components/warehouse-dashboard";
+import { ErpPageHeader } from "@/shared/components/layout/erp-page-header";
+import { LayoutGrid, Activity, Package } from "lucide-react";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -179,12 +181,21 @@ export default async function DashboardPage() {
   ]);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-bold text-slate-900">Dashboard Overview</h1>
-        <p className="text-sm text-slate-500 mt-0.5">Select a branch to see branch-specific analytics</p>
-      </div>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+    <div className="space-y-3.5 max-w-7xl mx-auto font-sans text-slate-800">
+      {/* Sticky ERP Page Header */}
+      <ErpPageHeader
+        category="Operations & Analytics"
+        title="Organization Dashboard"
+        description="Select a workspace or branch from top workspace switcher to see location-specific live analytics"
+        icon={LayoutGrid}
+        iconBgColor="bg-indigo-600 text-white"
+        tabs={[
+          { id: "dash-kpis", label: "Global KPI Summary", icon: Activity },
+          { id: "dash-inventory", label: "Recent Inventory Movements", icon: Package, count: recentMovements.length },
+        ]}
+      />
+
+      <div id="dash-kpis" className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5">
         {[
           { title: "Inventory Items", value: inventoryItemsCount || 0, href: "/inventory" },
           { title: "Total GRNs", value: grnsCount || 0, href: "/receiving" },
@@ -193,19 +204,19 @@ export default async function DashboardPage() {
           { title: "Ingredients", value: ingredientsCount || 0, href: "/ingredients" },
         ].map(card => (
           <Link key={card.title} href={card.href} className="block h-full hover:opacity-90 transition-opacity">
-            <div className="rounded-xl border border-slate-100 bg-white p-5 h-full">
+            <div className="rounded-xl border border-slate-200/80 bg-white p-5 h-full shadow-2xs">
               <div className="flex items-start justify-between">
-                <p className="text-xs font-medium text-slate-400">{card.title}</p>
+                <p className="text-xs font-semibold text-slate-500">{card.title}</p>
               </div>
-              <p className="mt-3 text-2xl font-bold text-slate-900 leading-none">{card.value}</p>
+              <p className="mt-3 text-2xl font-bold text-slate-900 tracking-tight leading-none">{card.value}</p>
             </div>
           </Link>
         ))}
       </div>
-      <div className="rounded-2xl bg-white border border-slate-100 overflow-hidden shrink-0 p-2 h-full flex flex-col">
+      <div id="dash-inventory" className="rounded-xl bg-white border border-slate-200/80 shadow-2xs overflow-hidden shrink-0 p-2 h-full flex flex-col">
         <div className="flex items-center justify-between px-3 pt-3 pb-2">
-          <span className="text-[15px] font-bold text-slate-800">Recent Inventory</span>
-          <Link href="/inventory/ledger" className="text-[13px] font-medium text-indigo-600 hover:text-indigo-700">
+          <span className="text-sm font-semibold text-slate-900">Recent Inventory</span>
+          <Link href="/inventory/ledger" className="text-xs font-semibold text-indigo-600 hover:text-indigo-700">
             See all
           </Link>
         </div>
@@ -234,18 +245,18 @@ export default async function DashboardPage() {
                 >
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center flex-wrap gap-x-2.5 gap-y-1">
-                      <span className="text-[14px] font-bold text-slate-800 tracking-tight">{m.ingredientName}</span>
+                      <span className="text-sm font-semibold text-slate-900 tracking-tight">{m.ingredientName}</span>
                       
-                      <div className="flex items-center gap-1.5 text-[12px] text-slate-500 font-medium">
+                      <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
                         <svg className="w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
                         <span>{dateStr}</span>
                       </div>
                       
-                      <div className="flex items-center gap-1.5 text-[12px] text-slate-500 font-medium">
+                      <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
                         <span>{m.quantity > 0 ? "+" : ""}{m.quantity.toFixed(1)} {m.unit || ""}</span>
                       </div>
                     </div>
-                    <p className="text-[12px] text-slate-500 mt-1 font-medium truncate">
+                    <p className="text-xs text-slate-500 mt-1 font-medium truncate">
                       {m.locationName} • {label}
                     </p>
                   </div>

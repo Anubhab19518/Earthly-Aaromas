@@ -4,7 +4,8 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import Link from "next/link";
-import { Filter, Eye } from "lucide-react";
+import { Filter, Eye, ShoppingBag, Receipt, ArrowRight } from "lucide-react";
+import { ErpPageHeader } from "@/shared/components/layout/erp-page-header";
 
 interface OwnerOrdersClientProps {
   initialData: any[];
@@ -72,15 +73,21 @@ export function OwnerOrdersClient({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Orders Monitoring</h1>
-          <p className="mt-1 text-sm text-zinc-500">Live view of shop operations (Read-Only)</p>
-        </div>
-      </div>
+      {/* Sticky ERP Page Header */}
+      <ErpPageHeader
+        category="Sales & POS Operations"
+        title="Live Orders & Sales Ledger"
+        description="Real-time order monitoring across shop locations, customer details, and status updates"
+        icon={ShoppingBag}
+        iconBgColor="bg-emerald-600 text-white"
+        tabs={[
+          { id: "orders-table", label: "Orders Ledger", icon: Receipt, count: totalCount },
+          { id: "orders-filters", label: "Search & Filters", icon: Filter },
+        ]}
+      />
 
       {/* Filters */}
-      <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">
+      <div id="orders-filters" className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">
         <div className="flex items-center gap-2 mb-4 text-sm font-semibold text-zinc-900">
           <Filter className="h-4 w-4 text-zinc-500" />
           Filters
@@ -151,7 +158,7 @@ export function OwnerOrdersClient({
       </div>
 
       {/* Orders Table */}
-      <div className="rounded-xl border border-zinc-200 bg-white shadow-sm overflow-hidden">
+      <div id="orders-table" className="rounded-xl border border-zinc-200 bg-white shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[800px] text-left text-sm text-zinc-600">
             <thead className="bg-zinc-50 text-xs uppercase text-zinc-500">

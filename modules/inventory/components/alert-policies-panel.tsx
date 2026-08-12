@@ -70,13 +70,13 @@ export function AlertPoliciesPanel({
           ) : (
             <div className="overflow-x-auto overflow-y-hidden rounded-xl border border-slate-200 bg-white shadow-[0_2px_4px_rgba(0,0,0,0.02)]">
               <table className="w-full text-left text-sm text-slate-700">
-                <thead className="bg-[#f8fafc] border-b border-slate-200">
-                  <tr className="divide-x divide-slate-200">
-                    <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500">Location</th>
-                    <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500">Warning</th>
-                    <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500">Critical</th>
-                    <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500">OOS</th>
-                    <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500 text-right">Actions</th>
+                <thead className="bg-slate-50/70 border-b border-slate-200/80">
+                  <tr className="divide-x divide-slate-200/80">
+                    <th className="px-5 py-3 text-xs font-semibold text-slate-700">Location</th>
+                    <th className="px-5 py-3 text-xs font-semibold text-slate-700">Warning</th>
+                    <th className="px-5 py-3 text-xs font-semibold text-slate-700">Critical</th>
+                    <th className="px-5 py-3 text-xs font-semibold text-slate-700">Out of stock</th>
+                    <th className="px-5 py-3 text-xs font-semibold text-slate-700 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-slate-200">

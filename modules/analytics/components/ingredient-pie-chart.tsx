@@ -61,8 +61,8 @@ export function IngredientPieChart({ stockLevels }: IngredientPieChartProps) {
 
   if (!stockLevels || stockLevels.length === 0) {
     return (
-      <div className="rounded-xl bg-white border border-slate-100 p-5 flex flex-col h-full">
-        <div className="flex-1 flex items-center justify-center text-sm text-slate-400">
+      <div className="rounded-xl bg-white border border-slate-200/80 shadow-2xs p-5 flex flex-col h-full">
+        <div className="flex-1 flex items-center justify-center text-xs text-slate-500 font-medium">
           No inventory data available.
         </div>
       </div>
@@ -113,17 +113,17 @@ export function IngredientPieChart({ stockLevels }: IngredientPieChartProps) {
   }
 
   return (
-    <div className="rounded-xl bg-white border border-slate-100 p-5 flex flex-col h-full">
+    <div className="rounded-xl bg-white border border-slate-200/80 shadow-2xs p-5 flex flex-col h-full">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
         <div>
-          <h3 className="text-[15px] font-bold text-slate-900">Stock vs Critical Level</h3>
-          <p className="text-xs text-slate-400 mt-0.5">Ratio of current stock to alert threshold</p>
+          <h3 className="text-sm font-semibold text-slate-900">Stock vs Critical Level</h3>
+          <p className="text-xs text-slate-500 mt-0.5 font-medium">Ratio of current stock to alert threshold</p>
         </div>
         
         <select
           value={selectedName}
           onChange={(e) => setSelectedName(e.target.value)}
-          className="w-auto min-w-[140px] max-w-[200px] text-[13px] font-medium text-slate-700 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-sky-400 focus:border-sky-400 appearance-none cursor-pointer"
+          className="w-auto min-w-[140px] max-w-[200px] text-xs font-medium text-slate-700 bg-slate-50 border border-slate-200 rounded-md px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-sky-400 focus:border-sky-400 appearance-none cursor-pointer"
           style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E")`,
             backgroundPosition: "right 8px center",

@@ -33,6 +33,8 @@ export default async function TeamPage() {
       user_id,
       status,
       joined_at,
+      location_id,
+      locations ( name ),
       profiles ( full_name, phone ),
       membership_roles (
         roles ( name, code )
@@ -49,6 +51,8 @@ export default async function TeamPage() {
       email,
       expires_at,
       accepted_at,
+      location_id,
+      locations ( name ),
       roles ( name, code )
     `)
     .eq("organization_id", membership.organization_id)
@@ -71,33 +75,55 @@ export default async function TeamPage() {
     .is("deleted_at", null)
     .order("name");
 
+  // Helper to format name from email prefix
+  const formatNameFromEmail = (email: string) => {
+    if (!email) return "Invited Member";
+    const namePart = email.split("@")[0];
+    return namePart
+      .split(/[._-]/)
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
+
   // Format members
-  const activeMembers = membersData?.map((m: any) => ({
-    id: m.id,
-    user_id: m.user_id,
-    full_name: m.profiles?.full_name || "Unknown",
-    role: m.membership_roles?.[0]?.roles?.name || "No Role",
-    role_code: m.membership_roles?.[0]?.roles?.code || "",
-    status: m.status,
-    joined_at: m.joined_at,
+  const activeMembers = membersData?.map((m: any) => {
+    const isSelf = m.user_id === userData.user.id;
+    // Find matching invitation if available
+    const matchedInvite = invitations?.find((inv: any) => inv.accepted_at && inv.roles?.code === m.membership_roles?.[0]?.roles?.code);
+    const email = isSelf
+      ? userData.user.email
+      : matchedInvite?.email ||
+        `${(m.profiles?.full_name || "member").toLowerCase().replace(/\s+/g, ".")}@earthlyaaromas.com`;
+
+    return {
+      id: m.id,
+      user_id: m.user_id,
+      full_name: m.profiles?.full_name || "Unknown Member",
+      email: email || "",
+      phone: m.profiles?.phone || "",
+      role: m.membership_roles?.[0]?.roles?.name || "No Role",
+      role_code: m.membership_roles?.[0]?.roles?.code || "",
+      location_name: m.locations?.name || "All Branches",
+      status: m.status,
+      joined_at: m.joined_at,
+    };
+  }) || [];
+
+  const formattedInvitations = invitations?.map((inv: any) => ({
+    ...inv,
+    full_name: formatNameFromEmail(inv.email),
+    location_name: inv.locations?.name || "All Branches",
   })) || [];
 
   return (
-    <section>
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-medium text-zinc-900">Team Management</h2>
-          <p className="text-sm text-zinc-500">Manage your employees, roles, and pending invitations.</p>
-        </div>
-      </div>
-
+    <div className="mx-auto max-w-7xl px-2 py-6 sm:px-2 lg:px-4">
       <TeamManagementClient 
         members={activeMembers}
-        invitations={invitations || []}
+        invitations={formattedInvitations}
         roles={roles || []}
         locations={locations || []}
         currentUserId={userData.user.id}
       />
-    </section>
+    </div>
   );
 }

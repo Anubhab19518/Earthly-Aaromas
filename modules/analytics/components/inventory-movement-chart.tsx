@@ -133,25 +133,25 @@ export function InventoryMovementChart({ orgId, locationId, ingredients }: Inven
 
   if (ingredients.length === 0) {
     return (
-      <div className="rounded-2xl bg-white border border-slate-100 p-5">
-        <p className="text-sm text-slate-400 text-center">No inventory items to chart.</p>
+      <div className="rounded-xl bg-white border border-slate-200/80 shadow-2xs p-5">
+        <p className="text-xs text-slate-500 font-medium text-center">No inventory items to chart.</p>
       </div>
     );
   }
 
   return (
-    <div className="rounded-2xl bg-white border border-slate-100 overflow-hidden pt-5 flex flex-col">
+    <div className="rounded-xl bg-white border border-slate-200/80 shadow-2xs overflow-hidden pt-5 flex flex-col">
       {/* Header with dropdown */}
       <div className="px-5">
         <div className="flex items-center justify-between mb-4">
-          <span className="text-[15px] font-bold text-slate-800">Stock Movement</span>
+          <span className="text-sm font-semibold text-slate-900">Stock Movement</span>
         </div>
 
         {/* Dropdown */}
         <select
           value={selectedId}
           onChange={(e) => setSelectedId(e.target.value)}
-          className="w-auto min-w-[140px] max-w-[250px] mb-2 text-[13px] font-medium text-slate-700 bg-white border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-sky-400 focus:border-sky-400 appearance-none cursor-pointer"
+          className="w-auto min-w-[140px] max-w-[250px] mb-2 text-xs font-medium text-slate-700 bg-white border border-slate-200 rounded-md px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-sky-400 focus:border-sky-400 appearance-none cursor-pointer"
           style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E")`,
             backgroundPosition: "right 8px center",
@@ -170,7 +170,7 @@ export function InventoryMovementChart({ orgId, locationId, ingredients }: Inven
       {/* Chart */}
       <div className="w-full" style={{ opacity: isPending ? 0.5 : 1, transition: "opacity 0.2s" }}>
         {data.length === 0 && !isPending ? (
-          <div className="flex h-48 items-center justify-center text-xs text-slate-400">
+          <div className="flex h-48 items-center justify-center text-xs text-slate-500 font-medium">
             No movement data for this item.
           </div>
         ) : (

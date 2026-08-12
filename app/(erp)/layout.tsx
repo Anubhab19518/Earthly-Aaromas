@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { createClient } from "@/shared/lib/supabase/server";
 import { Sidebar } from "@/shared/components/layout/sidebar";
 import { TopNav } from "@/shared/components/layout/top-nav";
+import { BranchProvider } from "@/shared/providers/branch-context";
 
 export default async function ErpLayout({ children }: Readonly<{ children: ReactNode }>) {
   const supabase = await createClient();
@@ -60,27 +61,35 @@ export default async function ErpLayout({ children }: Readonly<{ children: React
     .eq("id", userData.user.id)
     .single();
 
-  // Fetch locations for Branch Switcher
+  // Fetch locations for Branch Switcher & Header Context
   const { data: locations } = await supabase
     .from("locations")
-    .select("id, name")
+    .select("id, name, location_types(code)")
     .eq("organization_id", membershipData.organization_id)
     .is("deleted_at", null)
     .order("name");
 
-  const activeBranchId = cookieStore.get("active_branch_id")?.value || locations?.[0]?.id || "";
+  const formattedLocations = (locations || []).map((l: any) => ({
+    id: l.id,
+    name: l.name,
+    type: l.location_types?.code || "SHOP",
+  }));
+
+  const activeBranchId = cookieStore.get("active_branch_id")?.value || formattedLocations?.[0]?.id || "";
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-50 font-sans text-slate-900">
-      <Sidebar />
-      <div className="flex flex-1 flex-col overflow-hidden min-w-0">
-        <TopNav locations={locations || []} userFullName={profile?.full_name || ""} initialBranchId={activeBranchId} />
-        <main className="flex-1 overflow-y-auto p-5">
-          <div className="w-full">
-            {children}
-          </div>
-        </main>
+    <BranchProvider activeBranchId={activeBranchId} locations={formattedLocations}>
+      <div className="flex h-screen overflow-hidden font-sans text-slate-900 bg-slate-50">
+        <Sidebar />
+        <div className="flex flex-1 flex-col overflow-hidden min-w-0">
+          <TopNav locations={locations || []} userFullName={profile?.full_name || ""} initialBranchId={activeBranchId} />
+          <main className="flex-1 overflow-y-auto p-5">
+            <div className="w-full">
+              {children}
+            </div>
+          </main>
+        </div>
       </div>
-    </div>
+    </BranchProvider>
   );
 }

@@ -6,7 +6,8 @@ import { TaxCategoryDialog } from "./tax-category-dialog";
 import { DeleteTaxDialog } from "./delete-tax-dialog";
 import { TaxRatesPanel } from "./tax-rates-panel";
 import { TableToolbar } from "@/shared/components/ui/table-toolbar";
-import { Tag, Percent, AlignLeft, Activity } from "lucide-react";
+import { Tag, Percent, AlignLeft, Activity, Plus } from "lucide-react";
+import { ErpPageHeader } from "@/shared/components/layout/erp-page-header";
 
 interface TaxesTableProps {
   categories: TaxCategory[];
@@ -45,21 +46,30 @@ export function TaxesTable({ categories, rates }: TaxesTableProps) {
   };
 
   return (
-    <div>
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-medium text-zinc-900">Tax Categories</h2>
-          <p className="text-sm text-zinc-500">Configure GST classifications and their rates.</p>
-        </div>
-        <div className="flex items-center gap-3">
+    <div className="space-y-6">
+      {/* Sticky ERP Page Header */}
+      <ErpPageHeader
+        category="Finance & Compliance"
+        title="Tax Rules & GST Classifications"
+        description="Configure tax categories, HSN/SAC codes, effective rate schedules, and GST rules"
+        icon={Percent}
+        iconBgColor="bg-emerald-600 text-white"
+        tabs={[
+          { id: "taxes-table", label: "Tax Categories & Rates", icon: Percent, count: categories.length },
+        ]}
+        actions={
           <button
+            type="button"
             onClick={() => setIsAddOpen(true)}
-            className="rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700"
+            className="flex items-center gap-1.5 rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 transition-colors shadow-2xs cursor-pointer"
           >
-            Add Category
+            <Plus className="h-3.5 w-3.5" />
+            <span>Add Tax Category</span>
           </button>
-        </div>
-      </div>
+        }
+      />
+
+      <div id="taxes-table" className="space-y-4">
 
       <TableToolbar onSort={(dir) => setSortDir(dir)} />
 
@@ -171,6 +181,7 @@ export function TaxesTable({ categories, rates }: TaxesTableProps) {
           onClose={() => setRatesCategory(null)}
         />
       )}
+      </div>
     </div>
   );
 }

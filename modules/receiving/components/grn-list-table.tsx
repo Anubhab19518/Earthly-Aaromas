@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Hash, Building2, FileText, Calendar, Activity } from "lucide-react";
+import { Plus, Hash, Building2, FileText, Calendar, Activity, ClipboardList } from "lucide-react";
 import { useTransition } from "react";
 import { GoodsReceipt } from "@/modules/receiving/schemas/grn.schema";
 import { Supplier } from "@/modules/suppliers/schemas/supplier.schema";
@@ -10,6 +10,7 @@ import { deleteGrn } from "@/modules/receiving/services/grn.actions";
 import { CreateGrnDialog } from "./create-grn-dialog";
 import { useRouter } from "next/navigation";
 import { TableToolbar } from "@/shared/components/ui/table-toolbar";
+import { ErpPageHeader } from "@/shared/components/layout/erp-page-header";
 
 interface GrnListTableProps {
   grns: GoodsReceipt[];
@@ -59,21 +60,32 @@ export function GrnListTable({ grns, suppliers, warehouseLocations, purchaseOrde
   const getSupplierName = (id: string) => suppliers.find((s) => s.id === id)?.name ?? "-";
 
   return (
-    <div>
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-medium text-zinc-900">Goods Receipts</h2>
-          <p className="text-sm text-zinc-500">Create and manage incoming stock receipts (GRN).</p>
-        </div>
-        {canCreate && (
-          <button
-            onClick={() => setIsCreateOpen(true)}
-            className="rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700"
-          >
-            Create GRN
-          </button>
-        )}
-      </div>
+    <div className="space-y-6">
+      {/* Sticky ERP Page Header */}
+      <ErpPageHeader
+        category="Goods Receiving & Inbound"
+        title="Goods Receipt Notes (GRN)"
+        description="Verify supplier deliveries against purchase orders and record warehouse inventory receipts"
+        icon={ClipboardList}
+        iconBgColor="bg-amber-500 text-white"
+        tabs={[
+          { id: "grn-table", label: "Receipt Notes Ledger", icon: ClipboardList, count: grns.length },
+        ]}
+        actions={
+          canCreate ? (
+            <button
+              type="button"
+              onClick={() => setIsCreateOpen(true)}
+              className="flex items-center gap-1.5 rounded-md bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-600 transition-colors shadow-2xs cursor-pointer"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <span>Create GRN</span>
+            </button>
+          ) : undefined
+        }
+      />
+
+      <div id="grn-table" className="space-y-4">
 
       <TableToolbar 
         sortOptions={sortOptions}
@@ -149,6 +161,7 @@ export function GrnListTable({ grns, suppliers, warehouseLocations, purchaseOrde
         warehouseLocations={warehouseLocations}
         purchaseOrders={purchaseOrders}
       />
+      </div>
     </div>
   );
 }
