@@ -59,7 +59,7 @@ export function TableToolbar({
         <div className="relative" ref={sortRef}>
           <button
             onClick={() => setShowSortOptions((v) => !v)}
-            className="flex items-center gap-2 rounded-xl bg-violet-500 px-4 py-2 text-[13px] font-semibold text-white shadow-sm hover:bg-violet-600 transition-colors"
+            className="flex items-center gap-2 rounded-md bg-sky-600 px-3 py-1.5 text-xs font-semibold text-white shadow-2xs hover:bg-sky-700 transition-colors cursor-pointer"
           >
             <span>Sort</span>
             <ArrowUpDown className="h-3.5 w-3.5" />
@@ -75,7 +75,7 @@ export function TableToolbar({
                     onSortChange?.(opt.value);
                     setShowSortOptions(false);
                   }}
-                  className={`w-full text-left px-4 py-2 text-sm cursor-pointer hover:bg-slate-50 ${activeSort === opt.value ? 'text-violet-600 font-semibold bg-violet-50/50' : 'text-slate-700'}`}
+                  className={`w-full text-left px-4 py-2 text-sm cursor-pointer hover:bg-slate-50 ${activeSort === opt.value ? 'text-sky-600 font-semibold bg-sky-50/50' : 'text-slate-700'}`}
                 >
                   {opt.label}
                 </button>
@@ -87,7 +87,7 @@ export function TableToolbar({
         <button
           onClick={handleSortClick}
           title={`Sort ${sortDirection === "asc" ? "descending" : "ascending"}`}
-          className="flex items-center gap-2 rounded-xl bg-violet-500 px-4 py-2 text-[13px] font-semibold text-white shadow-sm hover:bg-violet-600 transition-colors"
+          className="flex items-center gap-2 rounded-md bg-sky-600 px-3 py-1.5 text-xs font-semibold text-white shadow-2xs hover:bg-sky-700 transition-colors cursor-pointer"
         >
           <span>Sort</span>
           <ArrowUpDown className="h-3.5 w-3.5" />
@@ -139,7 +139,7 @@ export function TableToolbar({
                     type="checkbox"
                     checked={col.visible}
                     onChange={() => onColumnToggle?.(col.key)}
-                    className="accent-violet-500 h-3.5 w-3.5 rounded"
+                    className="accent-sky-600 h-3.5 w-3.5 rounded"
                   />
                   {col.label}
                 </label>

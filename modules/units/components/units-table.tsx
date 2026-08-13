@@ -73,31 +73,32 @@ export function UnitsTable({ units }: UnitsTableProps) {
         onSortChange={setActiveSort}
       />
 
-      <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm">
-        <table className="min-w-full divide-y divide-zinc-200">
-          <thead className="bg-zinc-50 border-b border-zinc-200">
-            <tr className="divide-x divide-zinc-200">
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
-                <div className="flex items-center gap-1.5"><Scale className="w-3.5 h-3.5" />Name</div>
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
-                <div className="flex items-center gap-1.5"><Hash className="w-3.5 h-3.5" />Symbol</div>
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
-                <div className="flex items-center gap-1.5"><Tag className="w-3.5 h-3.5" />Category</div>
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
-                <div className="flex items-center gap-1.5"><ArrowRightLeft className="w-3.5 h-3.5" />Conversion</div>
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
-                <div className="flex items-center gap-1.5"><Activity className="w-3.5 h-3.5" />Status</div>
-              </th>
-              <th scope="col" className="relative px-6 py-3">
-                <span className="sr-only">Actions</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-zinc-200 bg-white">
+      <div className="rounded-md border border-neutral-200 bg-white shadow-2xs overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-neutral-200 bg-neutral-50/60 text-xs font-semibold text-neutral-700">
+                <th className="py-2.5 px-4 border-r border-neutral-200">
+                  <div className="flex items-center gap-1.5"><Scale className="w-3.5 h-3.5 text-neutral-400" />Name</div>
+                </th>
+                <th className="py-2.5 px-4 border-r border-neutral-200">
+                  <div className="flex items-center gap-1.5"><Hash className="w-3.5 h-3.5 text-neutral-400" />Symbol</div>
+                </th>
+                <th className="py-2.5 px-4 border-r border-neutral-200">
+                  <div className="flex items-center gap-1.5"><Tag className="w-3.5 h-3.5 text-neutral-400" />Category</div>
+                </th>
+                <th className="py-2.5 px-4 border-r border-neutral-200">
+                  <div className="flex items-center gap-1.5"><ArrowRightLeft className="w-3.5 h-3.5 text-neutral-400" />Conversion</div>
+                </th>
+                <th className="py-2.5 px-4 border-r border-neutral-200">
+                  <div className="flex items-center gap-1.5"><Activity className="w-3.5 h-3.5 text-neutral-400" />Status</div>
+                </th>
+                <th className="py-2.5 px-4">
+                  <span className="sr-only">Actions</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-neutral-200 text-xs font-normal text-neutral-800">
             {units.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-6 py-12 text-center text-sm text-zinc-500">
@@ -106,42 +107,42 @@ export function UnitsTable({ units }: UnitsTableProps) {
               </tr>
             ) : (
               sortedUnits.map((unit) => (
-                <tr key={unit.id} className="hover:bg-zinc-50 divide-x divide-zinc-200">
-                  <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-zinc-900">
+                <tr key={unit.id} className="h-11 border-b border-neutral-200 transition-colors group hover:bg-neutral-50/80">
+                  <td className="py-2.5 px-4 border-r border-neutral-200 font-medium text-neutral-900">
                     {unit.name}
                   </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-zinc-500">
+                  <td className="py-2.5 px-4 border-r border-neutral-200 text-neutral-600">
                     {unit.symbol}
                   </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-zinc-500">
-                    <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-800">
+                  <td className="py-2.5 px-4 border-r border-neutral-200 text-neutral-600">
+                    <span className="inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium bg-neutral-100 text-neutral-800">
                       {unit.measurement_category}
                     </span>
                   </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-zinc-500">
+                  <td className="py-2.5 px-4 border-r border-neutral-200 text-neutral-600">
                     {getBaseUnitInfo(unit)}
                   </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-zinc-500">
+                  <td className="py-2.5 px-4 border-r border-neutral-200">
                     <span
-                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                      className={`inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium ${
                         unit.status === "ACTIVE"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200/60"
+                          : "bg-red-50 text-red-700 border-red-200/60"
                       }`}
                     >
                       {unit.status}
                     </span>
                   </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
+                  <td className="py-2.5 px-4 text-right">
                     <button
                       onClick={() => setEditUnit(unit)}
-                      className="mr-4 text-zinc-600 hover:text-zinc-900"
+                      className="mr-4 text-indigo-600 hover:text-indigo-800 font-medium"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => setDeleteUnit(unit)}
-                      className="text-red-600 hover:text-red-900"
+                      className="text-red-600 hover:text-red-800 font-medium"
                     >
                       Delete
                     </button>
@@ -150,7 +151,8 @@ export function UnitsTable({ units }: UnitsTableProps) {
               ))
             )}
           </tbody>
-        </table>
+          </table>
+        </div>
       </div>
 
       <UnitDialog

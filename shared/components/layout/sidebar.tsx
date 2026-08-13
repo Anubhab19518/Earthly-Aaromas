@@ -127,19 +127,8 @@ function NavItemLink({
 export function Sidebar() {
   const [isExpanded, setIsExpanded] = useState(true);
 
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem("sidebar-expanded");
-      if (stored !== null) setIsExpanded(stored === "true");
-    } catch {}
-  }, []);
-
   const toggle = () => {
-    setIsExpanded(prev => {
-      const next = !prev;
-      try { localStorage.setItem("sidebar-expanded", String(next)); } catch {}
-      return next;
-    });
+    setIsExpanded(prev => !prev);
   };
 
   return (

@@ -109,18 +109,19 @@ export function GrnListTable({ grns, suppliers, warehouseLocations, purchaseOrde
         </div>
       )}
 
-      <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm">
-        <table className="min-w-full divide-y divide-zinc-200">
-          <thead className="bg-zinc-50 border-b border-zinc-200">
-            <tr className="divide-x divide-zinc-200">
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500"><div className="flex items-center gap-1.5"><Hash className="w-3.5 h-3.5" />GRN #</div></th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500"><div className="flex items-center gap-1.5"><Building2 className="w-3.5 h-3.5" />Supplier</div></th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500"><div className="flex items-center gap-1.5"><FileText className="w-3.5 h-3.5" />Invoice #</div></th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500"><div className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" />Received Date</div></th>
-              <th className="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider text-zinc-500"><div className="flex items-center justify-center gap-1.5"><Activity className="w-3.5 h-3.5" />Status</div></th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-zinc-200 bg-white">
+      <div className="rounded-md border border-neutral-200 bg-white shadow-2xs overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-neutral-200 bg-neutral-50/60 text-xs font-semibold text-neutral-700">
+                <th className="py-2.5 px-4 border-r border-neutral-200"><div className="flex items-center gap-1.5"><Hash className="w-3.5 h-3.5 text-neutral-400" />GRN #</div></th>
+                <th className="py-2.5 px-4 border-r border-neutral-200"><div className="flex items-center gap-1.5"><Building2 className="w-3.5 h-3.5 text-neutral-400" />Supplier</div></th>
+                <th className="py-2.5 px-4 border-r border-neutral-200"><div className="flex items-center gap-1.5"><FileText className="w-3.5 h-3.5 text-neutral-400" />Invoice #</div></th>
+                <th className="py-2.5 px-4 border-r border-neutral-200"><div className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5 text-neutral-400" />Received Date</div></th>
+                <th className="py-2.5 px-4"><div className="flex items-center justify-center gap-1.5"><Activity className="w-3.5 h-3.5 text-neutral-400" />Status</div></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-neutral-200 text-xs font-normal text-neutral-800">
             {filtered.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-6 py-12 text-center text-sm text-zinc-500">
@@ -129,21 +130,21 @@ export function GrnListTable({ grns, suppliers, warehouseLocations, purchaseOrde
               </tr>
             ) : (
               filtered.map((grn) => (
-                <tr key={grn.id} onClick={() => router.push(`/receiving/${grn.id}`)} className="cursor-pointer hover:bg-zinc-50 divide-x divide-zinc-200">
-                  <td className="whitespace-nowrap px-6 py-4 text-sm font-mono font-semibold text-zinc-900">
+                <tr key={grn.id} onClick={() => router.push(`/receiving/${grn.id}`)} className="h-11 border-b border-neutral-200 transition-colors group cursor-pointer hover:bg-neutral-50/80">
+                  <td className="py-2.5 px-4 border-r border-neutral-200 font-medium text-neutral-900">
                     {grn.grn_number}
                   </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-zinc-700">
+                  <td className="py-2.5 px-4 border-r border-neutral-200 text-neutral-600">
                     {getSupplierName(grn.supplier_id)}
                   </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-zinc-500">
+                  <td className="py-2.5 px-4 border-r border-neutral-200 text-neutral-600">
                     {grn.invoice_number || "-"}
                   </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-zinc-500">
+                  <td className="py-2.5 px-4 border-r border-neutral-200 text-neutral-600 whitespace-nowrap">
                     {grn.received_date}
                   </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-center text-sm">
-                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUS_STYLES[grn.status] || ""}`}>
+                  <td className="py-2.5 px-4 text-center">
+                    <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium ${STATUS_STYLES[grn.status] || ""}`}>
                       {grn.status}
                     </span>
                   </td>
@@ -151,7 +152,8 @@ export function GrnListTable({ grns, suppliers, warehouseLocations, purchaseOrde
               ))
             )}
           </tbody>
-        </table>
+          </table>
+        </div>
       </div>
 
       <CreateGrnDialog

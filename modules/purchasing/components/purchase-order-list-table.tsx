@@ -146,7 +146,7 @@ export function PurchaseOrderListTable({
       </div>
       )}
 
-      <div className="rounded-lg border bg-white shadow-sm overflow-hidden">
+      <div className="rounded-md border border-neutral-200 bg-white shadow-2xs overflow-hidden">
         {filteredOrders.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-12 text-center">
             <FileText className="mb-4 h-12 w-12 text-zinc-300" />
@@ -157,38 +157,38 @@ export function PurchaseOrderListTable({
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead className="bg-zinc-50 text-zinc-500 border-b border-zinc-200">
-                <tr className="divide-x divide-zinc-200">
-                  <th className="px-4 py-3 font-medium"><div className="flex items-center gap-1.5"><Hash className="w-4 h-4 text-zinc-400" />PO Number</div></th>
-                  <th className="px-4 py-3 font-medium"><div className="flex items-center gap-1.5"><Building2 className="w-4 h-4 text-zinc-400" />Supplier</div></th>
-                  <th className="px-4 py-3 font-medium"><div className="flex items-center gap-1.5"><MapPin className="w-4 h-4 text-zinc-400" />Destination</div></th>
-                  <th className="px-4 py-3 font-medium"><div className="flex items-center gap-1.5"><Calendar className="w-4 h-4 text-zinc-400" />Expected Delivery</div></th>
-                  <th className="px-4 py-3 font-medium"><div className="flex items-center gap-1.5"><IndianRupee className="w-4 h-4 text-zinc-400" />Total Cost</div></th>
-                  <th className="px-4 py-3 font-medium"><div className="flex items-center gap-1.5"><Activity className="w-4 h-4 text-zinc-400" />Status</div></th>
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-neutral-200 bg-neutral-50/60 text-xs font-semibold text-neutral-700">
+                  <th className="py-2.5 px-4 border-r border-neutral-200"><div className="flex items-center gap-1.5"><Hash className="w-4 h-4 text-neutral-400" />PO Number</div></th>
+                  <th className="py-2.5 px-4 border-r border-neutral-200"><div className="flex items-center gap-1.5"><Building2 className="w-4 h-4 text-neutral-400" />Supplier</div></th>
+                  <th className="py-2.5 px-4 border-r border-neutral-200"><div className="flex items-center gap-1.5"><MapPin className="w-4 h-4 text-neutral-400" />Destination</div></th>
+                  <th className="py-2.5 px-4 border-r border-neutral-200"><div className="flex items-center gap-1.5"><Calendar className="w-4 h-4 text-neutral-400" />Expected Delivery</div></th>
+                  <th className="py-2.5 px-4 border-r border-neutral-200"><div className="flex items-center gap-1.5"><IndianRupee className="w-4 h-4 text-neutral-400" />Total Cost</div></th>
+                  <th className="py-2.5 px-4"><div className="flex items-center gap-1.5"><Activity className="w-4 h-4 text-neutral-400" />Status</div></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-200">
+              <tbody className="divide-y divide-neutral-200 text-xs font-normal text-neutral-800">
                 {filteredOrders.map((po) => {
                   const supplier = suppliers.find((s) => s.id === po.supplier_id);
                   const location = locations.find((l) => l.id === po.location_id);
                   return (
-                    <tr key={po.id} onClick={() => router.push(`/purchase-orders/${po.id}`)} className="cursor-pointer hover:bg-zinc-50 divide-x divide-zinc-200">
-                      <td className="px-4 py-3 font-medium text-zinc-900">{po.po_number}</td>
-                      <td className="px-4 py-3 text-zinc-600">{supplier?.name || "Unknown"}</td>
-                      <td className="px-4 py-3 text-zinc-600">{location?.name || "Unknown"}</td>
-                      <td className="px-4 py-3 text-zinc-600">
+                    <tr key={po.id} onClick={() => router.push(`/purchase-orders/${po.id}`)} className="h-11 border-b border-neutral-200 transition-colors group cursor-pointer hover:bg-neutral-50/80">
+                      <td className="py-2.5 px-4 border-r border-neutral-200 font-medium text-neutral-900">{po.po_number}</td>
+                      <td className="py-2.5 px-4 border-r border-neutral-200 text-neutral-600">{supplier?.name || "Unknown"}</td>
+                      <td className="py-2.5 px-4 border-r border-neutral-200 text-neutral-600">{location?.name || "Unknown"}</td>
+                      <td className="py-2.5 px-4 border-r border-neutral-200 text-neutral-600">
                         {po.expected_delivery_date
                           ? format(new Date(po.expected_delivery_date), "MMM d, yyyy")
                           : "Not set"}
                       </td>
-                      <td className="px-4 py-3 text-zinc-600">
+                      <td className="py-2.5 px-4 border-r border-neutral-200 text-neutral-600">
                         {new Intl.NumberFormat("en-IN", {
                           style: "currency",
                           currency: "INR",
                         }).format(po.total_expected_cost)}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="py-2.5 px-4">
                         <StatusBadge status={po.status} />
                       </td>
                     </tr>

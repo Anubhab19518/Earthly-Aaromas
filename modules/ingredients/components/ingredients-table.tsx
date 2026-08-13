@@ -8,6 +8,7 @@ import { Unit } from "@/modules/units/schemas/unit.schema";
 import { IngredientDialog } from "./ingredient-dialog";
 import { DeleteIngredientDialog } from "./delete-ingredient-dialog";
 import { CategoryDialog } from "./category-dialog";
+import { CategoriesClient } from "./categories-client";
 import { ConversionsPanel } from "./conversions-panel";
 import { AlertPoliciesPanel } from "@/modules/inventory/components/alert-policies-panel";
 import { Location } from "@/modules/locations/schemas/location.schema";
@@ -156,37 +157,38 @@ export function IngredientsTable({
       </div>
       )}
 
-      <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm">
-        <table className="min-w-full divide-y divide-zinc-200">
-          <thead className="bg-zinc-50 border-b border-zinc-200">
-            <tr className="divide-x divide-zinc-200">
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
-                <div className="flex items-center gap-1.5"><Package className="w-3.5 h-3.5" />Name</div>
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
-                <div className="flex items-center gap-1.5"><Hash className="w-3.5 h-3.5" />SKU</div>
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
-                <div className="flex items-center gap-1.5"><Tag className="w-3.5 h-3.5" />Category</div>
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
-                <div className="flex items-center gap-1.5"><Scale className="w-3.5 h-3.5" />Base Unit</div>
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
-                <div className="flex items-center gap-1.5"><IndianRupee className="w-3.5 h-3.5" />Cost</div>
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
-                <div className="flex items-center gap-1.5"><Flag className="w-3.5 h-3.5" />Flags</div>
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
-                <div className="flex items-center gap-1.5"><Activity className="w-3.5 h-3.5" />Status</div>
-              </th>
-              <th scope="col" className="relative px-6 py-3">
-                <span className="sr-only">Actions</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-zinc-200 bg-white">
+      <div className="rounded-md border border-neutral-200 bg-white shadow-2xs overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-neutral-200 bg-neutral-50/60 text-xs font-semibold text-neutral-700">
+                <th className="py-2.5 px-4 border-r border-neutral-200">
+                  <div className="flex items-center gap-1.5"><Package className="w-3.5 h-3.5 text-neutral-400" />Name</div>
+                </th>
+                <th className="py-2.5 px-4 border-r border-neutral-200">
+                  <div className="flex items-center gap-1.5"><Hash className="w-3.5 h-3.5 text-neutral-400" />SKU</div>
+                </th>
+                <th className="py-2.5 px-4 border-r border-neutral-200">
+                  <div className="flex items-center gap-1.5"><Tag className="w-3.5 h-3.5 text-neutral-400" />Category</div>
+                </th>
+                <th className="py-2.5 px-4 border-r border-neutral-200">
+                  <div className="flex items-center gap-1.5"><Scale className="w-3.5 h-3.5 text-neutral-400" />Base Unit</div>
+                </th>
+                <th className="py-2.5 px-4 border-r border-neutral-200">
+                  <div className="flex items-center gap-1.5"><IndianRupee className="w-3.5 h-3.5 text-neutral-400" />Cost</div>
+                </th>
+                <th className="py-2.5 px-4 border-r border-neutral-200">
+                  <div className="flex items-center gap-1.5"><Flag className="w-3.5 h-3.5 text-neutral-400" />Flags</div>
+                </th>
+                <th className="py-2.5 px-4 border-r border-neutral-200">
+                  <div className="flex items-center gap-1.5"><Activity className="w-3.5 h-3.5 text-neutral-400" />Status</div>
+                </th>
+                <th className="py-2.5 px-4">
+                  <span className="sr-only">Actions</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-neutral-200 text-xs font-normal text-neutral-800">
             {filteredIngredients.length === 0 ? (
               <tr>
                 <td colSpan={8} className="px-6 py-12 text-center text-sm text-zinc-500">
@@ -197,74 +199,74 @@ export function IngredientsTable({
               </tr>
             ) : (
               filteredIngredients.map((ingredient) => (
-                <tr key={ingredient.id} className="hover:bg-zinc-50 divide-x divide-zinc-200">
-                  <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-zinc-900">
+                <tr key={ingredient.id} className="h-11 border-b border-neutral-200 transition-colors group hover:bg-neutral-50/80">
+                  <td className="py-2.5 px-4 border-r border-neutral-200 font-medium text-neutral-900">
                     {ingredient.name}
                   </td>
-                  <td className="whitespace-nowrap px-6 py-4 font-mono text-xs text-zinc-500">
+                  <td className="py-2.5 px-4 border-r border-neutral-200 font-mono text-xs text-neutral-600">
                     {ingredient.sku}
                   </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-zinc-500">
+                  <td className="py-2.5 px-4 border-r border-neutral-200 text-neutral-600">
                     {getCategoryName(ingredient.category_id)}
                   </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-zinc-500">
+                  <td className="py-2.5 px-4 border-r border-neutral-200 text-neutral-600">
                     {getUnitDisplay(ingredient.base_unit_id)}
                   </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-zinc-500">
+                  <td className="py-2.5 px-4 border-r border-neutral-200 text-neutral-600">
                     {ingredient.standard_cost != null
                       ? `₹${Number(ingredient.standard_cost).toFixed(2)}`
                       : "-"}
                   </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  <td className="py-2.5 px-4 border-r border-neutral-200">
                     {ingredient.is_perishable && (
-                      <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800">
+                      <span className="inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium bg-amber-50 text-amber-700 border-amber-200/60">
                         Perishable
                       </span>
                     )}
                   </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  <td className="py-2.5 px-4 border-r border-neutral-200">
                     <span
-                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                      className={`inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium ${
                         ingredient.status === "ACTIVE"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200/60"
+                          : "bg-red-50 text-red-700 border-red-200/60"
                       }`}
                     >
                       {ingredient.status}
                     </span>
                   </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
+                  <td className="py-2.5 px-4 text-right">
                     <button
                       onClick={() => setAlertsIngredient(ingredient)}
-                      className="mr-4 text-amber-600 hover:text-amber-900"
+                      className="mr-4 text-amber-600 hover:text-amber-800 font-medium"
                     >
                       Alerts
                       {getAlertCount(ingredient.id) > 0 && (
-                        <span className="ml-1 rounded-full bg-amber-100 px-1.5 py-0.5 text-xs font-semibold text-amber-700">
+                        <span className="ml-1 rounded-md bg-amber-100 px-1.5 py-0.5 text-xs font-semibold text-amber-700">
                           {getAlertCount(ingredient.id)}
                         </span>
                       )}
                     </button>
                     <button
                       onClick={() => setConversionsIngredient(ingredient)}
-                      className="mr-4 text-indigo-600 hover:text-indigo-900"
+                      className="mr-4 text-indigo-600 hover:text-indigo-800 font-medium"
                     >
                       Conversions
                       {getConversionCount(ingredient.id) > 0 && (
-                        <span className="ml-1 rounded-full bg-indigo-100 px-1.5 py-0.5 text-xs font-semibold text-indigo-700">
+                        <span className="ml-1 rounded-md bg-indigo-100 px-1.5 py-0.5 text-xs font-semibold text-indigo-700">
                           {getConversionCount(ingredient.id)}
                         </span>
                       )}
                     </button>
                     <button
                       onClick={() => setEditIngredient(ingredient)}
-                      className="mr-4 text-zinc-600 hover:text-zinc-900"
+                      className="mr-4 text-indigo-600 hover:text-indigo-800 font-medium"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => setDeleteIngredient(ingredient)}
-                      className="text-red-600 hover:text-red-900"
+                      className="text-red-600 hover:text-red-800 font-medium"
                     >
                       Delete
                     </button>
@@ -273,7 +275,8 @@ export function IngredientsTable({
               ))
             )}
           </tbody>
-        </table>
+          </table>
+        </div>
       </div>
 
       <IngredientDialog
@@ -322,6 +325,10 @@ export function IngredientsTable({
           onClose={() => setAlertsIngredient(null)}
         />
       )}
+      </div>
+
+      <div id="ingredients-categories">
+        <CategoriesClient categories={categories} />
       </div>
     </div>
   );
