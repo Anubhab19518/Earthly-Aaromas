@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 
 import { signIn } from "@/modules/auth/services/auth.actions";
 
@@ -8,6 +9,7 @@ export function LoginForm() {
   const [state, action, isPending] = useActionState(signIn, null);
   const [step, setStep] = useState<1 | 2>(1);
   const [email, setEmail] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     if (step === 1) {
@@ -41,16 +43,30 @@ export function LoginForm() {
           <label className="text-[13px] font-semibold text-slate-700" htmlFor="password">
             Password
           </label>
-          <input
-            autoComplete="current-password"
-            className="w-full rounded-lg border border-slate-200 bg-transparent px-4 py-2.5 text-[14px] outline-none transition focus:border-sky-600 focus:ring-1 focus:ring-sky-600 placeholder:text-slate-400"
-            id="password"
-            name="password"
-            placeholder="••••••••"
-            required
-            type="password"
-            autoFocus
-          />
+          <div className="relative">
+            <input
+              autoComplete="current-password"
+              className="w-full rounded-lg border border-slate-200 bg-transparent px-4 py-2.5 pr-10 text-[14px] outline-none transition focus:border-sky-600 focus:ring-1 focus:ring-sky-600 placeholder:text-slate-400"
+              id="password"
+              name="password"
+              placeholder="••••••••"
+              required
+              type={showPassword ? "text" : "password"}
+              autoFocus
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+              tabIndex={-1}
+            >
+              {showPassword ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
+            </button>
+          </div>
         </div>
       )}
       {state?.message ? (

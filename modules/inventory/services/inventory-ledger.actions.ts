@@ -37,13 +37,13 @@ export async function getInventoryLedger(organizationId: string, filter: LedgerF
     query = query.order("created_at", { ascending: filter.sortOrder === "asc" });
   }
 
-  if (filter.locationId) {
+  if (filter.locationId && filter.locationId !== "all") {
     query = query.eq("location_id", filter.locationId);
   }
-  if (filter.ingredientId) {
+  if (filter.ingredientId && filter.ingredientId !== "all") {
     query = query.eq("ingredient_id", filter.ingredientId);
   }
-  if (filter.transactionType) {
+  if (filter.transactionType && filter.transactionType !== "all") {
     query = query.eq("transaction_type", filter.transactionType);
   }
   if (filter.startDate) {
@@ -59,8 +59,8 @@ export async function getInventoryLedger(organizationId: string, filter: LedgerF
   const { data, count, error } = await query.range(start, end);
 
   if (error) {
-    console.error("Error fetching inventory ledger:", error);
-    throw new Error("Failed to fetch inventory ledger");
+    console.error("Error fetching inventory ledger:", error.message, error.details, error.hint, error.code);
+    throw new Error("Failed to fetch inventory ledger: " + error.message);
   }
 
   let processedData = data || [];

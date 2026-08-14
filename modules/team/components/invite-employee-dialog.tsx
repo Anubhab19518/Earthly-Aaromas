@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createInvitation } from "@/modules/team/services/invitation.actions";
 import { createInvitationSchema, CreateInvitationFormValues } from "@/modules/team/schemas/invitation.schema";
-import { UserPlus, Check, Copy, X, ChevronDown, CheckCircle2, Loader2 } from "lucide-react";
+import { UserPlus, X, Loader2, ChevronDown } from "lucide-react";
 
 interface InviteEmployeeDialogProps {
   roles: { id: string; name: string; code: string }[];
@@ -18,8 +18,6 @@ interface InviteEmployeeDialogProps {
 export function InviteEmployeeDialog({ roles, locations, open, onOpenChange, onInviteSent }: InviteEmployeeDialogProps) {
   const [isPending, startTransition] = useTransition();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [successLink, setSuccessLink] = useState<string | null>(null);
-  const [copiedLink, setCopiedLink] = useState(false);
 
   const form = useForm<CreateInvitationFormValues>({
     resolver: zodResolver(createInvitationSchema),
@@ -37,8 +35,6 @@ export function InviteEmployeeDialog({ roles, locations, open, onOpenChange, onI
     if (open) {
       form.reset();
       setErrorMsg(null);
-      setSuccessLink(null);
-      setCopiedLink(false);
     }
   }, [open, form]);
 
@@ -53,20 +49,13 @@ export function InviteEmployeeDialog({ roles, locations, open, onOpenChange, onI
 
       const result = await createInvitation(null, formData);
 
-      if (result?.inviteLink) {
-        setSuccessLink(result.inviteLink);
-        onInviteSent?.(`Invitation generated for ${data.email}`);
+      if (result?.message === "Invitation created successfully.") {
+        onInviteSent?.(`Invitation email sent to ${data.email}`);
+        onOpenChange(false);
       } else if (result?.message) {
         setErrorMsg(result.message);
       }
     });
-  };
-
-  const handleCopyLink = () => {
-    if (!successLink) return;
-    navigator.clipboard.writeText(successLink);
-    setCopiedLink(true);
-    setTimeout(() => setCopiedLink(false), 2500);
   };
 
   if (!open) return null;
@@ -97,57 +86,6 @@ export function InviteEmployeeDialog({ roles, locations, open, onOpenChange, onI
 
         {/* Modal Body */}
         <div className="p-5">
-          {successLink ? (
-            <div className="space-y-4 animate-in fade-in duration-150">
-              <div className="rounded-lg bg-emerald-50/80 border border-emerald-200/80 p-3.5 text-emerald-900">
-                <div className="flex items-center gap-2 text-xs font-semibold text-emerald-800">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
-                  <span>Invitation link generated!</span>
-                </div>
-                <p className="mt-1 text-[11px] text-emerald-700 leading-relaxed">
-                  Share this secure link with your new team member so they can complete their registration.
-                </p>
-
-                <div className="mt-3 flex items-center gap-2">
-                  <input
-                    type="text"
-                    readOnly
-                    value={successLink}
-                    className="w-full rounded-md border border-emerald-300/80 bg-white px-2.5 py-1.5 text-xs font-mono text-slate-700 outline-none select-all"
-                  />
-                  <button
-                    onClick={handleCopyLink}
-                    className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all whitespace-nowrap shadow-2xs ${
-                      copiedLink
-                        ? "bg-emerald-600 text-white"
-                        : "bg-slate-900 text-white hover:bg-slate-800"
-                    }`}
-                  >
-                    {copiedLink ? (
-                      <>
-                        <Check className="h-3.5 w-3.5" />
-                        <span>Copied</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="h-3.5 w-3.5" />
-                        <span>Copy link</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex justify-end pt-1">
-                <button
-                  onClick={() => onOpenChange(false)}
-                  className="rounded-lg bg-slate-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-slate-800 transition-all cursor-pointer shadow-2xs"
-                >
-                  Done
-                </button>
-              </div>
-            </div>
-          ) : (
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               {/* Email Field */}
               <div>
@@ -264,7 +202,6 @@ export function InviteEmployeeDialog({ roles, locations, open, onOpenChange, onI
                 </button>
               </div>
             </form>
-          )}
         </div>
       </div>
     </div>

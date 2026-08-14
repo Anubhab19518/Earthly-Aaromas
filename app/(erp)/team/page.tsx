@@ -88,8 +88,12 @@ export default async function TeamPage() {
   // Format members
   const activeMembers = membersData?.map((m: any) => {
     const isSelf = m.user_id === userData.user.id;
-    // Find matching invitation if available
-    const matchedInvite = invitations?.find((inv: any) => inv.accepted_at && inv.roles?.code === m.membership_roles?.[0]?.roles?.code);
+    // Find matching invitation by comparing joined_at and accepted_at (they happen within seconds of each other)
+    const matchedInvite = invitations?.find((inv: any) => {
+      if (!inv.accepted_at) return false;
+      const timeDiff = Math.abs(new Date(inv.accepted_at).getTime() - new Date(m.joined_at).getTime());
+      return timeDiff < 10000; // Within 10 seconds
+    });
     const email = isSelf
       ? userData.user.email
       : matchedInvite?.email ||
@@ -109,11 +113,13 @@ export default async function TeamPage() {
     };
   }) || [];
 
-  const formattedInvitations = invitations?.map((inv: any) => ({
+  const pendingInvitations = invitations?.filter((inv: any) => !inv.accepted_at) || [];
+
+  const formattedInvitations = pendingInvitations.map((inv: any) => ({
     ...inv,
     full_name: formatNameFromEmail(inv.email),
     location_name: inv.locations?.name || "All Branches",
-  })) || [];
+  }));
 
   return (
     <div className="mx-auto max-w-7xl px-2 py-6 sm:px-2 lg:px-4">

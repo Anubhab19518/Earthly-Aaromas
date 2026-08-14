@@ -5,6 +5,7 @@ import { createClient } from "@/shared/lib/supabase/server";
 import { createAdminClient } from "@/shared/lib/supabase/admin";
 import { createInvitationSchema, acceptInvitationSchema } from "@/modules/team/schemas/invitation.schema";
 import crypto from "crypto";
+import { Resend } from "resend";
 
 export type InvitationActionState = { message: string; inviteLink?: string } | null;
 
@@ -93,12 +94,31 @@ export async function createInvitation(
 
   revalidatePath("/team");
   
-  // In a real app we'd send an email here.
-  // For this demo, we return the link to the UI.
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   const inviteLink = `${appUrl}/accept-invite?token=${rawToken}`;
   
-  return { message: "Invitation created successfully.", inviteLink };
+  // In development, it is helpful to log the link in case email sending fails
+  console.log(`[DEV] Generated Invite Link for ${parsed.data.email}: ${inviteLink}`);
+  
+  try {
+    const resend = new Resend(process.env.RESEND_API_KEY);
+    const { error: resendError } = await resend.emails.send({
+      from: 'onboarding@resend.dev',
+      to: parsed.data.email,
+      subject: 'You have been invited to join Tea-Chain ERP',
+      html: `<p>You have been invited to join a workspace on Tea-Chain ERP.</p><p>Click <a href="${inviteLink}">here</a> to accept the invitation.</p>`
+    });
+    
+    if (resendError) {
+      console.error("Resend API returned an error:", resendError);
+      return { message: "Invitation created, but failed to send email. Check server logs for the link." };
+    }
+  } catch (err) {
+    console.error("Failed to execute Resend client:", err);
+    return { message: "Invitation created, but failed to send email. Check server logs for the link." };
+  }
+  
+  return { message: "Invitation created successfully." };
 }
 
 // ─── Verify Invitation (Read-only) ──────────────────────────────────────────

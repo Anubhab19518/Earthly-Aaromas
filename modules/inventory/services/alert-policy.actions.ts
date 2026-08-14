@@ -143,3 +143,78 @@ export async function deleteAlertPolicy(
   revalidatePath("/ingredients");
   return null;
 }
+
+export type InventoryAlert = {
+  ingredientId: string;
+  ingredientName: string;
+  quantity: number;
+  level: "OUT_OF_STOCK" | "CRITICAL" | "WARNING";
+};
+
+export async function getActiveInventoryAlerts(locationId: string): Promise<InventoryAlert[]> {
+  if (!locationId) return [];
+
+  const supabase = await createClient();
+  const organizationId = await getActiveOrganizationId(supabase);
+  if (!organizationId) return [];
+
+  // Fetch policies with ingredient names
+  const { data: policies } = await supabase
+    .from("inventory_alert_policies")
+    .select("ingredient_id, warning_level, critical_level, out_of_stock_level, ingredients(name)")
+    .eq("location_id", locationId)
+    .eq("organization_id", organizationId)
+    .is("deleted_at", null);
+
+  if (!policies || policies.length === 0) return [];
+
+  const ingredientIds = policies.map((p: any) => p.ingredient_id);
+
+  // Fetch current snapshots
+  const { data: snapshots } = await supabase
+    .from("inventory_snapshot")
+    .select("ingredient_id, quantity_on_hand")
+    .eq("location_id", locationId)
+    .eq("organization_id", organizationId)
+    .in("ingredient_id", ingredientIds);
+
+  const snapshotMap = new Map(snapshots?.map((s: any) => [s.ingredient_id, Number(s.quantity_on_hand)]) || []);
+
+  const alerts: InventoryAlert[] = [];
+
+  for (const policy of policies) {
+    const qty = snapshotMap.get(policy.ingredient_id) || 0;
+    const outOfStockLevel = Number(policy.out_of_stock_level);
+    const criticalLevel = Number(policy.critical_level);
+    const warningLevel = Number(policy.warning_level);
+
+    if (qty <= outOfStockLevel) {
+      alerts.push({
+        ingredientId: policy.ingredient_id,
+        ingredientName: (policy.ingredients as any)?.name || "Unknown",
+        quantity: qty,
+        level: "OUT_OF_STOCK",
+      });
+    } else if (qty <= criticalLevel) {
+      alerts.push({
+        ingredientId: policy.ingredient_id,
+        ingredientName: (policy.ingredients as any)?.name || "Unknown",
+        quantity: qty,
+        level: "CRITICAL",
+      });
+    } else if (qty <= warningLevel) {
+      alerts.push({
+        ingredientId: policy.ingredient_id,
+        ingredientName: (policy.ingredients as any)?.name || "Unknown",
+        quantity: qty,
+        level: "WARNING",
+      });
+    }
+  }
+
+  // Sort: Out of stock first, then critical, then warning
+  const order = { OUT_OF_STOCK: 1, CRITICAL: 2, WARNING: 3 };
+  alerts.sort((a, b) => order[a.level] - order[b.level]);
+
+  return alerts;
+}

@@ -26,7 +26,8 @@ export async function employeeSignIn(
   const { data, error } = await supabase.auth.signInWithPassword(parsedInput.data);
 
   if (error) {
-    return { message: "Email or password is incorrect." };
+    console.error("Employee Sign-in Error:", error.message, parsedInput.data.email);
+    return { message: "Email or password is incorrect. (Make sure you don't copy any spaces!)" };
   }
 
   // Use the security-definer RPC to check membership — bypasses MFA-gated RLS.

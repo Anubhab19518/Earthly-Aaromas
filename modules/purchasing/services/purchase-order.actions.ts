@@ -34,6 +34,38 @@ async function getAuthContext(supabase: any) {
     : null;
 }
 
+async function updatePoTotalWithTax(supabase: any, poId: string, organizationId: string) {
+  const { data: items } = await supabase
+    .from("purchase_order_items")
+    .select("quantity, expected_cost, tax_category_id")
+    .eq("po_id", poId);
+
+  if (!items) return;
+
+  const { data: taxCategories } = await supabase
+    .from("tax_categories")
+    .select("id, tax_rates(rate_percentage)")
+    .eq("organization_id", organizationId);
+
+  const taxMap = new Map<string, number>();
+  if (taxCategories) {
+    taxCategories.forEach((tc: any) => {
+      const rates = tc.tax_rates;
+      const rate = rates && rates.length > 0 ? Number(rates[0].rate_percentage) : 0;
+      taxMap.set(tc.id, rate);
+    });
+  }
+
+  const grandTotal = items.reduce((acc: number, item: any) => {
+    const baseLine = item.quantity * item.expected_cost;
+    const taxRate = item.tax_category_id ? (taxMap.get(item.tax_category_id) || 0) : 0;
+    const taxAmount = baseLine * (taxRate / 100);
+    return acc + baseLine + taxAmount;
+  }, 0);
+
+  await supabase.from("purchase_orders").update({ total_expected_cost: grandTotal }).eq("id", poId);
+}
+
 // ─── Location Validation Helper ──────────────────────────────────────────────
 
 async function isWarehouseLocation(
@@ -274,15 +306,7 @@ export async function addPurchaseOrderItem(
   }
 
   // Update total_expected_cost
-  const { data: items } = await supabase
-    .from("purchase_order_items")
-    .select("quantity, expected_cost")
-    .eq("po_id", poId);
-
-  if (items) {
-    const total = items.reduce((acc: number, item: any) => acc + (item.quantity * item.expected_cost), 0);
-    await supabase.from("purchase_orders").update({ total_expected_cost: total }).eq("id", poId);
-  }
+  await updatePoTotalWithTax(supabase, poId, auth.organizationId);
 
   revalidatePath(`/purchase-orders/${poId}`);
   return null;
@@ -313,15 +337,7 @@ export async function deletePurchaseOrderItem(
   }
 
   // Update total_expected_cost
-  const { data: items } = await supabase
-    .from("purchase_order_items")
-    .select("quantity, expected_cost")
-    .eq("po_id", poId);
-
-  if (items) {
-    const total = items.reduce((acc: number, item: any) => acc + (item.quantity * item.expected_cost), 0);
-    await supabase.from("purchase_orders").update({ total_expected_cost: total }).eq("id", poId);
-  }
+  await updatePoTotalWithTax(supabase, poId, auth.organizationId);
 
   revalidatePath(`/purchase-orders/${poId}`);
   return null;

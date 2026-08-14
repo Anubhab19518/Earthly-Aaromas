@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/shared/lib/supabase/server";
 import { PurchaseOrderDetailClient } from "@/modules/purchasing/components/purchase-order-detail-client";
+import { getComments } from "@/modules/shared/services/comments.actions";
 
 export default async function PurchaseOrderDetailPage({
   params,
@@ -42,9 +43,11 @@ export default async function PurchaseOrderDetailPage({
     supabase.from("locations").select("*").eq("organization_id", membership.organization_id),
     supabase.from("ingredients").select("*").eq("organization_id", membership.organization_id).is("deleted_at", null),
     supabase.from("units").select("*").is("deleted_at", null),
-    supabase.from("tax_categories").select("*").eq("organization_id", membership.organization_id).is("deleted_at", null),
+    supabase.from("tax_categories").select("*, tax_rates(rate_percentage)").eq("organization_id", membership.organization_id).is("deleted_at", null),
     supabase.from("ingredient_unit_conversions").select("*").eq("organization_id", membership.organization_id).is("deleted_at", null),
   ]);
+
+  const comments = await getComments("PO", id);
 
   return (
     <PurchaseOrderDetailClient
@@ -56,6 +59,7 @@ export default async function PurchaseOrderDetailPage({
       units={units || []}
       taxCategories={taxCategories || []}
       ingredientConversions={ingredientConversions || []}
+      comments={comments}
     />
   );
 }

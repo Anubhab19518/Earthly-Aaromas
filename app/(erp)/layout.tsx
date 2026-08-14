@@ -5,6 +5,7 @@ import { createClient } from "@/shared/lib/supabase/server";
 import { Sidebar } from "@/shared/components/layout/sidebar";
 import { TopNav } from "@/shared/components/layout/top-nav";
 import { BranchProvider } from "@/shared/providers/branch-context";
+import { getActiveInventoryAlerts } from "@/modules/inventory/services/alert-policy.actions";
 
 export default async function ErpLayout({ children }: Readonly<{ children: ReactNode }>) {
   const supabase = await createClient();
@@ -25,8 +26,6 @@ export default async function ErpLayout({ children }: Readonly<{ children: React
   }
 
   // Step 2: Enforce MFA for Owners BEFORE querying RLS-protected tables.
-  // organization_memberships RLS requires aal2 (has_mfa_assurance()).
-  // Checking MFA first ensures the subsequent DB query will actually return data.
   if (isOwner) {
     const { data: assurance } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
     if (assurance?.currentLevel !== "aal2") {
@@ -35,7 +34,6 @@ export default async function ErpLayout({ children }: Readonly<{ children: React
   }
 
   // Step 3: Now at aal2 (or is an employee — employees bypass MFA in this layout).
-  // The RLS membership query will succeed here.
   const { data: membershipData } = await supabase
     .from("organization_memberships")
     .select(`
@@ -77,12 +75,15 @@ export default async function ErpLayout({ children }: Readonly<{ children: React
 
   const activeBranchId = cookieStore.get("active_branch_id")?.value || formattedLocations?.[0]?.id || "";
 
+  // Fetch active alerts for the current branch
+  const activeAlerts = await getActiveInventoryAlerts(activeBranchId);
+
   return (
     <BranchProvider activeBranchId={activeBranchId} locations={formattedLocations}>
       <div className="flex h-screen overflow-hidden font-sans text-slate-900 bg-slate-50">
         <Sidebar />
         <div className="flex flex-1 flex-col overflow-hidden min-w-0">
-          <TopNav locations={locations || []} userFullName={profile?.full_name || ""} initialBranchId={activeBranchId} />
+          <TopNav locations={locations || []} userFullName={profile?.full_name || ""} initialBranchId={activeBranchId} alerts={activeAlerts} />
           <main className="flex-1 overflow-y-auto p-5">
             <div className="w-full">
               {children}

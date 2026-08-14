@@ -1,6 +1,7 @@
 import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/shared/lib/supabase/server";
 import { GrnDetailView } from "@/modules/receiving/components/grn-detail-view";
+import { getComments } from "@/modules/shared/services/comments.actions";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -78,12 +79,14 @@ export default async function GrnDetailPage({ params }: Props) {
     supabase.from("units").select("*").is("deleted_at", null),
     supabase
       .from("tax_categories")
-      .select("*")
+      .select("*, tax_rates(rate_percentage)")
       .eq("organization_id", membership.organization_id)
       .eq("status", "ACTIVE")
       .is("deleted_at", null)
       .order("name"),
   ]);
+
+  const comments = await getComments("GRN", id);
 
   if (!grn) notFound();
 
@@ -98,6 +101,7 @@ export default async function GrnDetailPage({ params }: Props) {
         conversions={conversions || []}
         units={units || []}
         taxCategories={taxCategories || []}
+        comments={comments}
       />
     </section>
   );

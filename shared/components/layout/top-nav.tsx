@@ -30,6 +30,9 @@ import {
 import { Avatar, AvatarFallback } from "@/shared/components/ui/avatar";
 import { SearchCommandDialog } from "./search-command-dialog";
 
+import type { InventoryAlert } from "@/modules/inventory/services/alert-policy.actions";
+import { NotificationDropdown } from "./notification-dropdown";
+
 interface Location {
   id: string;
   name: string;
@@ -39,6 +42,7 @@ interface TopNavProps {
   locations: Location[];
   userFullName: string;
   initialBranchId: string;
+  alerts?: InventoryAlert[];
 }
 
 const HANDY_NAV_LINKS = [
@@ -49,7 +53,7 @@ const HANDY_NAV_LINKS = [
   { name: "Financials", href: "/financial" },
 ];
 
-export function TopNav({ locations, userFullName, initialBranchId }: TopNavProps) {
+export function TopNav({ locations, userFullName, initialBranchId, alerts = [] }: TopNavProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
@@ -182,13 +186,7 @@ export function TopNav({ locations, userFullName, initialBranchId }: TopNavProps
         {/* Right Section: Action Icons & User Profile Dropdown */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {/* Notifications */}
-          <button
-            className="relative flex h-8 w-8 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-colors cursor-pointer"
-            title="Notifications"
-          >
-            <Bell className="h-4 w-4" />
-            <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-indigo-600 ring-2 ring-white" />
-          </button>
+          <NotificationDropdown alerts={alerts} />
 
           {/* Help */}
           <button

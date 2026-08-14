@@ -66,7 +66,19 @@ export function MemberActionMenu({ member, currentUserId, onCopySuccess }: Membe
   };
 
   return (
-    <div className="relative inline-block text-left" ref={menuRef}>
+    <div className="relative inline-flex items-center gap-2 text-left" ref={menuRef}>
+      {canDeactivate && (
+        <button
+          type="button"
+          onClick={() => setShowDeactivateModal(true)}
+          className="flex h-8 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 text-xs font-medium text-rose-600 hover:border-rose-200 hover:bg-rose-50 transition-all shadow-2xs"
+          title="Deactivate Member"
+        >
+          <UserX className="h-3.5 w-3.5" />
+          <span>Deactivate</span>
+        </button>
+      )}
+
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
@@ -89,19 +101,6 @@ export function MemberActionMenu({ member, currentUserId, onCopySuccess }: Membe
             {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5 text-slate-400" />}
             <span>Copy Member ID</span>
           </button>
-
-          {canDeactivate && (
-            <button
-              onClick={() => {
-                setIsOpen(false);
-                setShowDeactivateModal(true);
-              }}
-              className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-rose-600 hover:bg-rose-50 transition-colors mt-0.5"
-            >
-              <UserX className="h-3.5 w-3.5 text-rose-500" />
-              <span>Deactivate Member</span>
-            </button>
-          )}
 
           {!canDeactivate && (
             <div className="px-2.5 py-1 text-[11px] text-slate-400 italic">

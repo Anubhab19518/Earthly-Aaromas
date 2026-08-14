@@ -1,16 +1,45 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Hash, Building2, FileText, Calendar, Activity, ClipboardList } from "lucide-react";
+import { 
+  Plus, 
+  Hash, 
+  Building2, 
+  FileText, 
+  Calendar, 
+  Activity, 
+  ClipboardList,
+  ChevronRight,
+  Filter,
+  Layers,
+  X,
+  Search
+} from "lucide-react";
 import { useTransition } from "react";
 import { GoodsReceipt } from "@/modules/receiving/schemas/grn.schema";
 import { Supplier } from "@/modules/suppliers/schemas/supplier.schema";
 import { Location } from "@/modules/locations/schemas/location.schema";
-import { deleteGrn } from "@/modules/receiving/services/grn.actions";
 import { CreateGrnDialog } from "./create-grn-dialog";
 import { useRouter } from "next/navigation";
-import { TableToolbar } from "@/shared/components/ui/table-toolbar";
 import { ErpPageHeader } from "@/shared/components/layout/erp-page-header";
+
+function StatusBadge({ status }: { status: string }) {
+  // Matching the bright, modern pill design from the reference image
+  const styles: Record<string, { bg: string, text: string, border: string, dot: string, label: string }> = {
+    DRAFT: { bg: "bg-slate-50", text: "text-slate-700", border: "border-slate-200", dot: "bg-slate-500", label: "Draft" },
+    POSTED: { bg: "bg-[#eafff5]", text: "text-[#008a5e]", border: "border-[#a7f3d0]", dot: "bg-[#059669]", label: "Posted" },
+    CANCELLED: { bg: "bg-rose-50", text: "text-rose-700", border: "border-rose-200", dot: "bg-rose-500", label: "Cancelled" },
+  };
+
+  const style = styles[status] || styles.DRAFT;
+
+  return (
+    <span className={`inline-flex items-center gap-2 rounded-lg border px-2.5 py-1 text-[13px] font-semibold tracking-tight whitespace-nowrap ${style.bg} ${style.border} ${style.text}`}>
+      <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${style.dot}`} />
+      <span>{style.label}</span>
+    </span>
+  );
+}
 
 interface GrnListTableProps {
   grns: GoodsReceipt[];
@@ -20,29 +49,20 @@ interface GrnListTableProps {
   canCreate: boolean;
 }
 
-const STATUS_STYLES: Record<string, string> = {
-  DRAFT: "bg-yellow-100 text-yellow-800",
-  POSTED: "bg-green-100 text-green-800",
-  CANCELLED: "bg-zinc-100 text-zinc-600",
-};
-
 export function GrnListTable({ grns, suppliers, warehouseLocations, purchaseOrders, canCreate }: GrnListTableProps) {
   const router = useRouter();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [statusFilter, setStatusFilter] = useState<string>("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [activeSort, setActiveSort] = useState("date-desc");
 
-  const sortOptions = [
-    { label: "Date (Newest)", value: "date-desc" },
-    { label: "Date (Oldest)", value: "date-asc" },
-    { label: "GRN # (A-Z)", value: "number-asc" },
-    { label: "GRN # (Z-A)", value: "number-desc" },
-    { label: "Status (A-Z)", value: "status-asc" },
-  ];
-  const [showFilters, setShowFilters] = useState(false);
-  const [isPending, startTransition] = useTransition();
-
-  const filtered = (statusFilter ? grns.filter((g) => g.status === statusFilter) : grns).sort((a, b) => {
+  // Filter and Sort Logic
+  const filtered = grns.filter((g) => {
+    const matchesSearch = g.grn_number.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          (g.invoice_number && g.invoice_number.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesStatus = statusFilter === "ALL" || g.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  }).sort((a, b) => {
     const [by, dir] = activeSort.split("-");
     const mod = dir === "asc" ? 1 : -1;
     if (by === "number") {
@@ -58,6 +78,18 @@ export function GrnListTable({ grns, suppliers, warehouseLocations, purchaseOrde
   });
 
   const getSupplierName = (id: string) => suppliers.find((s) => s.id === id)?.name ?? "-";
+
+  // Calculate counts for tabs
+  const getCount = (status: string) => status === "ALL" 
+    ? grns.length 
+    : grns.filter(g => g.status === status).length;
+
+  const tabs = [
+    { id: "ALL", label: "All Receipts" },
+    { id: "DRAFT", label: "Drafts" },
+    { id: "POSTED", label: "Posted" },
+    { id: "CANCELLED", label: "Cancelled" },
+  ];
 
   return (
     <div className="space-y-6">
@@ -85,74 +117,144 @@ export function GrnListTable({ grns, suppliers, warehouseLocations, purchaseOrde
         }
       />
 
-      <div id="grn-table" className="space-y-4">
-
-      <TableToolbar 
-        sortOptions={sortOptions}
-        activeSort={activeSort}
-        onSortChange={setActiveSort}
-        onFilter={() => setShowFilters(!showFilters)} 
-      />
-
-      {showFilters && (
-        <div className="mb-4 flex items-center gap-3">
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="rounded-md border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-sky-600"
-          >
-            <option value="">All Statuses</option>
-            <option value="DRAFT">Draft</option>
-            <option value="POSTED">Posted</option>
-            <option value="CANCELLED">Cancelled</option>
-          </select>
+      <div id="grn-table" className="bg-white shadow-xs overflow-hidden rounded-xl border border-slate-200">
+        
+        {/* Top View Tabs (Airtable / Linear Style) */}
+        <div className="flex items-center gap-1 bg-slate-50/70 px-4 pt-2.5 overflow-x-auto select-none border-b border-slate-200/80">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setStatusFilter(tab.id)}
+              className={`flex items-center gap-1.5 rounded-t-lg px-4 py-2 text-xs font-medium transition-all whitespace-nowrap ${
+                statusFilter === tab.id
+                  ? "bg-white text-slate-900 border border-b-white border-slate-200/90 shadow-2xs font-semibold -mb-px z-10"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <span>{tab.label}</span>
+              <span className={`rounded-full px-1.5 py-0.2 text-[10px] font-mono ${
+                statusFilter === tab.id ? "bg-slate-100 text-slate-500" : "text-slate-400"
+              }`}>
+                {getCount(tab.id)}
+              </span>
+            </button>
+          ))}
+          
+          <div className="h-4 w-px bg-slate-200/80 mx-1" />
+          
+          {canCreate && (
+            <button
+              type="button"
+              onClick={() => setIsCreateOpen(true)}
+              className="flex items-center gap-1 rounded-t-lg px-3 py-2 text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors cursor-pointer whitespace-nowrap"
+            >
+              <Plus className="h-3.5 w-3.5 text-slate-500" />
+              <span>New</span>
+            </button>
+          )}
         </div>
-      )}
 
-      <div className="rounded-md border border-neutral-200 bg-white shadow-2xs overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-neutral-200 bg-neutral-50/60 text-xs font-semibold text-neutral-700">
-                <th className="py-2.5 px-4 border-r border-neutral-200"><div className="flex items-center gap-1.5"><Hash className="w-3.5 h-3.5 text-neutral-400" />GRN #</div></th>
-                <th className="py-2.5 px-4 border-r border-neutral-200"><div className="flex items-center gap-1.5"><Building2 className="w-3.5 h-3.5 text-neutral-400" />Supplier</div></th>
-                <th className="py-2.5 px-4 border-r border-neutral-200"><div className="flex items-center gap-1.5"><FileText className="w-3.5 h-3.5 text-neutral-400" />Invoice #</div></th>
-                <th className="py-2.5 px-4 border-r border-neutral-200"><div className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5 text-neutral-400" />Received Date</div></th>
-                <th className="py-2.5 px-4"><div className="flex items-center justify-center gap-1.5"><Activity className="w-3.5 h-3.5 text-neutral-400" />Status</div></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-neutral-200 text-xs font-normal text-neutral-800">
-            {filtered.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="px-6 py-12 text-center text-sm text-zinc-500">
-                  No goods receipts found. Create your first GRN to start receiving stock.
-                </td>
-              </tr>
-            ) : (
-              filtered.map((grn) => (
-                <tr key={grn.id} onClick={() => router.push(`/receiving/${grn.id}`)} className="h-11 border-b border-neutral-200 transition-colors group cursor-pointer hover:bg-neutral-50/80">
-                  <td className="py-2.5 px-4 border-r border-neutral-200 font-medium text-neutral-900">
-                    {grn.grn_number}
-                  </td>
-                  <td className="py-2.5 px-4 border-r border-neutral-200 text-neutral-600">
-                    {getSupplierName(grn.supplier_id)}
-                  </td>
-                  <td className="py-2.5 px-4 border-r border-neutral-200 text-neutral-600">
-                    {grn.invoice_number || "-"}
-                  </td>
-                  <td className="py-2.5 px-4 border-r border-neutral-200 text-neutral-600 whitespace-nowrap">
-                    {grn.received_date}
-                  </td>
-                  <td className="py-2.5 px-4 text-center">
-                    <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium ${STATUS_STYLES[grn.status] || ""}`}>
-                      {grn.status}
-                    </span>
-                  </td>
-                </tr>
-              ))
+        {/* Inline Toolbar */}
+        <div className="flex flex-col gap-2.5 border-b border-slate-200/80 bg-white px-4 py-2 sm:flex-row sm:items-center sm:justify-between text-xs text-slate-600">
+          <div className="flex items-center gap-3 overflow-x-auto py-0.5">
+            <button className="flex items-center gap-1.5 font-medium text-slate-700 hover:text-slate-900 cursor-pointer">
+              <Layers className="h-3.5 w-3.5 text-slate-500" />
+              <span>Grouping</span>
+            </button>
+
+            <div className="h-3.5 w-px bg-slate-200" />
+
+            {/* Sort Dropdown */}
+            <div className="flex items-center gap-1.5">
+              <span className="font-medium text-slate-700">Sort:</span>
+              <select
+                value={activeSort}
+                onChange={(e) => setActiveSort(e.target.value)}
+                className="bg-transparent font-medium text-slate-700 outline-none cursor-pointer hover:text-slate-900 focus:outline-none"
+              >
+                <option value="date-desc">Date (Newest)</option>
+                <option value="date-asc">Date (Oldest)</option>
+                <option value="number-asc">GRN Number (A-Z)</option>
+                <option value="number-desc">GRN Number (Z-A)</option>
+                <option value="status-asc">Status (A-Z)</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Search Box */}
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search GRN or Invoice..."
+              className="w-full rounded-md border border-slate-200/80 bg-slate-50/50 pl-8 pr-7 py-1 text-xs text-slate-800 placeholder:text-slate-400 outline-none focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-500/20 transition-all"
+            />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm("")}
+                className="absolute right-2 top-1.5 text-slate-400 hover:text-slate-600 cursor-pointer"
+              >
+                <X className="h-3 w-3" />
+              </button>
             )}
-          </tbody>
-          </table>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          {filtered.length === 0 ? (
+            <div className="flex flex-col items-center justify-center p-12 text-center">
+              <ClipboardList className="mb-4 h-12 w-12 text-slate-300" />
+              <h3 className="text-[14px] font-medium text-slate-900">No Goods Receipts</h3>
+              <p className="mt-1 text-xs text-slate-500 max-w-sm">
+                You don't have any GRNs matching these filters. Try adjusting your search or create a new one.
+              </p>
+            </div>
+          ) : (
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-slate-200/90 bg-slate-50/50 text-xs font-semibold text-slate-700">
+                  <th className="py-2.5 px-4 border-r border-slate-200/80 w-[20%]"><div className="flex items-center gap-1.5"><Hash className="w-3.5 h-3.5 text-slate-400" />GRN #</div></th>
+                  <th className="py-2.5 px-4 border-r border-slate-200/80 w-[25%]"><div className="flex items-center gap-1.5"><Building2 className="w-3.5 h-3.5 text-slate-400" />Supplier</div></th>
+                  <th className="py-2.5 px-4 border-r border-slate-200/80 w-[20%]"><div className="flex items-center gap-1.5"><FileText className="w-3.5 h-3.5 text-slate-400" />Invoice #</div></th>
+                  <th className="py-2.5 px-4 border-r border-slate-200/80 w-[15%]"><div className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5 text-slate-400" />Received Date</div></th>
+                  <th className="py-2.5 px-4 border-r border-slate-200/80 w-[15%]"><div className="flex items-center gap-1.5"><Activity className="w-3.5 h-3.5 text-slate-400" />Status</div></th>
+                  <th className="py-2.5 px-4 text-right w-[5%]"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200/80 text-xs font-normal text-slate-800">
+                {filtered.map((grn) => (
+                  <tr 
+                    key={grn.id} 
+                    onClick={() => router.push(`/receiving/${grn.id}`)} 
+                    className="border-b border-slate-200/80 hover:bg-slate-50/60 transition-colors group cursor-pointer"
+                  >
+                    <td className="py-3 px-4 border-r border-slate-200/80 font-medium text-slate-900">
+                      {grn.grn_number}
+                    </td>
+                    <td className="py-3 px-4 border-r border-slate-200/80 text-slate-700">
+                      {getSupplierName(grn.supplier_id)}
+                    </td>
+                    <td className="py-3 px-4 border-r border-slate-200/80 text-slate-700">
+                      {grn.invoice_number || "-"}
+                    </td>
+                    <td className="py-3 px-4 border-r border-slate-200/80 text-slate-600 font-normal whitespace-nowrap">
+                      {grn.received_date}
+                    </td>
+                    <td className="py-3 px-4 border-r border-slate-200/80">
+                      <StatusBadge status={grn.status} />
+                    </td>
+                    <td className="py-3 px-4 text-right">
+                      <div className="flex items-center justify-end">
+                        <ChevronRight className="h-4 w-4 text-slate-400 opacity-0 group-hover:opacity-100 group-hover:text-slate-600 transition-all -translate-x-2 group-hover:translate-x-0" />
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
 
@@ -163,7 +265,6 @@ export function GrnListTable({ grns, suppliers, warehouseLocations, purchaseOrde
         warehouseLocations={warehouseLocations}
         purchaseOrders={purchaseOrders}
       />
-      </div>
     </div>
   );
 }

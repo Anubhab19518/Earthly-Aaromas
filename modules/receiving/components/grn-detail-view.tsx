@@ -11,6 +11,7 @@ import { TaxCategory } from "@/modules/taxes/schemas/tax.schema";
 import { cancelGrn } from "@/modules/receiving/services/grn.actions";
 import { GrnItemForm } from "./grn-item-form";
 import { PostGrnDialog } from "./post-grn-dialog";
+import { CommentSection } from "@/modules/shared/components/comment-section";
 import Link from "next/link";
 
 interface GrnDetailViewProps {
@@ -22,6 +23,7 @@ interface GrnDetailViewProps {
   conversions: IngredientUnitConversion[];
   units: Unit[];
   taxCategories: TaxCategory[];
+  comments?: any[];
 }
 
 const STATUS_STYLES: Record<string, string> = {
@@ -39,6 +41,7 @@ export function GrnDetailView({
   conversions,
   units,
   taxCategories,
+  comments,
 }: GrnDetailViewProps) {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editItem, setEditItem] = useState<GoodsReceiptItem | null>(null);
@@ -63,7 +66,20 @@ export function GrnDetailView({
   const getSupplierName = (id: string) => suppliers.find((s) => s.id === id)?.name ?? "-";
   const getLocationName = (id: string) => warehouseLocations.find((l) => l.id === id)?.name ?? "-";
 
-  const grandTotal = items.reduce((sum, i) => sum + Number(i.line_total), 0);
+  let subtotal = 0;
+  let taxTotal = 0;
+
+  items.forEach((item) => {
+    const baseLine = Number(item.line_total);
+    subtotal += baseLine;
+    if (item.tax_category_id) {
+      const tc = taxCategories.find((t) => t.id === item.tax_category_id);
+      const rate = tc?.tax_rates?.[0]?.rate_percentage || 0;
+      taxTotal += baseLine * (rate / 100);
+    }
+  });
+
+  const grandTotal = subtotal + taxTotal;
 
   const handleCancel = () => {
     if (!confirm("Are you sure you want to cancel this GRN? This cannot be undone.")) return;
@@ -156,6 +172,9 @@ export function GrnDetailView({
         </div>
       </div>
 
+      {/* Comments */}
+      <CommentSection entityType="GRN" entityId={grn.id} comments={comments || []} />
+
       {/* Items Table */}
       <div className="mt-6">
         <div className="mb-3 flex items-center justify-between">
@@ -224,13 +243,33 @@ export function GrnDetailView({
             {items.length > 0 && (
               <tfoot className="bg-zinc-50">
                 <tr>
-                  <td colSpan={isDraft ? 6 : 6} className="px-4 py-3 text-right text-sm font-semibold text-zinc-900">
-                    Grand Total
+                  <td colSpan={isDraft ? 6 : 6} className="px-4 py-2 text-right text-sm font-medium text-zinc-500">
+                    Subtotal
                   </td>
-                  <td className="px-4 py-3 text-right text-sm font-bold text-zinc-900">
-                    ₹{grandTotal.toFixed(2)}
+                  <td className="px-4 py-2 text-right text-sm font-medium text-zinc-900">
+                    ₹{subtotal.toFixed(2)}
                   </td>
                   {isDraft && <td />}
+                </tr>
+                {taxTotal > 0 && (
+                  <tr>
+                    <td colSpan={isDraft ? 6 : 6} className="px-4 py-2 text-right text-sm font-medium text-zinc-500">
+                      Tax Total
+                    </td>
+                    <td className="px-4 py-2 text-right text-sm font-medium text-zinc-900">
+                      ₹{taxTotal.toFixed(2)}
+                    </td>
+                    {isDraft && <td />}
+                  </tr>
+                )}
+                <tr>
+                  <td colSpan={isDraft ? 6 : 6} className="px-4 py-3 text-right text-sm font-bold text-zinc-900 border-t border-zinc-200">
+                    Grand Total
+                  </td>
+                  <td className="px-4 py-3 text-right text-sm font-bold text-zinc-900 border-t border-zinc-200">
+                    ₹{grandTotal.toFixed(2)}
+                  </td>
+                  {isDraft && <td className="border-t border-zinc-200" />}
                 </tr>
               </tfoot>
             )}
