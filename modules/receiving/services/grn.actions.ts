@@ -228,6 +228,30 @@ export async function updateGrn(
   return null;
 }
 
+export async function updateGrnRemarks(
+  id: string,
+  remarks: string,
+): Promise<GrnActionState> {
+  if (!id) return { message: "Invalid request." };
+
+  const supabase = await createClient();
+  const auth = await getAuthContext(supabase);
+  if (!auth) return { message: "Unauthorized." };
+
+  const { error } = await supabase
+    .from("goods_receipts")
+    .update({ remarks: remarks.trim() || null })
+    .eq("id", id)
+    .eq("organization_id", auth.organizationId);
+
+  if (error) {
+    return { message: "Could not update remarks." };
+  }
+
+  revalidatePath(`/receiving/${id}`);
+  return null;
+}
+
 // ─── Cancel GRN ─────────────────────────────────────────────────────────────
 
 export async function cancelGrn(

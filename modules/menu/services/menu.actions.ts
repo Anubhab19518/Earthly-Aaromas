@@ -162,8 +162,65 @@ export async function createMenuItem(
 
   if (error) return { message: "Could not create Menu Item." };
 
+  // If default price was provided, create initial default variant
+  const defaultPrice = formData.get("default_price");
+  if (defaultPrice && !isNaN(Number(defaultPrice)) && Number(defaultPrice) >= 0) {
+    const variantName = (formData.get("variant_name") as string) || "Regular";
+    await supabase.from("menu_variants").insert({
+      organization_id: auth.organizationId,
+      menu_item_id: item.id,
+      name: variantName,
+      default_price: Number(defaultPrice),
+      is_active: true,
+    });
+  }
+
   revalidatePath("/menu");
-  redirect(`/menu/items/${item.id}`);
+  return null;
+}
+
+export async function toggleMenuItemActive(
+  id: string,
+  isActive: boolean,
+): Promise<MenuActionState> {
+  if (!id) return { message: "Invalid request." };
+
+  const supabase = await createClient();
+  const auth = await getAuthContext(supabase);
+  if (!auth) return { message: "Unauthorized." };
+
+  const { error } = await supabase
+    .from("menu_items")
+    .update({ is_active: isActive })
+    .eq("id", id)
+    .eq("organization_id", auth.organizationId);
+
+  if (error) return { message: "Could not update status." };
+
+  revalidatePath("/menu");
+  return null;
+}
+
+export async function toggleMenuVariantActive(
+  id: string,
+  isActive: boolean,
+): Promise<MenuActionState> {
+  if (!id) return { message: "Invalid request." };
+
+  const supabase = await createClient();
+  const auth = await getAuthContext(supabase);
+  if (!auth) return { message: "Unauthorized." };
+
+  const { error } = await supabase
+    .from("menu_variants")
+    .update({ is_active: isActive })
+    .eq("id", id)
+    .eq("organization_id", auth.organizationId);
+
+  if (error) return { message: "Could not update variant status." };
+
+  revalidatePath("/menu");
+  return null;
 }
 
 export async function updateMenuItem(
@@ -225,7 +282,7 @@ export async function deleteMenuItem(
   if (error) return { message: "Could not delete Menu Item. It may be in use." };
 
   revalidatePath("/menu");
-  redirect("/menu");
+  return null;
 }
 
 // ─── Menu Variants ───────────────────────────────────────────────────────────
@@ -267,8 +324,9 @@ export async function createMenuVariant(
 
   if (error) return { message: "Could not create Menu Variant." };
 
+  revalidatePath("/menu");
   revalidatePath(`/menu/items/${parsed.data.menu_item_id}`);
-  redirect(`/menu/variants/${variant.id}`);
+  return null;
 }
 
 export async function updateMenuVariant(

@@ -25,7 +25,8 @@ export default async function MenuPage() {
   const [
     { data: categories },
     { data: items },
-    { data: taxCategories }
+    { data: variants },
+    { data: taxCategories },
   ] = await Promise.all([
     supabase
       .from("menu_categories")
@@ -40,18 +41,25 @@ export default async function MenuPage() {
       .is("deleted_at", null)
       .order("name"),
     supabase
-      .from("tax_categories")
+      .from("menu_variants")
       .select("*")
       .eq("organization_id", membership.organization_id)
       .is("deleted_at", null)
-      .order("name")
+      .order("default_price"),
+    supabase
+      .from("tax_categories")
+      .select("*, tax_rates(rate_percentage)")
+      .eq("organization_id", membership.organization_id)
+      .is("deleted_at", null)
+      .order("name"),
   ]);
 
   return (
-    <MenuClient 
-      items={items || []} 
-      categories={categories || []} 
-      taxCategories={taxCategories || []} 
+    <MenuClient
+      items={items || []}
+      categories={categories || []}
+      variants={variants || []}
+      taxCategories={taxCategories || []}
     />
   );
 }

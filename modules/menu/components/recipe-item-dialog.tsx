@@ -1,7 +1,23 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
+import {
+  ChefHat,
+  X,
+  Loader2,
+  AlertCircle,
+  Scale,
+  Check,
+} from "lucide-react";
 import { addRecipeItem } from "../services/menu.actions";
+import { Input } from "@/shared/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
 
 interface Ingredient {
   id: string;
@@ -29,38 +45,72 @@ interface RecipeItemDialogProps {
   ingredientConversions: IngredientConversion[];
 }
 
-export function RecipeItemDialog({ open, onOpenChange, variantId, ingredients, units, ingredientConversions }: RecipeItemDialogProps) {
+export function RecipeItemDialog({
+  open,
+  onOpenChange,
+  variantId,
+  ingredients,
+  units,
+  ingredientConversions,
+}: RecipeItemDialogProps) {
   const [isPending, startTransition] = useTransition();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
   const [selectedIngredientId, setSelectedIngredientId] = useState("");
+  const [quantity, setQuantity] = useState("");
+  const [selectedUnitId, setSelectedUnitId] = useState("");
 
   useEffect(() => {
     if (open) {
       setErrorMsg(null);
       setSelectedIngredientId("");
+      setQuantity("");
+      setSelectedUnitId("");
     }
   }, [open]);
 
-  const selectedIngredient = ingredients.find(i => i.id === selectedIngredientId);
+  const selectedIngredient = ingredients.find((i) => i.id === selectedIngredientId);
 
   // Filter units: base unit is always valid; plus any unit that has a configured conversion
   const filteredUnits = selectedIngredient
-    ? units.filter(u => {
+    ? units.filter((u) => {
         if (u.id === selectedIngredient.base_unit_id) return true;
         return ingredientConversions.some(
-          c => c.ingredient_id === selectedIngredientId && c.from_unit_id === u.id
+          (c) => c.ingredient_id === selectedIngredientId && c.from_unit_id === u.id
         );
       })
     : [];
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  useEffect(() => {
+    if (selectedIngredient?.base_unit_id) {
+      setSelectedUnitId(selectedIngredient.base_unit_id);
+    }
+  }, [selectedIngredientId, selectedIngredient]);
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const form = e.currentTarget;
-    const formData = new FormData(form);
+    if (!selectedIngredientId) {
+      setErrorMsg("Please select an ingredient.");
+      return;
+    }
+    if (!quantity || isNaN(Number(quantity)) || Number(quantity) <= 0) {
+      setErrorMsg("Please enter a valid quantity greater than 0.");
+      return;
+    }
+    if (!selectedUnitId) {
+      setErrorMsg("Please select a unit.");
+      return;
+    }
 
     startTransition(async () => {
       setErrorMsg(null);
-      const result = await addRecipeItem(null, formData);
+      const fd = new FormData();
+      fd.append("variant_id", variantId);
+      fd.append("ingredient_id", selectedIngredientId);
+      fd.append("quantity", quantity);
+      fd.append("unit_id", selectedUnitId);
+
+      const result = await addRecipeItem(null, fd);
       if (result?.message) {
         setErrorMsg(result.message);
       } else {
@@ -72,85 +122,135 @@ export function RecipeItemDialog({ open, onOpenChange, variantId, ingredients, u
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
-        <h2 className="text-xl font-semibold">Add Ingredient to Recipe</h2>
-        <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-          <input type="hidden" name="variant_id" value={variantId} />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4 animate-in fade-in duration-100 font-sans">
+      <div className="w-full max-w-md rounded-lg bg-white p-5 shadow-xl relative border border-slate-200 text-xs">
+        {/* Close Button */}
+        <button
+          onClick={() => onOpenChange(false)}
+          className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+        >
+          <X className="h-4 w-4" />
+        </button>
 
+        {/* Header */}
+        <div className="flex items-center gap-2.5 mb-4">
+          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-blue-50 text-blue-600 border border-blue-200/60">
+            <ChefHat className="h-4 w-4" />
+          </div>
           <div>
-            <label className="block text-sm font-medium text-zinc-700">Ingredient *</label>
-            <select
-              name="ingredient_id"
-              required
+            <h2 className="text-sm font-semibold text-slate-900 leading-tight">
+              Add Ingredient to Recipe
+            </h2>
+            <p className="text-[11px] text-slate-500">
+              Configure component ingredient and portion quantity
+            </p>
+          </div>
+        </div>
+
+        {/* Error Alert */}
+        {errorMsg && (
+          <div className="mb-3 flex items-center gap-2 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-rose-700">
+            <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+            <span>{errorMsg}</span>
+          </div>
+        )}
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-3.5">
+          {/* Ingredient Select */}
+          <div className="space-y-1">
+            <label className="block text-[11px] font-medium text-slate-700">
+              Raw Material / Ingredient <span className="text-rose-500">*</span>
+            </label>
+            <Select
               value={selectedIngredientId}
-              onChange={(e) => setSelectedIngredientId(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
+              onValueChange={(val) => setSelectedIngredientId(val)}
             >
-              <option value="">Select ingredient...</option>
-              {ingredients.map((i) => (
-                <option key={i.id} value={i.id}>{i.name}</option>
-              ))}
-            </select>
+              <SelectTrigger className="h-8 text-xs bg-white border-slate-200">
+                <SelectValue placeholder="Select raw material / ingredient..." />
+              </SelectTrigger>
+              <SelectContent>
+                {ingredients.map((i) => (
+                  <SelectItem key={i.id} value={i.id} className="text-xs font-medium">
+                    {i.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-zinc-700">Quantity *</label>
-              <input
+          {/* Quantity & Unit */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="block text-[11px] font-medium text-slate-700">
+                Quantity <span className="text-rose-500">*</span>
+              </label>
+              <Input
                 type="number"
-                name="quantity"
-                step="0.01"
-                min="0.01"
-                required
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
+                step="any"
+                min="0.0001"
+                value={quantity}
+                onChange={(e) => setQuantity(e.target.value)}
+                placeholder="e.g. 0.015"
+                className="h-8 text-xs font-mono"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-zinc-700">Unit *</label>
-              <select
-                name="unit_id"
-                required
+
+            <div className="space-y-1">
+              <label className="block text-[11px] font-medium text-slate-700">
+                Portion Unit <span className="text-rose-500">*</span>
+              </label>
+              <Select
+                value={selectedUnitId}
+                onValueChange={(val) => setSelectedUnitId(val)}
                 disabled={!selectedIngredientId}
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a] disabled:bg-zinc-100 disabled:text-zinc-500"
               >
-                <option value="">
-                  {selectedIngredientId
-                    ? filteredUnits.length === 0
-                      ? "No units configured"
-                      : "Select unit..."
-                    : "Select ingredient first"}
-                </option>
-                {filteredUnits.map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {u.name}
-                    {u.id === selectedIngredient?.base_unit_id ? " (base)" : ""}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="h-8 text-xs bg-white border-slate-200">
+                  <SelectValue
+                    placeholder={
+                      selectedIngredientId ? "Select unit..." : "Pick ingredient first"
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {filteredUnits.map((u) => (
+                    <SelectItem key={u.id} value={u.id} className="text-xs font-medium">
+                      {u.name}
+                      {u.id === selectedIngredient?.base_unit_id ? " (base)" : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
-          <p className="text-xs text-zinc-500">
-            Only units with configured conversions for this ingredient are shown. The quantity will be stored in the ingredient's base unit.
+
+          <p className="text-[10px] text-slate-400">
+            Portions are automatically converted and depleted from base inventory units upon POS order checkout.
           </p>
 
-          {errorMsg && <p className="text-sm text-red-600">{errorMsg}</p>}
-
-          <div className="flex justify-end gap-3 pt-2">
+          {/* Actions */}
+          <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
             <button
               type="button"
               onClick={() => onOpenChange(false)}
-              className="rounded-md px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100"
               disabled={isPending}
+              className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
-              disabled={isPending}
-              className="rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+              disabled={isPending || !selectedIngredientId || !quantity}
+              className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition-colors shadow-2xs cursor-pointer disabled:opacity-50"
             >
-              {isPending ? "Adding..." : "Add to Recipe"}
+              {isPending ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <>
+                  <span>Add to Recipe</span>
+                  <Check className="h-3 w-3" />
+                </>
+              )}
             </button>
           </div>
         </form>

@@ -13,6 +13,7 @@ interface TableToolbarProps {
   onFilter?: () => void;
   onColumnToggle?: (key: string) => void;
   onExpand?: () => void;
+  colorTheme?: "sky" | "indigo";
 }
 
 export function TableToolbar({
@@ -25,6 +26,7 @@ export function TableToolbar({
   onFilter,
   onColumnToggle,
   onExpand,
+  colorTheme = "sky",
 }: TableToolbarProps) {
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [showColumns, setShowColumns] = useState(false);
@@ -59,7 +61,9 @@ export function TableToolbar({
         <div className="relative" ref={sortRef}>
           <button
             onClick={() => setShowSortOptions((v) => !v)}
-            className="flex items-center gap-2 rounded-md bg-sky-600 px-3 py-1.5 text-xs font-semibold text-white shadow-2xs hover:bg-sky-700 transition-colors cursor-pointer"
+            className={`flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-semibold text-white shadow-2xs transition-colors cursor-pointer ${
+              colorTheme === "indigo" ? "bg-indigo-600 hover:bg-indigo-700" : "bg-sky-600 hover:bg-sky-700"
+            }`}
           >
             <span>Sort</span>
             <ArrowUpDown className="h-3.5 w-3.5" />
@@ -75,7 +79,13 @@ export function TableToolbar({
                     onSortChange?.(opt.value);
                     setShowSortOptions(false);
                   }}
-                  className={`w-full text-left px-4 py-2 text-sm cursor-pointer hover:bg-slate-50 ${activeSort === opt.value ? 'text-sky-600 font-semibold bg-sky-50/50' : 'text-slate-700'}`}
+                  className={`w-full text-left px-4 py-2 text-sm cursor-pointer hover:bg-slate-50 ${
+                    activeSort === opt.value
+                      ? colorTheme === "indigo"
+                        ? "text-indigo-600 font-semibold bg-indigo-50/50"
+                        : "text-sky-600 font-semibold bg-sky-50/50"
+                      : "text-slate-700"
+                  }`}
                 >
                   {opt.label}
                 </button>
@@ -87,7 +97,9 @@ export function TableToolbar({
         <button
           onClick={handleSortClick}
           title={`Sort ${sortDirection === "asc" ? "descending" : "ascending"}`}
-          className="flex items-center gap-2 rounded-md bg-sky-600 px-3 py-1.5 text-xs font-semibold text-white shadow-2xs hover:bg-sky-700 transition-colors cursor-pointer"
+          className={`flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-semibold text-white shadow-2xs transition-colors cursor-pointer ${
+            colorTheme === "indigo" ? "bg-indigo-600 hover:bg-indigo-700" : "bg-sky-600 hover:bg-sky-700"
+          }`}
         >
           <span>Sort</span>
           <ArrowUpDown className="h-3.5 w-3.5" />
@@ -139,7 +151,9 @@ export function TableToolbar({
                     type="checkbox"
                     checked={col.visible}
                     onChange={() => onColumnToggle?.(col.key)}
-                    className="accent-sky-600 h-3.5 w-3.5 rounded"
+                    className={`h-3.5 w-3.5 rounded ${
+                      colorTheme === "indigo" ? "accent-indigo-600" : "accent-sky-600"
+                    }`}
                   />
                   {col.label}
                 </label>

@@ -255,6 +255,7 @@ export function InventoryDashboard({
         description="Real-time stock levels, low-stock alert monitoring, and ledger adjustments"
         icon={Package}
         iconBgColor="bg-indigo-600 text-white"
+        colorTheme="indigo"
         tabs={[
           { id: "inventory-ledger-section", label: "Stock Ledger Master", icon: Database, count: snapshots.length },
           { 
@@ -347,59 +348,59 @@ export function InventoryDashboard({
       <div id="inventory-ledger-section" className="bg-white rounded-xl border border-slate-200/80 shadow-2xs overflow-hidden">
         
         {/* Navigation View Tabs */}
-        <div className="flex items-center gap-1 bg-slate-50/70 px-4 pt-2.5 overflow-x-auto select-none border-b border-slate-200/80">
+        <div className="flex items-center gap-1 bg-slate-50/70 pl-0 pr-4 pt-2.5 overflow-x-auto select-none border-b border-slate-200/80">
           <button
             onClick={() => setActiveTab("all")}
-            className={`flex items-center gap-1.5 rounded-t-lg px-4 py-2 text-xs font-medium transition-all ${
+            className={`flex items-center gap-1.5 rounded-t-lg px-4 py-2 text-xs font-medium transition-all duration-300 ease-in-out cursor-pointer ${
               activeTab === "all"
-                ? "bg-white text-slate-900 border border-b-white border-slate-200/90 shadow-2xs font-semibold -mb-px z-10"
-                : "text-slate-600 hover:text-slate-900"
+                ? "relative bg-white text-slate-900 border border-slate-200/90 border-b-transparent shadow-2xs font-semibold translate-y-[1px] z-10"
+                : "border border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/50"
             }`}
           >
             <span>All stock items</span>
-            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-500">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-semibold text-white shrink-0">
               {tabCounts.all}
             </span>
           </button>
 
           <button
             onClick={() => setActiveTab("healthy")}
-            className={`flex items-center gap-1.5 rounded-t-lg px-4 py-2 text-xs font-medium transition-all ${
+            className={`flex items-center gap-1.5 rounded-t-lg px-4 py-2 text-xs font-medium transition-all duration-300 ease-in-out cursor-pointer ${
               activeTab === "healthy"
-                ? "bg-white text-slate-900 border border-b-white border-slate-200/90 shadow-2xs font-semibold -mb-px z-10"
-                : "text-slate-600 hover:text-slate-900"
+                ? "relative bg-white text-slate-900 border border-slate-200/90 border-b-transparent shadow-2xs font-semibold translate-y-[1px] z-10"
+                : "border border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/50"
             }`}
           >
             <span>Healthy stock</span>
-            <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 border border-emerald-200/60">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-semibold text-white shrink-0">
               {tabCounts.healthy}
             </span>
           </button>
 
           <button
             onClick={() => setActiveTab("alerts")}
-            className={`flex items-center gap-1.5 rounded-t-lg px-4 py-2 text-xs font-medium transition-all ${
+            className={`flex items-center gap-1.5 rounded-t-lg px-4 py-2 text-xs font-medium transition-all duration-300 ease-in-out cursor-pointer ${
               activeTab === "alerts"
-                ? "bg-white text-slate-900 border border-b-white border-slate-200/90 shadow-2xs font-semibold -mb-px z-10"
-                : "text-slate-600 hover:text-slate-900"
+                ? "relative bg-white text-slate-900 border border-slate-200/90 border-b-transparent shadow-2xs font-semibold translate-y-[1px] z-10"
+                : "border border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/50"
             }`}
           >
             <span>Low & critical alerts</span>
-            <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700 border border-amber-200/60">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-semibold text-white shrink-0">
               {tabCounts.alerts}
             </span>
           </button>
 
           <button
             onClick={() => setActiveTab("oos")}
-            className={`flex items-center gap-1.5 rounded-t-lg px-4 py-2 text-xs font-medium transition-all ${
+            className={`flex items-center gap-1.5 rounded-t-lg px-4 py-2 text-xs font-medium transition-all duration-300 ease-in-out cursor-pointer ${
               activeTab === "oos"
-                ? "bg-white text-slate-900 border border-b-white border-slate-200/90 shadow-2xs font-semibold -mb-px z-10"
-                : "text-slate-600 hover:text-slate-900"
+                ? "relative bg-white text-slate-900 border border-slate-200/90 border-b-transparent shadow-2xs font-semibold translate-y-[1px] z-10"
+                : "border border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/50"
             }`}
           >
             <span>Out of stock</span>
-            <span className="rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-semibold text-red-700 border border-red-200/60">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-semibold text-white shrink-0">
               {tabCounts.oos}
             </span>
           </button>
@@ -486,6 +487,7 @@ export function InventoryDashboard({
               sortOptions={sortOptions}
               activeSort={activeSort}
               onSortChange={setActiveSort}
+              colorTheme="indigo"
             />
           </div>
         </div>

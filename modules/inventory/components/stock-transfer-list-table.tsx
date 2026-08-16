@@ -220,79 +220,79 @@ export function StockTransferListTable({
         {/* Main Table Container Card */}
         <div id="transfers-table" className="bg-white rounded-lg border border-slate-200/80 shadow-2xs overflow-hidden">
           {/* View Tabs Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200/80 bg-slate-50/80 px-3 pt-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200/80 bg-slate-50/80 pl-0 pr-3 pt-2.5">
             <div className="flex items-center gap-1 overflow-x-auto select-none">
               <button
                 onClick={() => setActiveTab("ALL")}
-                className={`flex items-center gap-1.5 rounded-t-md px-3.5 py-2 text-xs font-medium transition-all ${
+                className={`flex items-center gap-1.5 rounded-t-lg px-4 py-2.5 text-xs font-medium transition-all duration-300 ease-in-out cursor-pointer ${
                   activeTab === "ALL"
-                    ? "bg-white text-slate-900 border-t-2 border-t-sky-600 border-x border-b-white font-semibold -mb-px z-10 shadow-2xs"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/40"
+                    ? "relative bg-white text-slate-900 border border-slate-200/90 border-b-transparent shadow-2xs font-semibold translate-y-[1px] z-10"
+                    : "border border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/50"
                 }`}
               >
                 <ArrowLeftRight className="h-3.5 w-3.5 text-slate-500" />
                 <span>All transfers</span>
-                <span className="rounded-full bg-slate-100 px-2 py-0.2 text-[10px] font-semibold text-slate-500">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-semibold text-white shrink-0">
                   {metrics.all}
                 </span>
               </button>
 
               <button
                 onClick={() => setActiveTab("SHIPPED")}
-                className={`flex items-center gap-1.5 rounded-t-md px-3.5 py-2 text-xs font-medium transition-all ${
+                className={`flex items-center gap-1.5 rounded-t-lg px-4 py-2.5 text-xs font-medium transition-all duration-300 ease-in-out cursor-pointer ${
                   activeTab === "SHIPPED"
-                    ? "bg-white text-slate-900 border-t-2 border-t-sky-600 border-x border-b-white font-semibold -mb-px z-10 shadow-2xs"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/40"
+                    ? "relative bg-white text-slate-900 border border-slate-200/90 border-b-transparent shadow-2xs font-semibold translate-y-[1px] z-10"
+                    : "border border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/50"
                 }`}
               >
                 <Truck className="h-3.5 w-3.5 text-blue-500" />
                 <span>Shipped</span>
-                <span className="rounded-full bg-slate-100 px-2 py-0.2 text-[10px] font-semibold text-slate-500">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-semibold text-white shrink-0">
                   {metrics.shipped}
                 </span>
               </button>
 
               <button
                 onClick={() => setActiveTab("RECEIVED")}
-                className={`flex items-center gap-1.5 rounded-t-md px-3.5 py-2 text-xs font-medium transition-all ${
+                className={`flex items-center gap-1.5 rounded-t-lg px-4 py-2.5 text-xs font-medium transition-all duration-300 ease-in-out cursor-pointer ${
                   activeTab === "RECEIVED"
-                    ? "bg-white text-slate-900 border-t-2 border-t-sky-600 border-x border-b-white font-semibold -mb-px z-10 shadow-2xs"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/40"
+                    ? "relative bg-white text-slate-900 border border-slate-200/90 border-b-transparent shadow-2xs font-semibold translate-y-[1px] z-10"
+                    : "border border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/50"
                 }`}
               >
                 <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
                 <span>Received</span>
-                <span className="rounded-full bg-slate-100 px-2 py-0.2 text-[10px] font-semibold text-slate-500">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-semibold text-white shrink-0">
                   {metrics.received}
                 </span>
               </button>
 
               <button
                 onClick={() => setActiveTab("DRAFT")}
-                className={`flex items-center gap-1.5 rounded-t-md px-3.5 py-2 text-xs font-medium transition-all ${
+                className={`flex items-center gap-1.5 rounded-t-lg px-4 py-2.5 text-xs font-medium transition-all duration-300 ease-in-out cursor-pointer ${
                   activeTab === "DRAFT"
-                    ? "bg-white text-slate-900 border-t-2 border-t-sky-600 border-x border-b-white font-semibold -mb-px z-10 shadow-2xs"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/40"
+                    ? "relative bg-white text-slate-900 border border-slate-200/90 border-b-transparent shadow-2xs font-semibold translate-y-[1px] z-10"
+                    : "border border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/50"
                 }`}
               >
                 <Clock className="h-3.5 w-3.5 text-amber-500" />
                 <span>Draft</span>
-                <span className="rounded-full bg-slate-100 px-2 py-0.2 text-[10px] font-semibold text-slate-500">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-semibold text-white shrink-0">
                   {metrics.draft}
                 </span>
               </button>
 
               <button
                 onClick={() => setActiveTab("CANCELLED")}
-                className={`flex items-center gap-1.5 rounded-t-md px-3.5 py-2 text-xs font-medium transition-all ${
+                className={`flex items-center gap-1.5 rounded-t-lg px-4 py-2.5 text-xs font-medium transition-all duration-300 ease-in-out cursor-pointer ${
                   activeTab === "CANCELLED"
-                    ? "bg-white text-slate-900 border-t-2 border-t-sky-600 border-x border-b-white font-semibold -mb-px z-10 shadow-2xs"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/40"
+                    ? "relative bg-white text-slate-900 border border-slate-200/90 border-b-transparent shadow-2xs font-semibold translate-y-[1px] z-10"
+                    : "border border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/50"
                 }`}
               >
                 <X className="h-3.5 w-3.5 text-rose-500" />
                 <span>Cancelled</span>
-                <span className="rounded-full bg-slate-100 px-2 py-0.2 text-[10px] font-semibold text-slate-500">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-semibold text-white shrink-0">
                   {metrics.cancelled}
                 </span>
               </button>

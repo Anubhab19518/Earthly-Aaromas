@@ -383,63 +383,63 @@ export function AuditLogClient({
       <div id="audit-trail" className="bg-white rounded-lg border border-slate-200/80 shadow-2xs overflow-hidden">
         
         {/* Navigation View Tabs */}
-        <div className="flex items-center gap-1 bg-slate-50/80 px-3 pt-2 overflow-x-auto select-none border-b border-slate-200/80">
+        <div className="flex items-center gap-1 bg-slate-50/80 pl-0 pr-4 pt-2.5 overflow-x-auto select-none border-b border-slate-200/80">
           <button
             onClick={() => setActiveTab("all")}
-            className={`flex items-center gap-1.5 rounded-t-md px-3.5 py-2 text-xs font-medium transition-all ${
+            className={`flex items-center gap-1.5 rounded-t-lg px-4 py-2.5 text-xs font-medium transition-all duration-300 ease-in-out cursor-pointer ${
               activeTab === "all"
-                ? "bg-white text-slate-900 border-t-2 border-t-indigo-600 border-x border-b-white font-semibold -mb-px z-10 shadow-2xs"
-                : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/40"
+                ? "relative bg-white text-slate-900 border border-slate-200/90 border-b-transparent shadow-2xs font-semibold translate-y-[1px] z-10"
+                : "border border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/50"
             }`}
           >
             <ShieldCheck className="h-3.5 w-3.5 text-slate-500" />
             <span>All activities</span>
-            <span className="rounded-full bg-slate-100 px-2 py-0.2 text-[10px] font-mono font-semibold text-slate-500">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-semibold text-white shrink-0">
               {tabCounts.all}
             </span>
           </button>
 
           <button
             onClick={() => setActiveTab("inventory")}
-            className={`flex items-center gap-1.5 rounded-t-md px-3.5 py-2 text-xs font-medium transition-all ${
+            className={`flex items-center gap-1.5 rounded-t-lg px-4 py-2.5 text-xs font-medium transition-all duration-300 ease-in-out cursor-pointer ${
               activeTab === "inventory"
-                ? "bg-white text-slate-900 border-t-2 border-t-indigo-600 border-x border-b-white font-semibold -mb-px z-10 shadow-2xs"
-                : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/40"
+                ? "relative bg-white text-slate-900 border border-slate-200/90 border-b-transparent shadow-2xs font-semibold translate-y-[1px] z-10"
+                : "border border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/50"
             }`}
           >
             <Package className="h-3.5 w-3.5 text-indigo-500" />
             <span>Inventory log</span>
-            <span className="rounded-full bg-slate-100 px-2 py-0.2 text-[10px] font-mono font-semibold text-slate-500">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-semibold text-white shrink-0">
               {tabCounts.inventory}
             </span>
           </button>
 
           <button
             onClick={() => setActiveTab("orders")}
-            className={`flex items-center gap-1.5 rounded-t-md px-3.5 py-2 text-xs font-medium transition-all ${
+            className={`flex items-center gap-1.5 rounded-t-lg px-4 py-2.5 text-xs font-medium transition-all duration-300 ease-in-out cursor-pointer ${
               activeTab === "orders"
-                ? "bg-white text-slate-900 border-t-2 border-t-indigo-600 border-x border-b-white font-semibold -mb-px z-10 shadow-2xs"
-                : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/40"
+                ? "relative bg-white text-slate-900 border border-slate-200/90 border-b-transparent shadow-2xs font-semibold translate-y-[1px] z-10"
+                : "border border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/50"
             }`}
           >
             <ShoppingCart className="h-3.5 w-3.5 text-emerald-500" />
             <span>Orders & Purchasing</span>
-            <span className="rounded-full bg-slate-100 px-2 py-0.2 text-[10px] font-mono font-semibold text-slate-500">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-semibold text-white shrink-0">
               {tabCounts.orders}
             </span>
           </button>
 
           <button
             onClick={() => setActiveTab("catalog")}
-            className={`flex items-center gap-1.5 rounded-t-md px-3.5 py-2 text-xs font-medium transition-all ${
+            className={`flex items-center gap-1.5 rounded-t-lg px-4 py-2.5 text-xs font-medium transition-all duration-300 ease-in-out cursor-pointer ${
               activeTab === "catalog"
-                ? "bg-white text-slate-900 border-t-2 border-t-indigo-600 border-x border-b-white font-semibold -mb-px z-10 shadow-2xs"
-                : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/40"
+                ? "relative bg-white text-slate-900 border border-slate-200/90 border-b-transparent shadow-2xs font-semibold translate-y-[1px] z-10"
+                : "border border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/50"
             }`}
           >
             <Utensils className="h-3.5 w-3.5 text-amber-500" />
             <span>Catalog & Master Data</span>
-            <span className="rounded-full bg-slate-100 px-2 py-0.2 text-[10px] font-mono font-semibold text-slate-500">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-semibold text-white shrink-0">
               {tabCounts.catalog}
             </span>
           </button>
@@ -582,7 +582,13 @@ export function AuditLogClient({
               {filteredData.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="py-12 text-center text-slate-400 font-normal">
-                    No activity logs match the selected criteria.
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <ClipboardList className="h-8 w-8 text-slate-300" />
+                      <p className="text-sm font-medium text-slate-600">No activity logs found</p>
+                      <p className="text-xs text-slate-400 max-w-sm">
+                        No activity logs match the selected criteria or filters.
+                      </p>
+                    </div>
                   </td>
                 </tr>
               ) : (

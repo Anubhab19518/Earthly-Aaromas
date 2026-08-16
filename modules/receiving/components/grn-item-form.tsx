@@ -1,14 +1,35 @@
 "use client";
 
 import { useState, useTransition, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { addGrnItem, updateGrnItem, deleteGrnItem } from "@/modules/receiving/services/grn.actions";
-import { addGrnItemSchema, AddGrnItemFormValues, GoodsReceiptItem } from "@/modules/receiving/schemas/grn.schema";
+import {
+  addGrnItem,
+  updateGrnItem,
+  deleteGrnItem,
+} from "@/modules/receiving/services/grn.actions";
+import { GoodsReceiptItem } from "@/modules/receiving/schemas/grn.schema";
 import { Ingredient } from "@/modules/ingredients/schemas/ingredient.schema";
 import { IngredientUnitConversion } from "@/modules/ingredients/schemas/ingredient-conversion.schema";
 import { Unit } from "@/modules/units/schemas/unit.schema";
 import { TaxCategory } from "@/modules/taxes/schemas/tax.schema";
+import {
+  PackageCheck,
+  X,
+  Loader2,
+  AlertCircle,
+  Scale,
+  DollarSign,
+  Trash2,
+  Check,
+  Sparkles,
+} from "lucide-react";
+import { Input } from "@/shared/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
 
 interface GrnItemFormProps {
   grnId: string;
@@ -20,30 +41,32 @@ interface GrnItemFormProps {
   onClose: () => void;
 }
 
-export function GrnItemForm({ grnId, ingredients, conversions, units, taxCategories, editItem, onClose }: GrnItemFormProps) {
+export function GrnItemForm({
+  grnId,
+  ingredients,
+  conversions,
+  units,
+  taxCategories,
+  editItem,
+  onClose,
+}: GrnItemFormProps) {
   const [isPending, startTransition] = useTransition();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // Form State
+  const [ingredientId, setIngredientId] = useState(editItem?.ingredient_id || "");
+  const [purchaseUnitId, setPurchaseUnitId] = useState(editItem?.purchase_unit_id || "");
+  const [receivedQty, setReceivedQty] = useState(
+    editItem ? String(editItem.received_quantity) : ""
+  );
+  const [unitCost, setUnitCost] = useState(editItem ? String(editItem.unit_cost) : "");
+  const [taxCategoryId, setTaxCategoryId] = useState(editItem?.tax_category_id || "");
+
   const [previewBaseQty, setPreviewBaseQty] = useState<number | null>(null);
 
-  const form = useForm<AddGrnItemFormValues>({
-    resolver: zodResolver(addGrnItemSchema),
-    defaultValues: {
-      goods_receipt_id: grnId,
-      ingredient_id: editItem?.ingredient_id || "",
-      purchase_unit_id: editItem?.purchase_unit_id || "",
-      received_quantity: editItem?.received_quantity || 0,
-      unit_cost: editItem?.unit_cost || 0,
-      tax_category_id: editItem?.tax_category_id || null,
-    },
-  });
+  const selectedIngredient = ingredients.find((i) => i.id === ingredientId);
 
-  const watchIngredient = form.watch("ingredient_id");
-  const watchPurchaseUnit = form.watch("purchase_unit_id");
-  const watchQuantity = form.watch("received_quantity");
-
-  const selectedIngredient = ingredients.find((i) => i.id === watchIngredient);
-
-  // Eligible purchase units: base unit + units that have a conversion for this ingredient
+  // Eligible purchase units: base unit + units with a conversion for this ingredient
   const eligibleUnits = selectedIngredient
     ? units.filter(
         (u) =>
@@ -54,45 +77,75 @@ export function GrnItemForm({ grnId, ingredients, conversions, units, taxCategor
       )
     : [];
 
-  // Live preview of converted base quantity (client-side only for UX; server re-validates)
+  // When ingredient changes, default unit to base unit
   useEffect(() => {
-    if (!watchIngredient || !watchPurchaseUnit || !watchQuantity || watchQuantity <= 0 || !selectedIngredient) {
+    if (selectedIngredient && !purchaseUnitId) {
+      setPurchaseUnitId(selectedIngredient.base_unit_id);
+    }
+  }, [selectedIngredient, purchaseUnitId]);
+
+  // Live preview of converted base quantity
+  useEffect(() => {
+    const qty = Number(receivedQty);
+    if (!ingredientId || !purchaseUnitId || !qty || qty <= 0 || !selectedIngredient) {
       setPreviewBaseQty(null);
       return;
     }
 
-    if (watchPurchaseUnit === selectedIngredient.base_unit_id) {
-      setPreviewBaseQty(watchQuantity);
+    if (purchaseUnitId === selectedIngredient.base_unit_id) {
+      setPreviewBaseQty(qty);
       return;
     }
 
     const conv = conversions.find(
-      (c) => c.ingredient_id === selectedIngredient.id && c.from_unit_id === watchPurchaseUnit
+      (c) => c.ingredient_id === selectedIngredient.id && c.from_unit_id === purchaseUnitId
     );
     if (conv) {
-      setPreviewBaseQty(watchQuantity * Number(conv.conversion_factor));
+      setPreviewBaseQty(qty * Number(conv.conversion_factor));
     } else {
       setPreviewBaseQty(null);
     }
-  }, [watchIngredient, watchPurchaseUnit, watchQuantity, selectedIngredient, conversions]);
+  }, [ingredientId, purchaseUnitId, receivedQty, selectedIngredient, conversions]);
 
-  const baseUnit = selectedIngredient ? units.find((u) => u.id === selectedIngredient.base_unit_id) : null;
+  const baseUnit = selectedIngredient
+    ? units.find((u) => u.id === selectedIngredient.base_unit_id)
+    : null;
 
-  const onSubmit = (data: AddGrnItemFormValues) => {
+  const lineTotal =
+    Number(receivedQty) && Number(unitCost) ? Number(receivedQty) * Number(unitCost) : 0;
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!ingredientId) {
+      setErrorMsg("Please select an ingredient.");
+      return;
+    }
+    if (!purchaseUnitId) {
+      setErrorMsg("Please select a purchase unit.");
+      return;
+    }
+    if (!receivedQty || isNaN(Number(receivedQty)) || Number(receivedQty) <= 0) {
+      setErrorMsg("Please enter a valid received quantity.");
+      return;
+    }
+    if (!unitCost || isNaN(Number(unitCost)) || Number(unitCost) < 0) {
+      setErrorMsg("Please enter a valid unit cost.");
+      return;
+    }
+
     startTransition(async () => {
       setErrorMsg(null);
-      const formData = new FormData();
-      if (editItem) formData.append("id", editItem.id);
-      formData.append("goods_receipt_id", data.goods_receipt_id);
-      formData.append("ingredient_id", data.ingredient_id);
-      formData.append("purchase_unit_id", data.purchase_unit_id);
-      formData.append("received_quantity", String(data.received_quantity));
-      formData.append("unit_cost", String(data.unit_cost));
-      if (data.tax_category_id) formData.append("tax_category_id", data.tax_category_id);
+      const fd = new FormData();
+      if (editItem) fd.append("id", editItem.id);
+      fd.append("goods_receipt_id", grnId);
+      fd.append("ingredient_id", ingredientId);
+      fd.append("purchase_unit_id", purchaseUnitId);
+      fd.append("received_quantity", receivedQty);
+      fd.append("unit_cost", unitCost);
+      if (taxCategoryId) fd.append("tax_category_id", taxCategoryId);
 
-      const result = editItem
-        ? await updateGrnItem(null, formData)
-        : await addGrnItem(null, formData);
+      const action = editItem ? updateGrnItem : addGrnItem;
+      const result = await action(null, fd);
 
       if (result?.message) {
         setErrorMsg(result.message);
@@ -107,141 +160,219 @@ export function GrnItemForm({ grnId, ingredients, conversions, units, taxCategor
     if (!confirm("Remove this item from the GRN?")) return;
 
     startTransition(async () => {
-      const formData = new FormData();
-      formData.append("id", editItem.id);
-      formData.append("goods_receipt_id", grnId);
-      const result = await deleteGrnItem(null, formData);
+      const fd = new FormData();
+      fd.append("id", editItem.id);
+      fd.append("goods_receipt_id", grnId);
+      const result = await deleteGrnItem(null, fd);
       if (result?.message) setErrorMsg(result.message);
       else onClose();
     });
   };
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl">
-        <h2 className="text-xl font-semibold">{editItem ? "Edit Item" : "Add Item"}</h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4 animate-in fade-in duration-100 font-sans">
+      <div className="w-full max-w-md rounded-lg bg-white p-5 shadow-xl relative border border-slate-200 text-xs">
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+        >
+          <X className="h-4 w-4" />
+        </button>
 
-        <form onSubmit={form.handleSubmit(onSubmit)} className="mt-4 space-y-4">
+        {/* Dialog Header */}
+        <div className="flex items-center gap-2.5 mb-4">
+          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-blue-50 text-blue-600 border border-blue-200/60">
+            <PackageCheck className="h-4 w-4" />
+          </div>
           <div>
-            <label className="block text-sm font-medium text-zinc-700">Ingredient *</label>
-            <select
-              {...form.register("ingredient_id")}
-              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
+            <h2 className="text-sm font-semibold text-slate-900 leading-tight">
+              {editItem ? "Edit Received Item" : "Add Received Line Item"}
+            </h2>
+            <p className="text-[11px] text-slate-500">
+              Record quantity delivered and purchase price
+            </p>
+          </div>
+        </div>
+
+        {/* Error Alert */}
+        {errorMsg && (
+          <div className="mb-3 flex items-center gap-2 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-rose-700">
+            <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+            <span>{errorMsg}</span>
+          </div>
+        )}
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-3.5">
+          {/* Ingredient Select */}
+          <div className="space-y-1">
+            <label className="block text-[11px] font-medium text-slate-700">
+              Raw Material / Ingredient <span className="text-rose-500">*</span>
+            </label>
+            <Select
+              value={ingredientId}
+              onValueChange={(val) => {
+                setIngredientId(val);
+                setPurchaseUnitId("");
+              }}
             >
-              <option value="">Select ingredient...</option>
-              {ingredients.map((i) => (
-                <option key={i.id} value={i.id}>{i.name}</option>
-              ))}
-            </select>
-            {form.formState.errors.ingredient_id && (
-              <p className="mt-1 text-sm text-red-600">{form.formState.errors.ingredient_id.message}</p>
-            )}
+              <SelectTrigger className="h-8 text-xs bg-white border-slate-200">
+                <SelectValue placeholder="Select ingredient..." />
+              </SelectTrigger>
+              <SelectContent>
+                {ingredients.map((i) => (
+                  <SelectItem key={i.id} value={i.id} className="text-xs font-medium">
+                    {i.name} {i.sku ? `(${i.sku})` : ""}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-zinc-700">Purchase Unit *</label>
-            <select
-              {...form.register("purchase_unit_id")}
-              disabled={!selectedIngredient}
-              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a] disabled:bg-zinc-50"
-            >
-              <option value="">Select unit...</option>
-              {eligibleUnits.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.name} ({u.symbol}){u.id === selectedIngredient?.base_unit_id ? " — Base Unit" : ""}
-                </option>
-              ))}
-            </select>
-            {form.formState.errors.purchase_unit_id && (
-              <p className="mt-1 text-sm text-red-600">{form.formState.errors.purchase_unit_id.message}</p>
-            )}
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-zinc-700">
-                Received Qty *
+          {/* Received Quantity & Purchase Unit */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="block text-[11px] font-medium text-slate-700">
+                Received Qty <span className="text-rose-500">*</span>
               </label>
-              <input
+              <Input
                 type="number"
                 step="any"
-                {...form.register("received_quantity", { valueAsNumber: true })}
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
+                min="0.001"
+                value={receivedQty}
+                onChange={(e) => setReceivedQty(e.target.value)}
+                placeholder="e.g. 50"
+                className="h-8 text-xs font-mono"
+                autoFocus
               />
-              {form.formState.errors.received_quantity && (
-                <p className="mt-1 text-sm text-red-600">{form.formState.errors.received_quantity.message}</p>
-              )}
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-zinc-700">
-                Base Qty (auto)
+            <div className="space-y-1">
+              <label className="block text-[11px] font-medium text-slate-700">
+                Packaging Unit <span className="text-rose-500">*</span>
               </label>
-              <div className="mt-1 flex h-[42px] items-center rounded-md border border-zinc-200 bg-zinc-50 px-3 text-sm font-semibold text-zinc-700">
-                {previewBaseQty != null
-                  ? `${previewBaseQty} ${baseUnit?.symbol || ""}`
-                  : <span className="text-zinc-400">—</span>
-                }
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-zinc-700">Unit Cost (₹) *</label>
-              <input
-                type="number"
-                step="0.01"
-                {...form.register("unit_cost", { valueAsNumber: true })}
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
-              />
-              {form.formState.errors.unit_cost && (
-                <p className="mt-1 text-sm text-red-600">{form.formState.errors.unit_cost.message}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-zinc-700">Tax Category</label>
-              <select
-                {...form.register("tax_category_id")}
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
+              <Select
+                value={purchaseUnitId}
+                onValueChange={(val) => setPurchaseUnitId(val)}
+                disabled={!ingredientId}
               >
-                <option value="">No Tax</option>
-                {taxCategories.map((t) => (
-                  <option key={t.id} value={t.id}>{t.name}</option>
-                ))}
-              </select>
+                <SelectTrigger className="h-8 text-xs bg-white border-slate-200">
+                  <SelectValue placeholder={ingredientId ? "Select unit..." : "Pick ingredient"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {eligibleUnits.map((u) => (
+                    <SelectItem key={u.id} value={u.id} className="text-xs">
+                      {u.name} ({u.symbol})
+                      {u.id === selectedIngredient?.base_unit_id ? " [base]" : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
-          {errorMsg && <p className="text-sm text-red-600">{errorMsg}</p>}
+          {/* Live Base Quantity Conversion Indicator */}
+          {previewBaseQty !== null && baseUnit && (
+            <div className="flex items-center gap-1.5 text-[11px] text-blue-700 bg-blue-50/70 px-2.5 py-1.5 rounded-md border border-blue-200/60 font-mono">
+              <Scale className="h-3.5 w-3.5 text-blue-600 shrink-0" />
+              <span>
+                Converts to: <strong>{previewBaseQty.toFixed(3)} {baseUnit.symbol}</strong> inventory stock
+              </span>
+            </div>
+          )}
 
-          <div className="flex justify-between pt-2">
+          {/* Unit Cost & Tax Category */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="block text-[11px] font-medium text-slate-700">
+                Unit Cost (₹) <span className="text-rose-500">*</span>
+              </label>
+              <Input
+                type="number"
+                step="any"
+                min="0"
+                value={unitCost}
+                onChange={(e) => setUnitCost(e.target.value)}
+                placeholder="e.g. 400.00"
+                className="h-8 text-xs font-mono"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="block text-[11px] font-medium text-slate-700">
+                Applicable Tax
+              </label>
+              <Select
+                value={taxCategoryId}
+                onValueChange={(val) => setTaxCategoryId(val)}
+              >
+                <SelectTrigger className="h-8 text-xs bg-white border-slate-200">
+                  <SelectValue placeholder="No Tax / Exempt" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="" className="text-xs">No Tax / 0%</SelectItem>
+                  {taxCategories.map((t) => {
+                    const rate = (t as any)?.tax_rates?.[0]?.rate_percentage || 0;
+                    return (
+                      <SelectItem key={t.id} value={t.id} className="text-xs">
+                        {t.name} ({rate}%)
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Line Total Summary Preview */}
+          {lineTotal > 0 && (
+            <div className="flex items-center justify-between text-xs py-1.5 px-3 rounded-md bg-slate-50 border border-slate-200/60">
+              <span className="text-slate-500">Line Subtotal:</span>
+              <span className="font-mono font-bold text-blue-600">
+                ₹{lineTotal.toFixed(2)}
+              </span>
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="flex items-center justify-between pt-3 border-t border-slate-100">
             {editItem ? (
               <button
                 type="button"
                 onClick={handleDelete}
                 disabled={isPending}
-                className="rounded-md px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+                className="flex items-center gap-1 text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 px-2.5 py-1.5 rounded transition-colors cursor-pointer"
               >
-                Remove
+                <Trash2 className="h-3.5 w-3.5" />
+                <span>Remove</span>
               </button>
-            ) : <div />}
-            <div className="flex gap-3">
+            ) : (
+              <div />
+            )}
+
+            <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-md px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100"
                 disabled={isPending}
+                className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                disabled={isPending}
-                className="rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+                disabled={isPending || !ingredientId || !receivedQty || !unitCost}
+                className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition-colors shadow-2xs cursor-pointer disabled:opacity-50"
               >
-                {isPending ? "Saving..." : "Save Item"}
+                {isPending ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <>
+                    <span>{editItem ? "Save item" : "Add item"}</span>
+                    <Check className="h-3 w-3" />
+                  </>
+                )}
               </button>
             </div>
           </div>
@@ -250,4 +381,3 @@ export function GrnItemForm({ grnId, ingredients, conversions, units, taxCategor
     </div>
   );
 }
-

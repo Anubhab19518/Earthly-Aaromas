@@ -1,10 +1,18 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Layers,
+  X,
+  Loader2,
+  AlertCircle,
+  DollarSign,
+  Clock,
+  Barcode,
+  Check,
+} from "lucide-react";
 import { createMenuVariant, updateMenuVariant } from "../services/menu.actions";
-import { menuVariantSchema, MenuVariantFormValues } from "../schemas/menu.schema";
+import { Input } from "@/shared/components/ui/input";
 
 interface MenuVariantDialogProps {
   open: boolean;
@@ -22,73 +30,76 @@ interface MenuVariantDialogProps {
   } | null;
 }
 
-export function MenuVariantDialog({ open, onOpenChange, menuItemId, variant }: MenuVariantDialogProps) {
+export function MenuVariantDialog({
+  open,
+  onOpenChange,
+  menuItemId,
+  variant,
+}: MenuVariantDialogProps) {
   const [isPending, startTransition] = useTransition();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const form = useForm<MenuVariantFormValues>({
-    resolver: zodResolver(menuVariantSchema) as any,
-    defaultValues: {
-      menu_item_id: menuItemId,
-      name: "",
-      default_price: 0,
-      sku: "",
-      serving_size: "",
-      prep_time_mins: null,
-      is_active: true,
-    },
-  });
+  const [name, setName] = useState("");
+  const [defaultPrice, setDefaultPrice] = useState("");
+  const [sku, setSku] = useState("");
+  const [servingSize, setServingSize] = useState("");
+  const [prepTimeMins, setPrepTimeMins] = useState("");
+  const [isActive, setIsActive] = useState(true);
+
+  const isEditing = !!variant;
 
   useEffect(() => {
     if (open) {
       if (variant) {
-        form.reset({
-          menu_item_id: variant.menu_item_id,
-          name: variant.name,
-          default_price: variant.default_price,
-          sku: variant.sku || "",
-          serving_size: variant.serving_size || "",
-          prep_time_mins: variant.prep_time_mins,
-          is_active: variant.is_active,
-        });
+        setName(variant.name);
+        setDefaultPrice(String(variant.default_price));
+        setSku(variant.sku || "");
+        setServingSize(variant.serving_size || "");
+        setPrepTimeMins(variant.prep_time_mins !== null ? String(variant.prep_time_mins) : "");
+        setIsActive(variant.is_active);
       } else {
-        form.reset({
-          menu_item_id: menuItemId,
-          name: "",
-          default_price: 0,
-          sku: "",
-          serving_size: "",
-          prep_time_mins: null,
-          is_active: true,
-        });
+        setName("");
+        setDefaultPrice("");
+        setSku("");
+        setServingSize("");
+        setPrepTimeMins("");
+        setIsActive(true);
       }
       setErrorMsg(null);
     }
-  }, [open, variant, menuItemId, form]);
+  }, [open, variant, menuItemId]);
 
-  const onSubmit = (data: MenuVariantFormValues) => {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) {
+      setErrorMsg("Please enter a variant name (e.g., Regular, Large).");
+      return;
+    }
+    if (!defaultPrice || isNaN(Number(defaultPrice)) || Number(defaultPrice) < 0) {
+      setErrorMsg("Please enter a valid price (₹).");
+      return;
+    }
+
     startTransition(async () => {
       setErrorMsg(null);
-      const formData = new FormData();
-      formData.append("menu_item_id", data.menu_item_id);
-      formData.append("name", data.name);
-      formData.append("default_price", String(data.default_price));
-      if (data.sku) formData.append("sku", data.sku);
-      if (data.serving_size) formData.append("serving_size", data.serving_size);
-      if (data.prep_time_mins !== null && data.prep_time_mins !== undefined) {
-        formData.append("prep_time_mins", String(data.prep_time_mins));
-      }
-      formData.append("is_active", String(data.is_active));
+      const fd = new FormData();
+      fd.append("menu_item_id", menuItemId);
+      fd.append("name", name.trim());
+      fd.append("default_price", defaultPrice.trim());
+      if (sku.trim()) fd.append("sku", sku.trim());
+      if (servingSize.trim()) fd.append("serving_size", servingSize.trim());
+      if (prepTimeMins.trim()) fd.append("prep_time_mins", prepTimeMins.trim());
+      fd.append("is_active", String(isActive));
 
-      if (variant) {
-        formData.append("id", variant.id);
-        const result = await updateMenuVariant(null, formData);
+      if (isEditing) {
+        fd.append("id", variant.id);
+        const result = await updateMenuVariant(null, fd);
         if (result?.message) setErrorMsg(result.message);
         else onOpenChange(false);
       } else {
-        const result = await createMenuVariant(null, formData);
+        const result = await createMenuVariant(null, fd);
         if (result?.message) setErrorMsg(result.message);
-        else onOpenChange(false); // createMenuVariant redirects on success
+        else onOpenChange(false);
       }
     });
   };
@@ -96,91 +107,154 @@ export function MenuVariantDialog({ open, onOpenChange, menuItemId, variant }: M
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
-        <h2 className="text-xl font-semibold">{variant ? "Edit Variant" : "Add Variant"}</h2>
-        <form onSubmit={form.handleSubmit(onSubmit as any)} className="mt-4 space-y-4">
-          
-          <div>
-            <label className="block text-sm font-medium text-zinc-700">Variant Name * (e.g., Small, Medium)</label>
-            <input
-              {...form.register("name")}
-              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
-            />
-            {form.formState.errors.name && (
-              <p className="mt-1 text-sm text-red-600">{form.formState.errors.name.message}</p>
-            )}
-          </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4 animate-in fade-in duration-100 font-sans">
+      <div className="w-full max-w-md rounded-lg bg-white p-5 shadow-xl relative border border-slate-200 text-xs">
+        {/* Close Button */}
+        <button
+          onClick={() => onOpenChange(false)}
+          className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+        >
+          <X className="h-4 w-4" />
+        </button>
 
-          <div>
-            <label className="block text-sm font-medium text-zinc-700">Default Selling Price (₹) *</label>
-            <input
-              type="number"
-              step="0.01"
-              {...form.register("default_price", { valueAsNumber: true })}
-              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
-            />
-            {form.formState.errors.default_price && (
-              <p className="mt-1 text-sm text-red-600">{form.formState.errors.default_price.message}</p>
-            )}
+        {/* Header */}
+        <div className="flex items-center gap-2.5 mb-4">
+          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-blue-50 text-blue-600 border border-blue-200/60">
+            <Layers className="h-4 w-4" />
           </div>
+          <div>
+            <h2 className="text-sm font-semibold text-slate-900 leading-tight">
+              {isEditing ? "Edit Size / Variant" : "Add Size / Variant"}
+            </h2>
+            <p className="text-[11px] text-slate-500">
+              Define pricing and serving configuration
+            </p>
+          </div>
+        </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-zinc-700">SKU</label>
-              <input
-                {...form.register("sku")}
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
+        {/* Error Alert */}
+        {errorMsg && (
+          <div className="mb-3 flex items-center gap-2 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-rose-700">
+            <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+            <span>{errorMsg}</span>
+          </div>
+        )}
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-3.5">
+          {/* Variant Name & Price */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="block text-[11px] font-medium text-slate-700">
+                Size / Variant Name <span className="text-rose-500">*</span>
+              </label>
+              <Input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g. Regular, Large"
+                className="h-8 text-xs"
+                autoFocus
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-zinc-700">Serving Size</label>
-              <input
-                {...form.register("serving_size")}
-                placeholder="e.g., 200ml"
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
+
+            <div className="space-y-1">
+              <label className="block text-[11px] font-medium text-slate-700">
+                Price (₹) <span className="text-rose-500">*</span>
+              </label>
+              <Input
+                type="number"
+                step="any"
+                min="0"
+                value={defaultPrice}
+                onChange={(e) => setDefaultPrice(e.target.value)}
+                placeholder="e.g. 50"
+                className="h-8 text-xs font-mono"
               />
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-zinc-700">Prep Time (mins)</label>
-            <input
+          {/* SKU & Serving Size */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="block text-[11px] font-medium text-slate-700">
+                SKU / Barcode (Optional)
+              </label>
+              <Input
+                type="text"
+                value={sku}
+                onChange={(e) => setSku(e.target.value)}
+                placeholder="e.g. CHAI-REG"
+                className="h-8 text-xs font-mono"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="block text-[11px] font-medium text-slate-700">
+                Serving Size (Optional)
+              </label>
+              <Input
+                type="text"
+                value={servingSize}
+                onChange={(e) => setServingSize(e.target.value)}
+                placeholder="e.g. 250ml, 1 Pc"
+                className="h-8 text-xs"
+              />
+            </div>
+          </div>
+
+          {/* Prep Time */}
+          <div className="space-y-1">
+            <label className="block text-[11px] font-medium text-slate-700">
+              Prep Time in Mins (Optional)
+            </label>
+            <Input
               type="number"
-              {...form.register("prep_time_mins", { valueAsNumber: true })}
-              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
+              min="0"
+              value={prepTimeMins}
+              onChange={(e) => setPrepTimeMins(e.target.value)}
+              placeholder="e.g. 5"
+              className="h-8 text-xs font-mono"
             />
           </div>
 
-          <div className="flex items-center gap-2">
+          {/* Active Checkbox */}
+          <div className="flex items-center gap-2 pt-1">
             <input
               type="checkbox"
-              id="is_active_variant"
-              {...form.register("is_active")}
-              className="h-4 w-4 rounded border-zinc-300 text-zinc-950 focus:ring-[#4a632a]"
+              id="is_active_var_check"
+              checked={isActive}
+              onChange={(e) => setIsActive(e.target.checked)}
+              className="h-3.5 w-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
             />
-            <label htmlFor="is_active_variant" className="text-sm font-medium text-zinc-700">
-              Active Variant
+            <label htmlFor="is_active_var_check" className="text-xs text-slate-700 cursor-pointer select-none">
+              Available on POS registers
             </label>
           </div>
 
-          {errorMsg && <p className="text-sm text-red-600">{errorMsg}</p>}
-
-          <div className="flex justify-end gap-3 pt-2">
+          {/* Actions */}
+          <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
             <button
               type="button"
               onClick={() => onOpenChange(false)}
-              className="rounded-md px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100"
               disabled={isPending}
+              className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
-              disabled={isPending}
-              className="rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+              disabled={isPending || !name.trim()}
+              className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition-colors shadow-2xs cursor-pointer disabled:opacity-50"
             >
-              {isPending ? "Saving..." : "Save"}
+              {isPending ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <>
+                  <span>{isEditing ? "Save changes" : "Add variant"}</span>
+                  <Check className="h-3 w-3" />
+                </>
+              )}
             </button>
           </div>
         </form>
@@ -188,4 +262,3 @@ export function MenuVariantDialog({ open, onOpenChange, menuItemId, variant }: M
     </div>
   );
 }
-

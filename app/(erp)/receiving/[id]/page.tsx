@@ -91,7 +91,7 @@ export default async function GrnDetailPage({ params }: Props) {
   if (!grn) notFound();
 
   return (
-    <section className="px-4 py-6">
+    <section>
       <GrnDetailView
         grn={grn}
         items={items || []}

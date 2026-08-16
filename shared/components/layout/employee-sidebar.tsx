@@ -28,10 +28,10 @@ export function EmployeeSidebar({ orgName, userFullName }: EmployeeSidebarProps)
           <Image src="/logo.png" alt="Logo" fill className="object-contain p-1" />
         </div>
         <div className="min-w-0">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 leading-tight">
+          <p className="text-[11px] font-medium text-slate-500 leading-tight">
             Employee Portal
           </p>
-          <p className="truncate text-sm font-semibold text-[#172B4D] leading-tight">{orgName}</p>
+          <p className="truncate text-sm font-semibold text-slate-900 leading-tight">{orgName}</p>
         </div>
       </div>
 
@@ -43,10 +43,10 @@ export function EmployeeSidebar({ orgName, userFullName }: EmployeeSidebarProps)
             return (
               <div
                 key={item.name}
-                className="flex items-center justify-between rounded-md px-3 py-2 text-sm font-medium text-zinc-400 cursor-not-allowed"
+                className="flex items-center justify-between rounded-md px-3 py-2 text-sm font-medium text-slate-400 cursor-not-allowed"
               >
                 <span>{item.name}</span>
-                <span className="rounded border border-zinc-200 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-300">
+                <span className="rounded border border-slate-200 px-1.5 py-0.5 text-[10px] font-medium text-slate-400 bg-slate-100">
                   Soon
                 </span>
               </div>

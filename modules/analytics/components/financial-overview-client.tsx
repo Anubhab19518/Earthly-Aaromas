@@ -340,59 +340,59 @@ export function FinancialOverviewClient({ overview }: FinancialOverviewClientPro
       {/* Main Data Table Container */}
       <div id="financial-transactions" className="rounded-md border border-neutral-200 bg-white shadow-2xs overflow-hidden">
         {/* Top View Tabs (Airtable / Figma Table View Tabs) */}
-        <div className="flex items-center gap-1 bg-neutral-50/70 px-4 pt-2.5 overflow-x-auto select-none border-b border-neutral-200">
+        <div className="flex items-center gap-1 bg-neutral-50/70 pl-0 pr-4 pt-2.5 overflow-x-auto select-none border-b border-neutral-200">
           <button
             onClick={() => setActiveTab("all")}
-            className={`flex items-center gap-1.5 rounded-t-md px-4 py-2 text-xs font-medium transition-all ${
+            className={`flex items-center gap-1.5 rounded-t-lg px-4 py-2.5 text-xs font-medium transition-all duration-300 ease-in-out cursor-pointer ${
               activeTab === "all"
-                ? "bg-white text-neutral-900 border border-b-white border-neutral-200 font-semibold -mb-px z-10"
-                : "text-neutral-600 hover:text-neutral-900"
+                ? "relative bg-white text-neutral-900 border border-neutral-200 border-b-transparent shadow-2xs font-semibold translate-y-[1px] z-10"
+                : "border border-transparent text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100/50"
             }`}
           >
             <span>All Transactions</span>
-            <span className="rounded-md bg-neutral-100 px-2 py-0.5 text-xs font-normal text-neutral-600">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-semibold text-white shrink-0">
               {allTransactions.length}
             </span>
           </button>
 
           <button
             onClick={() => setActiveTab("sales")}
-            className={`flex items-center gap-1.5 rounded-t-md px-4 py-2 text-xs font-medium transition-all ${
+            className={`flex items-center gap-1.5 rounded-t-lg px-4 py-2.5 text-xs font-medium transition-all duration-300 ease-in-out cursor-pointer ${
               activeTab === "sales"
-                ? "bg-white text-neutral-900 border border-b-white border-neutral-200 font-semibold -mb-px z-10"
-                : "text-neutral-600 hover:text-neutral-900"
+                ? "relative bg-white text-neutral-900 border border-neutral-200 border-b-transparent shadow-2xs font-semibold translate-y-[1px] z-10"
+                : "border border-transparent text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100/50"
             }`}
           >
             <span>Sales Revenue</span>
-            <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-normal text-emerald-700">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-semibold text-white shrink-0">
               {sales.length}
             </span>
           </button>
 
           <button
             onClick={() => setActiveTab("pos")}
-            className={`flex items-center gap-1.5 rounded-t-md px-4 py-2 text-xs font-medium transition-all ${
+            className={`flex items-center gap-1.5 rounded-t-lg px-4 py-2.5 text-xs font-medium transition-all duration-300 ease-in-out cursor-pointer ${
               activeTab === "pos"
-                ? "bg-white text-neutral-900 border border-b-white border-neutral-200 font-semibold -mb-px z-10"
-                : "text-neutral-600 hover:text-neutral-900"
+                ? "relative bg-white text-neutral-900 border border-neutral-200 border-b-transparent shadow-2xs font-semibold translate-y-[1px] z-10"
+                : "border border-transparent text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100/50"
             }`}
           >
             <span>Purchase Orders</span>
-            <span className="rounded-md bg-sky-50 px-2 py-0.5 text-xs font-normal text-sky-700">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-semibold text-white shrink-0">
               {pos.length}
             </span>
           </button>
 
           <button
             onClick={() => setActiveTab("grns")}
-            className={`flex items-center gap-1.5 rounded-t-md px-4 py-2 text-xs font-medium transition-all ${
+            className={`flex items-center gap-1.5 rounded-t-lg px-4 py-2.5 text-xs font-medium transition-all duration-300 ease-in-out cursor-pointer ${
               activeTab === "grns"
-                ? "bg-white text-neutral-900 border border-b-white border-neutral-200 font-semibold -mb-px z-10"
-                : "text-neutral-600 hover:text-neutral-900"
+                ? "relative bg-white text-neutral-900 border border-neutral-200 border-b-transparent shadow-2xs font-semibold translate-y-[1px] z-10"
+                : "border border-transparent text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100/50"
             }`}
           >
             <span>Goods Receipts</span>
-            <span className="rounded-md bg-amber-50 px-2 py-0.5 text-xs font-normal text-amber-700">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-semibold text-white shrink-0">
               {grns.length}
             </span>
           </button>
@@ -490,8 +490,14 @@ export function FinancialOverviewClient({ overview }: FinancialOverviewClientPro
             <tbody className="divide-y divide-neutral-200 text-xs font-normal text-neutral-800">
               {filteredTransactions.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="py-10 text-center text-neutral-400 font-normal">
-                    No financial transactions found matching criteria.
+                  <td colSpan={9} className="py-12 text-center text-neutral-400 font-normal">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <CreditCard className="h-8 w-8 text-neutral-300 animate-pulse" />
+                      <p className="text-sm font-medium text-neutral-600">No transactions found</p>
+                      <p className="text-xs text-neutral-400 max-w-sm">
+                        No financial transactions found matching criteria or filters.
+                      </p>
+                    </div>
                   </td>
                 </tr>
               ) : (
@@ -500,26 +506,13 @@ export function FinancialOverviewClient({ overview }: FinancialOverviewClientPro
                   const formattedDate = format(new Date(tx.date), "MMM d, yyyy");
 
                   // Badge styles
-                  let typeBadgeStyle = "bg-neutral-100 text-neutral-700 border-neutral-200";
                   let typeLabel = "Transaction";
                   if (tx.type === "PO") {
-                    typeBadgeStyle = "bg-sky-50 text-sky-700 border-sky-200/80";
                     typeLabel = "Purchase Order";
                   } else if (tx.type === "GRN") {
-                    typeBadgeStyle = "bg-amber-50 text-amber-700 border-amber-200/80";
                     typeLabel = "Goods Receipt";
                   } else if (tx.type === "SALE") {
-                    typeBadgeStyle = "bg-emerald-50 text-emerald-700 border-emerald-200/80";
                     typeLabel = "Sales Order";
-                  }
-
-                  let statusBadgeStyle = "bg-neutral-100 text-neutral-700 border-neutral-200";
-                  if (["COMPLETED", "POSTED", "PAID"].includes(tx.status)) {
-                    statusBadgeStyle = "bg-emerald-50 text-emerald-700 border-emerald-200/60";
-                  } else if (["APPROVED", "SENT", "PARTIAL", "CONFIRMED"].includes(tx.status)) {
-                    statusBadgeStyle = "bg-sky-50 text-sky-700 border-sky-200/60";
-                  } else if (["PENDING", "DRAFT"].includes(tx.status)) {
-                    statusBadgeStyle = "bg-amber-50 text-amber-700 border-amber-200/60";
                   }
 
                   return (
@@ -560,9 +553,12 @@ export function FinancialOverviewClient({ overview }: FinancialOverviewClientPro
 
                         {/* Transaction Type */}
                         <td className="py-2.5 px-4 border-r border-neutral-200">
-                          <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium ${typeBadgeStyle}`}>
-                            {typeLabel}
-                          </span>
+                          <div className="inline-flex items-center gap-2 rounded-md border border-slate-200/90 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 shadow-2xs">
+                            <span className={`h-2 w-2 rounded-[2px] shrink-0 ${
+                              tx.type === "PO" ? "bg-sky-500" : tx.type === "GRN" ? "bg-amber-500" : tx.type === "SALE" ? "bg-emerald-500" : "bg-slate-500"
+                            }`} />
+                            <span>{typeLabel}</span>
+                          </div>
                         </td>
 
                         {/* Entity / Supplier / Customer */}
@@ -587,9 +583,18 @@ export function FinancialOverviewClient({ overview }: FinancialOverviewClientPro
 
                         {/* Status */}
                         <td className="py-2.5 px-4 border-r border-neutral-200">
-                          <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[11px] font-medium ${statusBadgeStyle}`}>
-                            {tx.status}
-                          </span>
+                          <div className="inline-flex items-center gap-2 rounded-md border border-slate-200/90 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 shadow-2xs">
+                            <span className={`h-2 w-2 rounded-[2px] shrink-0 ${
+                              ["COMPLETED", "POSTED", "PAID"].includes(tx.status)
+                                ? "bg-emerald-500"
+                                : ["APPROVED", "SENT", "PARTIAL", "CONFIRMED"].includes(tx.status)
+                                ? "bg-sky-500"
+                                : ["PENDING", "DRAFT"].includes(tx.status)
+                                ? "bg-amber-500"
+                                : "bg-slate-500"
+                            }`} />
+                            <span>{tx.status.charAt(0) + tx.status.slice(1).toLowerCase()}</span>
+                          </div>
                         </td>
 
                         {/* Inspect Details Link */}

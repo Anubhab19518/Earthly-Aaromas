@@ -66,30 +66,18 @@ export function MemberActionMenu({ member, currentUserId, onCopySuccess }: Membe
   };
 
   return (
-    <div className="relative inline-flex items-center gap-2 text-left" ref={menuRef}>
-      {canDeactivate && (
-        <button
-          type="button"
-          onClick={() => setShowDeactivateModal(true)}
-          className="flex h-8 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 text-xs font-medium text-rose-600 hover:border-rose-200 hover:bg-rose-50 transition-all shadow-2xs"
-          title="Deactivate Member"
-        >
-          <UserX className="h-3.5 w-3.5" />
-          <span>Deactivate</span>
-        </button>
-      )}
-
+    <div className="relative inline-block text-left" ref={menuRef}>
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="flex h-8 w-8 items-center justify-center rounded-lg border border-transparent text-slate-400 hover:border-slate-200 hover:bg-slate-100 hover:text-slate-700 active:scale-95 transition-all"
+        className="flex h-8 w-8 items-center justify-center rounded-md border border-transparent text-slate-400 hover:border-slate-200 hover:bg-slate-100 hover:text-slate-700 active:scale-95 transition-all"
         title="More actions"
       >
         <MoreHorizontal className="h-4 w-4" />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-9 z-50 min-w-[190px] origin-top-right rounded-xl border border-slate-200/90 bg-white p-1 shadow-lg shadow-slate-200/50 backdrop-blur-md animate-in fade-in zoom-in-95 duration-150">
+        <div className="absolute right-0 top-9 z-50 min-w-[190px] origin-top-right rounded-md border border-slate-200/90 bg-white p-1 shadow-lg shadow-slate-200/50 backdrop-blur-md animate-in fade-in zoom-in-95 duration-150">
           <div className="px-3 py-1.5 text-[11px] font-medium text-slate-400 border-b border-slate-100 mb-1">
             Actions for {member.full_name.split(" ")[0]}
           </div>
@@ -102,8 +90,23 @@ export function MemberActionMenu({ member, currentUserId, onCopySuccess }: Membe
             <span>Copy Member ID</span>
           </button>
 
+          {canDeactivate && (
+            <button
+              type="button"
+              onClick={() => {
+                setShowDeactivateModal(true);
+                setIsOpen(false);
+              }}
+              className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition-colors"
+              title="Deactivate Member"
+            >
+              <UserX className="h-3.5 w-3.5 text-rose-500" />
+              <span>Deactivate</span>
+            </button>
+          )}
+
           {!canDeactivate && (
-            <div className="px-2.5 py-1 text-[11px] text-slate-400 italic">
+            <div className="px-2.5 py-1 text-[11px] text-slate-400 border-t border-slate-100 mt-1">
               {isSelf ? "Current account" : isOwner ? "Organization Owner" : "Member suspended"}
             </div>
           )}

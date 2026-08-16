@@ -15,7 +15,14 @@ export default async function NewPurchaseOrderPage() {
 
   if (!membership) redirect("/dashboard");
 
-  const [{ data: suppliers }, { data: locations }] = await Promise.all([
+  const [
+    { data: suppliers },
+    { data: locations },
+    { data: ingredients },
+    { data: units },
+    { data: taxCategories },
+    { data: conversions },
+  ] = await Promise.all([
     supabase
       .from("suppliers")
       .select("*")
@@ -25,19 +32,43 @@ export default async function NewPurchaseOrderPage() {
       .order("name"),
     supabase
       .from("locations")
-      .select("*")
+      .select("*, location_types(code, name)")
       .eq("organization_id", membership.organization_id)
       .is("deleted_at", null)
       .order("name"),
+    supabase
+      .from("ingredients")
+      .select("*")
+      .eq("organization_id", membership.organization_id)
+      .eq("status", "ACTIVE")
+      .is("deleted_at", null)
+      .order("name"),
+    supabase
+      .from("units")
+      .select("*")
+      .is("deleted_at", null)
+      .order("name"),
+    supabase
+      .from("tax_categories")
+      .select("*, tax_rates(rate_percentage)")
+      .eq("organization_id", membership.organization_id)
+      .is("deleted_at", null)
+      .order("name"),
+    supabase
+      .from("ingredient_unit_conversions")
+      .select("*")
+      .eq("organization_id", membership.organization_id)
+      .is("deleted_at", null),
   ]);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">New Purchase Order</h1>
-        <p className="text-sm text-zinc-500">Create a draft purchase order to request stock from a supplier.</p>
-      </div>
-      <PurchaseOrderForm suppliers={suppliers || []} locations={locations || []} />
-    </div>
+    <PurchaseOrderForm
+      suppliers={suppliers || []}
+      locations={locations || []}
+      ingredients={ingredients || []}
+      units={units || []}
+      taxCategories={taxCategories || []}
+      conversions={conversions || []}
+    />
   );
 }

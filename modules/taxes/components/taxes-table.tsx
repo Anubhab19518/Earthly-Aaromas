@@ -115,21 +115,19 @@ export function TaxesTable({ categories, rates }: TaxesTableProps) {
       <div id="taxes-table" className="bg-white shadow-xs overflow-hidden rounded-xl border border-slate-200">
         
         {/* Top View Tabs (Airtable / Linear Style) */}
-        <div className="flex items-center gap-1 bg-slate-50/70 px-4 pt-2.5 overflow-x-auto select-none border-b border-slate-200/80">
+        <div className="flex items-center gap-1 bg-slate-50/70 pl-0 pr-4 pt-2.5 overflow-x-auto select-none border-b border-slate-200/80">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setStatusFilter(tab.id)}
-              className={`flex items-center gap-1.5 rounded-t-lg px-4 py-2 text-xs font-medium transition-all whitespace-nowrap ${
+              className={`flex items-center gap-1.5 rounded-t-lg px-4 py-2.5 text-xs font-medium transition-all duration-300 ease-in-out cursor-pointer whitespace-nowrap ${
                 statusFilter === tab.id
-                  ? "bg-white text-slate-900 border border-b-white border-slate-200/90 shadow-2xs font-semibold -mb-px z-10"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "relative bg-white text-slate-900 border border-slate-200/90 border-b-transparent shadow-2xs font-semibold translate-y-[1px] z-10"
+                  : "border border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/50"
               }`}
             >
               <span>{tab.label}</span>
-              <span className={`rounded-full px-1.5 py-0.2 text-[10px] font-mono ${
-                statusFilter === tab.id ? "bg-slate-100 text-slate-500" : "text-slate-400"
-              }`}>
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-semibold text-white shrink-0">
                 {getCount(tab.id)}
               </span>
             </button>
@@ -140,7 +138,7 @@ export function TaxesTable({ categories, rates }: TaxesTableProps) {
           <button
             type="button"
             onClick={() => setIsAddOpen(true)}
-            className="flex items-center gap-1 rounded-t-lg px-3 py-2 text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors cursor-pointer whitespace-nowrap"
+            className="flex items-center gap-1 rounded-t-lg px-3 py-2.5 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100/50 transition-all duration-300 ease-in-out cursor-pointer whitespace-nowrap"
           >
             <Plus className="h-3.5 w-3.5 text-slate-500" />
             <span>New</span>

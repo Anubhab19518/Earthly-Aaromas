@@ -165,6 +165,38 @@ export async function createPurchaseOrder(
     return { message: "Could not create Purchase Order. Please try again." };
   }
 
+  // Handle optional initial items if provided in creation form
+  const itemsJson = formData.get("items") as string | null;
+  if (itemsJson) {
+    try {
+      const items = JSON.parse(itemsJson);
+      if (Array.isArray(items) && items.length > 0) {
+        for (const item of items) {
+          const convertedBaseQuantity = await computeBaseQuantity(
+            supabase,
+            item.ingredientId,
+            item.unitId,
+            Number(item.quantity),
+            auth.organizationId,
+          );
+
+          await supabase.from("purchase_order_items").insert({
+            po_id: po.id,
+            ingredient_id: item.ingredientId,
+            unit_id: item.unitId,
+            quantity: Number(item.quantity),
+            converted_base_quantity: convertedBaseQuantity,
+            expected_cost: Number(item.expectedCost),
+            tax_category_id: item.taxCategoryId || null,
+          });
+        }
+        await updatePoTotalWithTax(supabase, po.id, auth.organizationId);
+      }
+    } catch (err: any) {
+      console.error("Error inserting initial PO items:", err);
+    }
+  }
+
   revalidatePath("/purchase-orders");
   redirect(`/purchase-orders/${po.id}`);
 }
@@ -241,6 +273,30 @@ export async function changePurchaseOrderStatus(
 
   revalidatePath(`/purchase-orders/${id}`);
   revalidatePath("/purchase-orders");
+  return null;
+}
+
+// ─── Update Purchase Order Notes ──────────────────────────────────────────────
+
+export async function updatePurchaseOrderNotes(
+  poId: string,
+  notes: string | null,
+): Promise<PurchaseOrderActionState> {
+  if (!poId) return { message: "Invalid request." };
+
+  const supabase = await createClient();
+  const auth = await getAuthContext(supabase);
+  if (!auth) return { message: "Unauthorized." };
+
+  const { error } = await supabase
+    .from("purchase_orders")
+    .update({ notes: notes?.trim() || null })
+    .eq("id", poId)
+    .eq("organization_id", auth.organizationId);
+
+  if (error) return { message: "Could not update notes." };
+
+  revalidatePath(`/purchase-orders/${poId}`);
   return null;
 }
 

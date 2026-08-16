@@ -3,11 +3,12 @@
 import { useTransition, useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createAlertPolicy, updateAlertPolicy, deleteAlertPolicy } from "@/modules/inventory/services/alert-policy.actions";
+import { createAlertPolicy, updateAlertPolicy } from "@/modules/inventory/services/alert-policy.actions";
 import { CreateAlertPolicyFormValues, createAlertPolicySchema, InventoryAlertPolicy } from "@/modules/inventory/schemas/alert-policy.schema";
 import { Ingredient } from "@/modules/ingredients/schemas/ingredient.schema";
 import { Location } from "@/modules/locations/schemas/location.schema";
 import { Unit } from "@/modules/units/schemas/unit.schema";
+import { X } from "lucide-react";
 
 interface AlertPolicyDialogProps {
   ingredient: Ingredient;
@@ -18,7 +19,14 @@ interface AlertPolicyDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function AlertPolicyDialog({ ingredient, baseUnit, locations, policy, open, onOpenChange }: AlertPolicyDialogProps) {
+export function AlertPolicyDialog({
+  ingredient,
+  baseUnit,
+  locations,
+  policy,
+  open,
+  onOpenChange,
+}: AlertPolicyDialogProps) {
   const [isPending, startTransition] = useTransition();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -27,24 +35,24 @@ export function AlertPolicyDialog({ ingredient, baseUnit, locations, policy, ope
     defaultValues: {
       location_id: policy?.location_id || "",
       ingredient_id: ingredient.id,
-      warning_level: policy?.warning_level || 0,
-      critical_level: policy?.critical_level || 0,
-      out_of_stock_level: policy?.out_of_stock_level || 0,
+      warning_level: policy?.warning_level ?? 50,
+      critical_level: policy?.critical_level ?? 20,
+      out_of_stock_level: policy?.out_of_stock_level ?? 0,
     },
   });
 
   useEffect(() => {
     if (open) {
       form.reset({
-        location_id: policy?.location_id || "",
+        location_id: policy?.location_id || (locations[0]?.id ?? ""),
         ingredient_id: ingredient.id,
-        warning_level: policy?.warning_level || 0,
-        critical_level: policy?.critical_level || 0,
-        out_of_stock_level: policy?.out_of_stock_level || 0,
+        warning_level: policy?.warning_level ?? 50,
+        critical_level: policy?.critical_level ?? 20,
+        out_of_stock_level: policy?.out_of_stock_level ?? 0,
       });
       setErrorMsg(null);
     }
-  }, [open, policy, ingredient, form]);
+  }, [open, policy, ingredient, locations, form]);
 
   const onSubmit = (data: CreateAlertPolicyFormValues) => {
     startTransition(async () => {
@@ -69,139 +77,134 @@ export function AlertPolicyDialog({ ingredient, baseUnit, locations, policy, ope
     });
   };
 
-  const handleDelete = () => {
-    if (!policy) return;
-    if (!confirm("Are you sure you want to delete this alert policy?")) return;
-
-    startTransition(async () => {
-      setErrorMsg(null);
-      const formData = new FormData();
-      formData.append("id", policy.id);
-      const result = await deleteAlertPolicy(null, formData);
-      if (result?.message) {
-        setErrorMsg(result.message);
-      } else {
-        onOpenChange(false);
-      }
-    });
-  };
-
   if (!open) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 animate-in fade-in duration-150">
-      <div className="relative w-full max-w-[440px] overflow-hidden rounded-md border border-slate-200/90 bg-white shadow-xl animate-in zoom-in-95 duration-150">
-        <h2 className="text-xl font-semibold">{policy ? "Edit Alert Policy" : "Add Alert Policy"}</h2>
-        <p className="mt-1 text-sm text-zinc-500">
-          Ingredient: <span className="font-medium text-zinc-800">{ingredient.name}</span> <br/>
-          Unit: <span className="font-medium text-zinc-800">{baseUnit.name} ({baseUnit.symbol})</span>
-        </p>
+  const selectedLocName = locations.find((l) => l.id === policy?.location_id)?.name || "Facility";
 
-        <form onSubmit={form.handleSubmit(onSubmit)} className="mt-4 space-y-4">
-          {!policy && (
-            <div>
-              <label className="block text-sm font-medium text-zinc-700">Location *</label>
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 p-4 animate-in fade-in duration-150 font-sans">
+      <div className="w-full max-w-md rounded-lg border border-slate-200 bg-white p-5 shadow-xl">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div>
+            <h2 className="text-sm font-semibold text-slate-900">
+              {policy ? "Edit Alert Policy" : "Add Alert Policy"}
+            </h2>
+            <p className="text-[11px] text-slate-500">
+              {ingredient.name} ({baseUnit.symbol})
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => onOpenChange(false)}
+            className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors cursor-pointer"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <form onSubmit={form.handleSubmit(onSubmit)} className="mt-4 space-y-3.5 text-xs">
+          <div>
+            <label className="block font-medium text-slate-700 mb-1">Facility Location *</label>
+            {!policy ? (
               <select
                 {...form.register("location_id")}
-                className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
+                className="w-full rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-800 outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/20 transition-all cursor-pointer"
               >
                 <option value="">Select location...</option>
                 {locations.map((loc) => (
                   <option key={loc.id} value={loc.id}>
-                    {loc.name}
+                    {loc.name} ({loc.code})
                   </option>
                 ))}
               </select>
-              {form.formState.errors.location_id && (
-                <p className="mt-1 text-sm text-red-600">{form.formState.errors.location_id.message}</p>
-              )}
-            </div>
-          )}
-
-          {policy && (
-            <div>
-              <label className="block text-sm font-medium text-zinc-700">Location</label>
-              <div className="mt-1 block w-full rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-zinc-700">
-                {locations.find((l) => l.id === policy.location_id)?.name || "Unknown"}
+            ) : (
+              <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700">
+                {selectedLocName}
               </div>
-            </div>
-          )}
+            )}
+            {form.formState.errors.location_id && (
+              <p className="mt-1 text-[11px] text-rose-600">
+                {form.formState.errors.location_id.message}
+              </p>
+            )}
+          </div>
 
           <div>
-            <label className="block text-sm font-medium text-zinc-700">Warning Level ({baseUnit.symbol}) *</label>
+            <label className="block font-medium text-slate-700 mb-1">Warning Threshold ({baseUnit.symbol}) *</label>
             <input
               type="number"
               step="any"
-              {...form.register("warning_level", { valueAsNumber: true })}
-              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
+              {...form.register("warning_level", {
+                setValueAs: (v) => (v === "" || v === undefined ? undefined : Number(v)),
+              })}
+              className="w-full rounded-md border border-slate-200 bg-white px-3 py-1.5 font-mono text-xs text-slate-800 outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/20 transition-all"
             />
             {form.formState.errors.warning_level && (
-              <p className="mt-1 text-sm text-red-600">{form.formState.errors.warning_level.message}</p>
+              <p className="mt-1 text-[11px] text-rose-600">
+                {form.formState.errors.warning_level.message}
+              </p>
             )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-zinc-700">Critical Level ({baseUnit.symbol}) *</label>
+            <label className="block font-medium text-slate-700 mb-1">Critical Threshold ({baseUnit.symbol}) *</label>
             <input
               type="number"
               step="any"
-              {...form.register("critical_level", { valueAsNumber: true })}
-              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
+              {...form.register("critical_level", {
+                setValueAs: (v) => (v === "" || v === undefined ? undefined : Number(v)),
+              })}
+              className="w-full rounded-md border border-slate-200 bg-white px-3 py-1.5 font-mono text-xs text-slate-800 outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/20 transition-all"
             />
             {form.formState.errors.critical_level && (
-              <p className="mt-1 text-sm text-red-600">{form.formState.errors.critical_level.message}</p>
+              <p className="mt-1 text-[11px] text-rose-600">
+                {form.formState.errors.critical_level.message}
+              </p>
             )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-zinc-700">Out of Stock Level ({baseUnit.symbol}) *</label>
+            <label className="block font-medium text-slate-700 mb-1">Stockout Threshold ({baseUnit.symbol}) *</label>
             <input
               type="number"
               step="any"
-              {...form.register("out_of_stock_level", { valueAsNumber: true })}
-              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
+              {...form.register("out_of_stock_level", {
+                setValueAs: (v) => (v === "" || v === undefined ? undefined : Number(v)),
+              })}
+              className="w-full rounded-md border border-slate-200 bg-white px-3 py-1.5 font-mono text-xs text-slate-800 outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/20 transition-all"
             />
             {form.formState.errors.out_of_stock_level && (
-              <p className="mt-1 text-sm text-red-600">{form.formState.errors.out_of_stock_level.message}</p>
+              <p className="mt-1 text-[11px] text-rose-600">
+                {form.formState.errors.out_of_stock_level.message}
+              </p>
             )}
           </div>
 
-          {errorMsg && <p className="text-sm text-red-600">{errorMsg}</p>}
-
-          <div className="mt-6 flex justify-between gap-3">
-            {policy ? (
-              <button
-                type="button"
-                onClick={handleDelete}
-                disabled={isPending}
-                className="rounded-md px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
-              >
-                Delete
-              </button>
-            ) : (
-              <div></div>
-            )}
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => onOpenChange(false)}
-                className="rounded-md px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100"
-                disabled={isPending}
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isPending}
-                className="rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
-              >
-                {isPending ? "Saving..." : "Save"}
-              </button>
+          {errorMsg && (
+            <div className="rounded-md bg-rose-50 border border-rose-200 p-2 text-xs text-rose-700">
+              {errorMsg}
             </div>
+          )}
+
+          <div className="mt-5 flex items-center justify-end gap-2 border-t border-slate-100 pt-3">
+            <button
+              type="button"
+              onClick={() => onOpenChange(false)}
+              className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+              disabled={isPending}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isPending}
+              className="rounded-md bg-amber-600 px-3.5 py-1.5 text-xs font-medium text-white hover:bg-amber-700 transition-colors shadow-2xs cursor-pointer disabled:opacity-60"
+            >
+              {isPending ? "Saving..." : policy ? "Save Changes" : "Save Policy"}
+            </button>
           </div>
         </form>
       </div>
     </div>
   );
 }
-

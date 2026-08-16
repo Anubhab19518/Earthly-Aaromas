@@ -25,15 +25,12 @@ interface SuppliersTableProps {
 
 function StatusBadge({ status }: { status: string }) {
   const isActive = status === "ACTIVE";
-  const style = isActive 
-    ? { bg: "bg-[#eafff5]", text: "text-[#008a5e]", border: "border-[#a7f3d0]", dot: "bg-[#059669]", label: "Active" }
-    : { bg: "bg-rose-50", text: "text-rose-700", border: "border-rose-200", dot: "bg-rose-500", label: "Inactive" };
 
   return (
-    <span className={`inline-flex items-center gap-2 rounded-lg border px-2.5 py-1 text-[13px] font-semibold tracking-tight whitespace-nowrap ${style.bg} ${style.border} ${style.text}`}>
-      <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${style.dot}`} />
-      <span>{style.label}</span>
-    </span>
+    <div className="inline-flex items-center gap-2 rounded-md border border-slate-200/90 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 shadow-2xs">
+      <span className={`h-2 w-2 rounded-[2px] shrink-0 ${isActive ? "bg-emerald-500" : "bg-rose-500"}`} />
+      <span>{isActive ? "Active" : "Inactive"}</span>
+    </div>
   );
 }
 
@@ -98,21 +95,19 @@ export function SuppliersTable({ suppliers }: SuppliersTableProps) {
       <div id="suppliers-table" className="bg-white shadow-xs overflow-hidden rounded-xl border border-slate-200">
         
         {/* Top View Tabs (Airtable / Linear Style) */}
-        <div className="flex items-center gap-1 bg-slate-50/70 px-4 pt-2.5 overflow-x-auto select-none border-b border-slate-200/80">
+        <div className="flex items-center gap-1 bg-slate-50/70 pl-0 pr-4 pt-2.5 overflow-x-auto select-none border-b border-slate-200/80">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setStatusFilter(tab.id)}
-              className={`flex items-center gap-1.5 rounded-t-lg px-4 py-2 text-xs font-medium transition-all whitespace-nowrap ${
+              className={`flex items-center gap-1.5 rounded-t-lg px-4 py-2.5 text-xs font-medium transition-all duration-300 ease-in-out cursor-pointer whitespace-nowrap ${
                 statusFilter === tab.id
-                  ? "bg-white text-slate-900 border border-b-white border-slate-200/90 shadow-2xs font-semibold -mb-px z-10"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "relative bg-white text-slate-900 border border-slate-200/90 border-b-transparent shadow-2xs font-semibold translate-y-[1px] z-10"
+                  : "border border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/50"
               }`}
             >
               <span>{tab.label}</span>
-              <span className={`rounded-full px-1.5 py-0.2 text-[10px] font-mono ${
-                statusFilter === tab.id ? "bg-slate-100 text-slate-500" : "text-slate-400"
-              }`}>
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-semibold text-white shrink-0">
                 {getCount(tab.id)}
               </span>
             </button>
@@ -123,7 +118,7 @@ export function SuppliersTable({ suppliers }: SuppliersTableProps) {
           <button
             type="button"
             onClick={() => setIsAddOpen(true)}
-            className="flex items-center gap-1 rounded-t-lg px-3 py-2 text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors cursor-pointer whitespace-nowrap"
+            className="flex items-center gap-1 rounded-t-lg px-3 py-2.5 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100/50 transition-all duration-300 ease-in-out cursor-pointer whitespace-nowrap"
           >
             <Plus className="h-3.5 w-3.5 text-slate-500" />
             <span>New</span>

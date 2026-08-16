@@ -125,45 +125,45 @@ export function TeamManagementClient({
       <div id="team-members" className="bg-white shadow-xs overflow-hidden rounded-xl border border-slate-200">
         
         {/* Top View Tabs (Airtable / Linear / Figma Table View Tabs) */}
-        <div className="flex items-center gap-1 bg-slate-50/70 px-4 pt-2.5 overflow-x-auto select-none">
+        <div className="flex items-center gap-1 bg-slate-50/70 pl-0 pr-4 pt-2.5 overflow-x-auto select-none border-b border-slate-200/80">
           <button
             onClick={() => setActiveTab("all")}
-            className={`flex items-center gap-1.5 rounded-t-lg px-4 py-2 text-xs font-medium transition-all ${
+            className={`flex items-center gap-1.5 rounded-t-lg px-4 py-2.5 text-xs font-medium transition-all duration-300 ease-in-out cursor-pointer ${
               activeTab === "all"
-                ? "bg-white text-slate-900 border border-b-white border-slate-200/90 shadow-2xs font-semibold -mb-px z-10"
-                : "text-slate-600 hover:text-slate-900"
+                ? "relative bg-white text-slate-900 border border-slate-200/90 border-b-transparent shadow-2xs font-semibold translate-y-[1px] z-10"
+                : "border border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/50"
             }`}
           >
             <span>All accounts</span>
-            <span className="rounded-full bg-slate-100 px-1.5 py-0.2 text-[10px] font-mono text-slate-500">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-semibold text-white shrink-0">
               {members.length + invitations.length}
             </span>
           </button>
 
           <button
             onClick={() => setActiveTab("members")}
-            className={`flex items-center gap-1.5 rounded-t-lg px-4 py-2 text-xs font-medium transition-all ${
+            className={`flex items-center gap-1.5 rounded-t-lg px-4 py-2.5 text-xs font-medium transition-all duration-300 ease-in-out cursor-pointer ${
               activeTab === "members"
-                ? "bg-white text-slate-900 border border-b-white border-slate-200/90 shadow-2xs font-semibold -mb-px z-10"
-                : "text-slate-600 hover:text-slate-900"
+                ? "relative bg-white text-slate-900 border border-slate-200/90 border-b-transparent shadow-2xs font-semibold translate-y-[1px] z-10"
+                : "border border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/50"
             }`}
           >
             <span>Active members</span>
-            <span className="rounded-full bg-slate-100 px-1.5 py-0.2 text-[10px] font-mono text-slate-500">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-semibold text-white shrink-0">
               {members.length}
             </span>
           </button>
 
           <button
             onClick={() => setActiveTab("invitations")}
-            className={`flex items-center gap-1.5 rounded-t-lg px-4 py-2 text-xs font-medium transition-all ${
+            className={`flex items-center gap-1.5 rounded-t-lg px-4 py-2.5 text-xs font-medium transition-all duration-300 ease-in-out cursor-pointer ${
               activeTab === "invitations"
-                ? "bg-white text-slate-900 border border-b-white border-slate-200/90 shadow-2xs font-semibold -mb-px z-10"
-                : "text-slate-600 hover:text-slate-900"
+                ? "relative bg-white text-slate-900 border border-slate-200/90 border-b-transparent shadow-2xs font-semibold translate-y-[1px] z-10"
+                : "border border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/50"
             }`}
           >
             <span>Pending invitations</span>
-            <span className="rounded-full bg-slate-100 px-1.5 py-0.2 text-[10px] font-mono text-slate-500">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-semibold text-white shrink-0">
               {invitations.length}
             </span>
           </button>
@@ -172,7 +172,7 @@ export function TeamManagementClient({
 
           <button
             onClick={() => setIsInviteOpen(true)}
-            className="flex items-center gap-1 rounded-t-lg px-3 py-2 text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
+            className="flex items-center gap-1 rounded-t-lg px-3 py-2.5 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100/50 transition-all duration-300 ease-in-out cursor-pointer"
           >
             <Plus className="h-3.5 w-3.5 text-slate-500" />
             <span>Add</span>
@@ -270,8 +270,14 @@ export function TeamManagementClient({
               {(activeTab === "all" || activeTab === "members") && (
                 filteredMembers.length === 0 && activeTab === "members" ? (
                   <tr>
-                    <td colSpan={7} className="py-8 text-center text-slate-400 font-normal border-r border-slate-200/80">
-                      No active members found.
+                    <td colSpan={7} className="py-12 text-center text-slate-400 font-normal border-r border-slate-200/80">
+                      <div className="flex flex-col items-center justify-center gap-2">
+                        <UserCheck className="h-8 w-8 text-slate-300" />
+                        <p className="text-sm font-medium text-slate-600">No active members found</p>
+                        <p className="text-xs text-slate-400 max-w-sm">
+                          No active team members match the search query or filters.
+                        </p>
+                      </div>
                     </td>
                   </tr>
                 ) : (
@@ -379,8 +385,14 @@ export function TeamManagementClient({
               {(activeTab === "all" || activeTab === "invitations") && (
                 filteredInvitations.length === 0 && activeTab === "invitations" ? (
                   <tr>
-                    <td colSpan={7} className="py-8 text-center text-slate-400 font-normal border-r border-slate-200/80">
-                      No pending invitations found.
+                    <td colSpan={7} className="py-12 text-center text-slate-400 font-normal border-r border-slate-200/80">
+                      <div className="flex flex-col items-center justify-center gap-2">
+                        <Mail className="h-8 w-8 text-slate-300" />
+                        <p className="text-sm font-medium text-slate-600">No pending invitations found</p>
+                        <p className="text-xs text-slate-400 max-w-sm">
+                          No pending team invitations match the search query or filters.
+                        </p>
+                      </div>
                     </td>
                   </tr>
                 ) : (
@@ -476,7 +488,13 @@ export function TeamManagementClient({
               {filteredMembers.length === 0 && filteredInvitations.length === 0 && (
                 <tr>
                   <td colSpan={7} className="py-12 text-center text-slate-400 font-normal">
-                    No data available.
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <UserCheck className="h-8 w-8 text-slate-300" />
+                      <p className="text-sm font-medium text-slate-600">No team data available</p>
+                      <p className="text-xs text-slate-400 max-w-sm">
+                        There are currently no team members or pending invites. Invite a member to get started.
+                      </p>
+                    </div>
                   </td>
                 </tr>
               )}

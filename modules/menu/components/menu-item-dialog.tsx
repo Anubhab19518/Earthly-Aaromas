@@ -1,10 +1,25 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Utensils,
+  X,
+  Loader2,
+  AlertCircle,
+  Tag,
+  DollarSign,
+  Percent,
+  Check,
+} from "lucide-react";
 import { createMenuItem, updateMenuItem } from "../services/menu.actions";
-import { menuItemSchema, MenuItemFormValues } from "../schemas/menu.schema";
+import { Input } from "@/shared/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
 
 interface MenuCategory {
   id: string;
@@ -14,7 +29,7 @@ interface MenuCategory {
 interface TaxCategory {
   id: string;
   name: string;
-  rate: number;
+  tax_rates?: { rate_percentage: number }[];
 }
 
 interface MenuItemDialogProps {
@@ -33,67 +48,83 @@ interface MenuItemDialogProps {
   } | null;
 }
 
-export function MenuItemDialog({ open, onOpenChange, categories, taxCategories, item }: MenuItemDialogProps) {
+export function MenuItemDialog({
+  open,
+  onOpenChange,
+  categories,
+  taxCategories,
+  item,
+}: MenuItemDialogProps) {
   const [isPending, startTransition] = useTransition();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const form = useForm<MenuItemFormValues>({
-    resolver: zodResolver(menuItemSchema) as any,
-    defaultValues: {
-      category_id: "",
-      name: "",
-      description: "",
-      image_url: "",
-      tax_category_id: "",
-      is_active: true,
-    },
-  });
+  // Form State
+  const [name, setName] = useState("");
+  const [categoryId, setCategoryId] = useState("");
+  const [description, setDescription] = useState("");
+  const [taxCategoryId, setTaxCategoryId] = useState("");
+  const [isActive, setIsActive] = useState(true);
+
+  // Initial Variant Setup (for new items)
+  const [defaultPrice, setDefaultPrice] = useState("");
+  const [variantName, setVariantName] = useState("Regular");
+
+  const isEditing = !!item;
 
   useEffect(() => {
     if (open) {
       if (item) {
-        form.reset({
-          category_id: item.category_id,
-          name: item.name,
-          description: item.description || "",
-          image_url: item.image_url || "",
-          tax_category_id: item.tax_category_id || "",
-          is_active: item.is_active,
-        });
+        setName(item.name);
+        setCategoryId(item.category_id);
+        setDescription(item.description || "");
+        setTaxCategoryId(item.tax_category_id || "");
+        setIsActive(item.is_active);
+        setDefaultPrice("");
       } else {
-        form.reset({
-          category_id: "",
-          name: "",
-          description: "",
-          image_url: "",
-          tax_category_id: "",
-          is_active: true,
-        });
+        setName("");
+        setCategoryId(categories[0]?.id || "");
+        setDescription("");
+        setTaxCategoryId("");
+        setIsActive(true);
+        setDefaultPrice("");
+        setVariantName("Regular");
       }
       setErrorMsg(null);
     }
-  }, [open, item, form]);
+  }, [open, item, categories]);
 
-  const onSubmit = (data: MenuItemFormValues) => {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) {
+      setErrorMsg("Please enter an item name.");
+      return;
+    }
+    if (!categoryId) {
+      setErrorMsg("Please select a category.");
+      return;
+    }
+
     startTransition(async () => {
       setErrorMsg(null);
       const formData = new FormData();
-      formData.append("category_id", data.category_id);
-      formData.append("name", data.name);
-      if (data.description) formData.append("description", data.description);
-      if (data.image_url) formData.append("image_url", data.image_url);
-      if (data.tax_category_id) formData.append("tax_category_id", data.tax_category_id);
-      formData.append("is_active", String(data.is_active));
+      if (isEditing) formData.append("id", item.id);
+      formData.append("name", name.trim());
+      formData.append("category_id", categoryId);
+      if (description.trim()) formData.append("description", description.trim());
+      if (taxCategoryId) formData.append("tax_category_id", taxCategoryId);
+      formData.append("is_active", String(isActive));
 
-      if (item) {
-        formData.append("id", item.id);
-        const result = await updateMenuItem(null, formData);
-        if (result?.message) setErrorMsg(result.message);
-        else onOpenChange(false);
+      if (!isEditing && defaultPrice.trim()) {
+        formData.append("default_price", defaultPrice.trim());
+        formData.append("variant_name", variantName.trim() || "Regular");
+      }
+
+      const action = isEditing ? updateMenuItem : createMenuItem;
+      const result = await action(null, formData);
+      if (result?.message) {
+        setErrorMsg(result.message);
       } else {
-        const result = await createMenuItem(null, formData);
-        if (result?.message) setErrorMsg(result.message);
-        else onOpenChange(false);
+        onOpenChange(false);
       }
     });
   };
@@ -101,104 +132,182 @@ export function MenuItemDialog({ open, onOpenChange, categories, taxCategories, 
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
-        <h2 className="text-xl font-semibold">{item ? "Edit Menu Item" : "Add Menu Item"}</h2>
-        <form onSubmit={form.handleSubmit(onSubmit as any)} className="mt-4 space-y-4">
-          
-          <div>
-            <label className="block text-sm font-medium text-zinc-700">Category *</label>
-            <select
-              {...form.register("category_id")}
-              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
-            >
-              <option value="">Select category...</option>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
-            {form.formState.errors.category_id && (
-              <p className="mt-1 text-sm text-red-600">{form.formState.errors.category_id.message}</p>
-            )}
-          </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4 animate-in fade-in duration-100 font-sans">
+      <div className="w-full max-w-md rounded-lg bg-white p-5 shadow-xl relative border border-slate-200 text-xs">
+        {/* Close Button */}
+        <button
+          onClick={() => onOpenChange(false)}
+          className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+        >
+          <X className="h-4 w-4" />
+        </button>
 
+        {/* Dialog Header */}
+        <div className="flex items-center gap-2.5 mb-4">
+          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-blue-50 text-blue-600 border border-blue-200/60">
+            <Utensils className="h-4 w-4" />
+          </div>
           <div>
-            <label className="block text-sm font-medium text-zinc-700">Name *</label>
-            <input
-              {...form.register("name")}
-              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
+            <h2 className="text-sm font-semibold text-slate-900 leading-tight">
+              {isEditing ? "Edit Menu Item" : "Create Menu Item"}
+            </h2>
+            <p className="text-[11px] text-slate-500">
+              {isEditing ? "Update dish catalog details" : "Add a new dish or beverage to your menu"}
+            </p>
+          </div>
+        </div>
+
+        {/* Error Alert */}
+        {errorMsg && (
+          <div className="mb-3 flex items-center gap-2 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-rose-700">
+            <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+            <span>{errorMsg}</span>
+          </div>
+        )}
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-3.5">
+          {/* 1. Item Name */}
+          <div className="space-y-1">
+            <label className="block text-[11px] font-medium text-slate-700">
+              Item Name <span className="text-rose-500">*</span>
+            </label>
+            <Input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Masala Chai, Matcha Latte, Samosa..."
+              className="h-8 text-xs"
+              autoFocus
             />
-            {form.formState.errors.name && (
-              <p className="mt-1 text-sm text-red-600">{form.formState.errors.name.message}</p>
-            )}
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-zinc-700">Description</label>
+          {/* 2. Category Select */}
+          <div className="space-y-1">
+            <label className="block text-[11px] font-medium text-slate-700">
+              Category <span className="text-rose-500">*</span>
+            </label>
+            <Select value={categoryId} onValueChange={(val) => setCategoryId(val)}>
+              <SelectTrigger className="h-8 text-xs bg-white border-slate-200">
+                <SelectValue placeholder="Select category..." />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((c) => (
+                  <SelectItem key={c.id} value={c.id} className="text-xs font-medium">
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* 3. Base Variant & Price (Quick Setup for new items) */}
+          {!isEditing && (
+            <div className="p-2.5 rounded-md bg-slate-50 border border-slate-200/80 space-y-2">
+              <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wide">
+                Initial Size & Pricing (Optional)
+              </span>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-[10px] text-slate-500 block">Serving / Size</label>
+                  <Input
+                    type="text"
+                    value={variantName}
+                    onChange={(e) => setVariantName(e.target.value)}
+                    placeholder="Regular / 250ml"
+                    className="h-7 text-xs bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-slate-500 block">Base Price (₹)</label>
+                  <Input
+                    type="number"
+                    min="0"
+                    step="any"
+                    value={defaultPrice}
+                    onChange={(e) => setDefaultPrice(e.target.value)}
+                    placeholder="e.g. 40"
+                    className="h-7 text-xs font-mono bg-white"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 4. Tax Category */}
+          <div className="space-y-1">
+            <label className="block text-[11px] font-medium text-slate-700">
+              Applicable Tax Category
+            </label>
+            <Select value={taxCategoryId} onValueChange={(val) => setTaxCategoryId(val)}>
+              <SelectTrigger className="h-8 text-xs bg-white border-slate-200">
+                <SelectValue placeholder="No Tax / Exempt" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="" className="text-xs">No Tax / 0%</SelectItem>
+                {taxCategories.map((t) => {
+                  const rate = t.tax_rates?.[0]?.rate_percentage || 0;
+                  return (
+                    <SelectItem key={t.id} value={t.id} className="text-xs">
+                      {t.name} ({rate}%)
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* 5. Description */}
+          <div className="space-y-1">
+            <label className="block text-[11px] font-medium text-slate-700">
+              Description (Optional)
+            </label>
             <textarea
-              {...form.register("description")}
               rows={2}
-              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Flavor notes, allergens, brewing style..."
+              className="w-full rounded-md border border-slate-200 bg-white p-2 text-xs text-slate-800 placeholder:text-slate-400 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 resize-none font-sans"
             />
-            {form.formState.errors.description && (
-              <p className="mt-1 text-sm text-red-600">{form.formState.errors.description.message}</p>
-            )}
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-zinc-700">Tax Category</label>
-            <select
-              {...form.register("tax_category_id")}
-              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
-            >
-              <option value="">No Tax (or Inherit)</option>
-              {taxCategories.map((t) => (
-                <option key={t.id} value={t.id}>{t.name} ({t.rate}%)</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-zinc-700">Image URL</label>
-            <input
-              {...form.register("image_url")}
-              placeholder="https://..."
-              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-sky-600 focus:ring-1 focus:ring-[#4a632a]"
-            />
-            {form.formState.errors.image_url && (
-              <p className="mt-1 text-sm text-red-600">{form.formState.errors.image_url.message}</p>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2">
+          {/* 6. Active Toggle */}
+          <div className="flex items-center gap-2 pt-1">
             <input
               type="checkbox"
-              id="is_active_item"
-              {...form.register("is_active")}
-              className="h-4 w-4 rounded border-zinc-300 text-zinc-950 focus:ring-[#4a632a]"
+              id="is_active_check"
+              checked={isActive}
+              onChange={(e) => setIsActive(e.target.checked)}
+              className="h-3.5 w-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
             />
-            <label htmlFor="is_active_item" className="text-sm font-medium text-zinc-700">
-              Active Item
+            <label htmlFor="is_active_check" className="text-xs text-slate-700 cursor-pointer select-none">
+              Available for POS billing & online ordering
             </label>
           </div>
 
-          {errorMsg && <p className="text-sm text-red-600">{errorMsg}</p>}
-
-          <div className="flex justify-end gap-3 pt-2">
+          {/* Actions */}
+          <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
             <button
               type="button"
               onClick={() => onOpenChange(false)}
-              className="rounded-md px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100"
               disabled={isPending}
+              className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
-              disabled={isPending}
-              className="rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+              disabled={isPending || !name.trim()}
+              className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition-colors shadow-2xs cursor-pointer disabled:opacity-50"
             >
-              {isPending ? "Saving..." : "Save"}
+              {isPending ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <>
+                  <span>{isEditing ? "Save changes" : "Create item"}</span>
+                  <Check className="h-3 w-3" />
+                </>
+              )}
             </button>
           </div>
         </form>
@@ -206,4 +315,3 @@ export function MenuItemDialog({ open, onOpenChange, categories, taxCategories, 
     </div>
   );
 }
-
