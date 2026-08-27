@@ -28,6 +28,8 @@ import { Unit } from "@/modules/units/schemas/unit.schema";
 import { InventoryAlertPolicy } from "@/modules/inventory/schemas/alert-policy.schema";
 import { StockAdjustmentDialog } from "./stock-adjustment-dialog";
 
+import { IngredientUnitConversion } from "@/modules/ingredients/schemas/ingredient-conversion.schema";
+
 interface InventoryDashboardProps {
   snapshots: InventorySnapshot[];
   ingredients: Ingredient[];
@@ -35,6 +37,7 @@ interface InventoryDashboardProps {
   locations: Location[];
   units: Unit[];
   alertPolicies: InventoryAlertPolicy[];
+  conversions?: IngredientUnitConversion[];
 }
 
 export function InventoryDashboard({
@@ -44,6 +47,7 @@ export function InventoryDashboard({
   locations,
   units,
   alertPolicies,
+  conversions = [],
 }: InventoryDashboardProps) {
   const [isAdjustmentOpen, setIsAdjustmentOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"all" | "healthy" | "alerts" | "oos">("all");
@@ -678,6 +682,8 @@ export function InventoryDashboard({
         ingredients={ingredients}
         locations={locations}
         units={units}
+        conversions={conversions}
+        initialSnapshot={selectedSnapshotForAdjustment}
         open={isAdjustmentOpen}
         onOpenChange={setIsAdjustmentOpen}
       />

@@ -56,13 +56,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { id: "financial", name: "Financials", href: "/financial", icon: BarChart3 },
     ],
   },
-  {
-    id: "sales",
-    title: "Sales & POS",
-    items: [
-      { id: "orders", name: "Orders", href: "/orders", icon: ShoppingCart },
-    ],
-  },
+
   {
     id: "inventory",
     title: "Inventory Management",

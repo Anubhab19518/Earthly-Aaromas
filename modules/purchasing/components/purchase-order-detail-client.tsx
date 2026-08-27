@@ -330,6 +330,9 @@ export function PurchaseOrderDetailClient({
                               <td className="px-3.5 py-2.5 font-mono text-slate-600">{unit?.symbol || unit?.name}</td>
                               <td className="px-3.5 py-2.5 text-slate-700 text-right font-mono">
                                 ₹{Number(item.expected_cost).toFixed(2)}
+                                {(unit?.symbol || unit?.name) && (
+                                  <span className="text-[10px] text-slate-400 font-sans ml-0.5">/{unit?.symbol || unit?.name}</span>
+                                )}
                               </td>
                               <td className="px-3.5 py-2.5 text-blue-600 text-right font-mono font-medium">
                                 ₹{lineTotal.toFixed(2)}
@@ -522,12 +525,33 @@ export function PurchaseOrderDetailClient({
               <div className="flex items-start">
                 <div className="w-[120px] shrink-0 text-[14px] text-[#5E6C84] mt-0.5">Destination</div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <div className="h-5 w-5 rounded-full bg-[#0052CC] text-white flex items-center justify-center text-[10px] font-bold shrink-0">
-                      {location?.name?.charAt(0) || "L"}
-                    </div>
-                    <span className="text-[14px] text-[#172B4D] font-medium truncate">{location?.name || "N/A"}</span>
-                  </div>
+                  {(() => {
+                    const loc = location as any;
+                    const typeCode = loc?.location_types?.code || "";
+                    const isWarehouse = typeCode === "WAREHOUSE" || typeCode === "CENTRAL_WAREHOUSE";
+                    const typeName = loc?.location_types?.name || (isWarehouse ? "Warehouse" : "Shop");
+                    const displayName = loc?.name || "N/A";
+
+                    return (
+                      <div className="flex items-start gap-2">
+                        <div className={`h-5 w-5 rounded-full text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5 ${
+                          isWarehouse ? "bg-[#0052CC]" : "bg-emerald-600"
+                        }`}>
+                          {displayName.charAt(0)}
+                        </div>
+                        <div className="min-w-0">
+                          <span className="text-[14px] text-[#172B4D] font-medium block truncate">{displayName}</span>
+                          <span className={`inline-block font-mono text-[9px] px-1 py-0.2 rounded border mt-0.5 ${
+                            isWarehouse 
+                              ? "text-blue-700 bg-blue-50 border-blue-200/60" 
+                              : "text-emerald-700 bg-emerald-50 border-emerald-200/60"
+                          }`}>
+                            {typeName}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
 

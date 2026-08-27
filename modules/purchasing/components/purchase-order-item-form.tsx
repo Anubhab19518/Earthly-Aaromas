@@ -26,6 +26,7 @@ export function PurchaseOrderItemForm({
 }) {
   const [state, formAction, isPending] = useActionState(addPurchaseOrderItem, null);
   const [selectedIngredientId, setSelectedIngredientId] = useState("");
+  const [selectedUnitId, setSelectedUnitId] = useState("");
 
   useEffect(() => {
     if (state === null && !isPending) {
@@ -48,6 +49,21 @@ export function PurchaseOrderItemForm({
         );
       })
     : [];
+
+  // When ingredient changes, set default unit if available
+  const handleIngredientChange = (ingId: string) => {
+    setSelectedIngredientId(ingId);
+    const ing = ingredients.find((i) => i.id === ingId);
+    if (ing) {
+      const defaultUnit = ing.default_purchase_unit_id || ing.base_unit_id || "";
+      setSelectedUnitId(defaultUnit);
+    } else {
+      setSelectedUnitId("");
+    }
+  };
+
+  const selectedUnit = units.find((u) => u.id === selectedUnitId);
+  const unitLabel = selectedUnit ? (selectedUnit.symbol || selectedUnit.name) : "";
 
   return (
     <form
@@ -75,7 +91,7 @@ export function PurchaseOrderItemForm({
           name="ingredientId"
           required
           value={selectedIngredientId}
-          onChange={(e) => setSelectedIngredientId(e.target.value)}
+          onChange={(e) => handleIngredientChange(e.target.value)}
           className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 bg-white text-sm shadow-sm focus:border-sky-600 focus:outline-none focus:ring-1 focus:ring-[#4a632a]"
         >
           <option value="">Select ingredient</option>
@@ -109,6 +125,8 @@ export function PurchaseOrderItemForm({
           <select
             name="unitId"
             required
+            value={selectedUnitId}
+            onChange={(e) => setSelectedUnitId(e.target.value)}
             disabled={!selectedIngredientId}
             className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 bg-white text-sm shadow-sm focus:border-sky-600 focus:outline-none focus:ring-1 focus:ring-[#4a632a] disabled:bg-zinc-100 disabled:text-zinc-500"
           >
@@ -121,7 +139,7 @@ export function PurchaseOrderItemForm({
             </option>
             {filteredUnits.map((u) => (
               <option key={u.id} value={u.id}>
-                {u.name} ({u.abbreviation})
+                {u.name} ({u.symbol || u.abbreviation})
                 {u.id === selectedIngredient?.base_unit_id ? " — base unit" : ""}
               </option>
             ))}
@@ -132,7 +150,7 @@ export function PurchaseOrderItemForm({
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <label htmlFor="expectedCost" className="block text-sm font-medium text-zinc-700">
-            Expected Unit Cost (₹) <span className="text-red-500">*</span>
+            {unitLabel ? `Unit Cost (₹/${unitLabel})` : "Unit Cost (₹)"} <span className="text-red-500">*</span>
           </label>
           <input
             id="expectedCost"
@@ -141,6 +159,7 @@ export function PurchaseOrderItemForm({
             step="0.01"
             min="0"
             required
+            placeholder={unitLabel ? `e.g. 150 per ${unitLabel}` : "0.00"}
             className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 bg-white text-sm shadow-sm focus:border-sky-600 focus:outline-none focus:ring-1 focus:ring-[#4a632a]"
           />
         </div>
@@ -152,12 +171,15 @@ export function PurchaseOrderItemForm({
             name="taxCategoryId"
             className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 bg-white text-sm shadow-sm focus:border-sky-600 focus:outline-none focus:ring-1 focus:ring-[#4a632a]"
           >
-            <option value="">No Tax</option>
-            {taxCategories.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.name}
-              </option>
-            ))}
+            <option value="">No Tax (0%)</option>
+            {taxCategories.map((t) => {
+              const rate = t.tax_rates?.[0]?.rate_percentage;
+              return (
+                <option key={t.id} value={t.id}>
+                  {t.name} {rate !== undefined ? `(${rate}%)` : ""}
+                </option>
+              );
+            })}
           </select>
         </div>
       </div>

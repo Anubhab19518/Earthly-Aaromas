@@ -40,7 +40,7 @@ export default async function PurchaseOrderDetailPage({
   const [{ data: items }, { data: suppliers }, { data: locations }, { data: ingredients }, { data: units }, { data: taxCategories }, { data: ingredientConversions }] = await Promise.all([
     supabase.from("purchase_order_items").select("*").eq("po_id", id).order("created_at"),
     supabase.from("suppliers").select("*").eq("organization_id", membership.organization_id),
-    supabase.from("locations").select("*").eq("organization_id", membership.organization_id),
+    supabase.from("locations").select("*, location_types(code, name)").eq("organization_id", membership.organization_id).is("deleted_at", null),
     supabase.from("ingredients").select("*").eq("organization_id", membership.organization_id).is("deleted_at", null),
     supabase.from("units").select("*").is("deleted_at", null),
     supabase.from("tax_categories").select("*, tax_rates(rate_percentage)").eq("organization_id", membership.organization_id).is("deleted_at", null),

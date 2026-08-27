@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/shared/lib/supabase/server";
+import { createAdminClient } from "@/shared/lib/supabase/admin";
 import { TeamManagementClient } from "@/modules/team/components/team-management-client";
 
 export default async function TeamPage() {
@@ -25,8 +26,10 @@ export default async function TeamPage() {
 
   if (!canManage) redirect("/dashboard");
 
-  // Fetch Members
-  const { data: membersData } = await supabase
+  const adminClient = createAdminClient();
+
+  // 1. Fetch Members using adminClient to read profiles across the entire organization
+  const { data: membersData } = await adminClient
     .from("organization_memberships")
     .select(`
       id,
@@ -43,7 +46,22 @@ export default async function TeamPage() {
     .eq("organization_id", membership.organization_id)
     .is("deleted_at", null);
 
-  // Fetch Invitations
+  // 2. Fetch Auth Users via Admin API for true emails & metadata names
+  const { data: authUsersResponse } = await adminClient.auth.admin.listUsers();
+  const authUsers = authUsersResponse?.users || [];
+  const authUserMap = new Map<string, { email?: string; full_name?: string; phone?: string }>();
+
+  authUsers.forEach((u) => {
+    const meta = u.user_metadata || {};
+    const metaName = meta.full_name || meta.name || meta.fullName || "";
+    authUserMap.set(u.id, {
+      email: u.email,
+      full_name: metaName,
+      phone: u.phone || meta.phone,
+    });
+  });
+
+  // 3. Fetch Invitations
   const { data: invitations } = await supabase
     .from("organization_invitations")
     .select(`
@@ -59,7 +77,7 @@ export default async function TeamPage() {
     .is("deleted_at", null)
     .order("created_at", { ascending: false });
 
-  // Fetch Available Roles
+  // 4. Fetch Available Roles
   const { data: roles } = await supabase
     .from("roles")
     .select("id, name, code")
@@ -67,7 +85,7 @@ export default async function TeamPage() {
     .is("deleted_at", null)
     .order("name");
 
-  // Fetch Locations for branch assignment
+  // 5. Fetch Locations for branch assignment
   const { data: locations } = await supabase
     .from("locations")
     .select("id, name")
@@ -75,36 +93,62 @@ export default async function TeamPage() {
     .is("deleted_at", null)
     .order("name");
 
-  // Helper to format name from email prefix
+  // Helper to format clean, professional name from email prefix
   const formatNameFromEmail = (email: string) => {
-    if (!email) return "Invited Member";
-    const namePart = email.split("@")[0];
-    return namePart
-      .split(/[._-]/)
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    if (!email) return "Team Member";
+    const prefix = email.split("@")[0];
+    // Strip trailing digits (e.g. rohit19518 -> rohit)
+    const cleanPrefix = prefix.replace(/\d+$/, "");
+    const parts = (cleanPrefix || prefix).split(/[._-]/).filter(Boolean);
+    if (parts.length === 0) {
+      return prefix.charAt(0).toUpperCase() + prefix.slice(1);
+    }
+    return parts
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(" ");
   };
 
   // Format members
   const activeMembers = membersData?.map((m: any) => {
     const isSelf = m.user_id === userData.user.id;
-    // Find matching invitation by comparing joined_at and accepted_at (they happen within seconds of each other)
+    const authUser = authUserMap.get(m.user_id);
+
+    // Find matching invitation if any
     const matchedInvite = invitations?.find((inv: any) => {
+      if (authUser?.email && inv.email && inv.email.toLowerCase() === authUser.email.toLowerCase()) {
+        return true;
+      }
       if (!inv.accepted_at) return false;
       const timeDiff = Math.abs(new Date(inv.accepted_at).getTime() - new Date(m.joined_at).getTime());
-      return timeDiff < 10000; // Within 10 seconds
+      return timeDiff < 60000;
     });
-    const email = isSelf
-      ? userData.user.email
-      : matchedInvite?.email ||
-        `${(m.profiles?.full_name || "member").toLowerCase().replace(/\s+/g, ".")}@earthlyaaromas.com`;
+
+    const email = authUser?.email || (isSelf ? userData.user.email : matchedInvite?.email) || "";
+
+    // Resolve accurate full name
+    let fullName =
+      (m.profiles?.full_name && m.profiles.full_name.trim() !== "Unknown") ? m.profiles.full_name.trim() : "";
+    
+    if (!fullName && authUser?.full_name && authUser.full_name.trim() !== "Unknown") {
+      fullName = authUser.full_name.trim();
+    }
+
+    if (!fullName && email) {
+      fullName = formatNameFromEmail(email);
+    }
+
+    if (!fullName) {
+      fullName = "Team Member";
+    }
+
+    const phone = m.profiles?.phone || authUser?.phone || "";
 
     return {
       id: m.id,
       user_id: m.user_id,
-      full_name: m.profiles?.full_name || "Unknown Member",
+      full_name: fullName,
       email: email || "",
-      phone: m.profiles?.phone || "",
+      phone: phone || "",
       role: m.membership_roles?.[0]?.roles?.name || "No Role",
       role_code: m.membership_roles?.[0]?.roles?.code || "",
       location_name: m.locations?.name || "All Branches",

@@ -7,7 +7,16 @@ import { createInvitationSchema, acceptInvitationSchema } from "@/modules/team/s
 import crypto from "crypto";
 import { Resend } from "resend";
 
-export type InvitationActionState = { message: string; inviteLink?: string } | null;
+export type InvitationActionState = {
+  message: string;
+  credentials?: {
+    email: string;
+    password: string;
+    fullName: string;
+    roleName: string;
+    locationName?: string;
+  };
+} | null;
 
 async function getAuthContext(supabase: any) {
   const { data: userData } = await supabase.auth.getUser();
@@ -41,14 +50,17 @@ function generateInvitationToken() {
   return { rawToken, tokenHash };
 }
 
-// ─── Create Invitation ───────────────────────────────────────────────────────
+// ─── Create & Provision Employee Directly (With Owner Password) ──────────────
 
 export async function createInvitation(
   _previousState: InvitationActionState,
   formData: FormData,
 ): Promise<InvitationActionState> {
   const parsed = createInvitationSchema.safeParse({
+    fullName: formData.get("fullName"),
     email: formData.get("email"),
+    password: formData.get("password"),
+    phone: formData.get("phone") || null,
     role_id: formData.get("role_id"),
     location_id: formData.get("location_id") || null,
   });
@@ -62,75 +74,181 @@ export async function createInvitation(
   // Verify the role belongs to the organization
   const { data: role } = await supabase
     .from("roles")
-    .select("id")
+    .select("id, name, code")
     .eq("id", parsed.data.role_id)
     .eq("organization_id", auth.organizationId)
     .single();
 
   if (!role) return { message: "Invalid role selected." };
 
-  // Check if they are already an active member
-  // Note: users table is auth.users, we can't easily join by email unless we use admin client or rely on a membership email table.
-  // We'll rely on the unique index for pending invites.
+  let locationName = "All Branches";
+  if (parsed.data.location_id) {
+    const { data: loc } = await supabase
+      .from("locations")
+      .select("name")
+      .eq("id", parsed.data.location_id)
+      .single();
+    if (loc) locationName = loc.name;
+  }
 
-  const { rawToken, tokenHash } = generateInvitationToken();
-  const expiresAt = new Date();
-  expiresAt.setHours(expiresAt.getHours() + 48); // 48 hour expiry
+  const adminClient = createAdminClient();
 
-  const { error } = await supabase.from("organization_invitations").insert({
+  // 1. Check if user already exists in auth.users
+  const { data: userList } = await adminClient.auth.admin.listUsers();
+  const existingUser = userList?.users?.find(
+    (u) => u.email?.toLowerCase() === parsed.data.email.toLowerCase()
+  );
+
+  let userId: string;
+
+  if (existingUser) {
+    userId = existingUser.id;
+    // Update password and metadata
+    const { error: updateErr } = await adminClient.auth.admin.updateUserById(userId, {
+      password: parsed.data.password,
+      user_metadata: { full_name: parsed.data.fullName, phone: parsed.data.phone || null },
+    });
+    if (updateErr) {
+      return { message: "Could not update user account: " + updateErr.message };
+    }
+  } else {
+    // Create the user in Auth directly
+    const { data: newUser, error: createErr } = await adminClient.auth.admin.createUser({
+      email: parsed.data.email,
+      password: parsed.data.password,
+      email_confirm: true, // auto confirm so they can log in immediately
+      user_metadata: { full_name: parsed.data.fullName, phone: parsed.data.phone || null },
+    });
+
+    if (createErr || !newUser.user) {
+      return { message: "Could not create user account: " + (createErr?.message || "Unknown error") };
+    }
+    userId = newUser.user.id;
+  }
+
+  // 2. Upsert profile
+  await adminClient.from("profiles").upsert({
+    id: userId,
+    full_name: parsed.data.fullName,
+    phone: parsed.data.phone || null,
+  });
+
+  // 3. Upsert organization membership
+  const { data: existingMembership } = await adminClient
+    .from("organization_memberships")
+    .select("id")
+    .eq("organization_id", auth.organizationId)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  let membershipId: string;
+
+  if (existingMembership) {
+    membershipId = existingMembership.id;
+    await adminClient
+      .from("organization_memberships")
+      .update({
+        status: "ACTIVE",
+        location_id: parsed.data.location_id || null,
+        deleted_at: null,
+      })
+      .eq("id", membershipId);
+  } else {
+    const { data: newMem, error: memErr } = await adminClient
+      .from("organization_memberships")
+      .insert({
+        organization_id: auth.organizationId,
+        user_id: userId,
+        status: "ACTIVE",
+        joined_at: new Date().toISOString(),
+        location_id: parsed.data.location_id || null,
+      })
+      .select("id")
+      .single();
+
+    if (memErr || !newMem) {
+      return { message: "Failed to establish organization membership." };
+    }
+    membershipId = newMem.id;
+  }
+
+  // 4. Assign role in membership_roles
+  await adminClient.from("membership_roles").delete().eq("membership_id", membershipId);
+  await adminClient.from("membership_roles").insert({
+    membership_id: membershipId,
+    role_id: parsed.data.role_id,
+  });
+
+  // 5. Store in organization_invitations as accepted for record keeping
+  const { tokenHash } = generateInvitationToken();
+  await adminClient.from("organization_invitations").insert({
     organization_id: auth.organizationId,
     email: parsed.data.email,
     role_id: parsed.data.role_id,
-    location_id: parsed.data.location_id,
+    location_id: parsed.data.location_id || null,
     invited_by: auth.userId,
     token_hash: tokenHash,
-    expires_at: expiresAt.toISOString(),
+    expires_at: new Date().toISOString(),
+    accepted_at: new Date().toISOString(),
   });
 
-  if (error) {
-    if (error.code === "23505") return { message: "An active invitation for this email already exists." };
-    return { message: "Could not create invitation. " + error.message };
-  }
-
   revalidatePath("/team");
-  
+
+  // 6. Send email notification with login credentials
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-  const inviteLink = `${appUrl}/accept-invite?token=${rawToken}`;
-  
-  // In development, it is helpful to log the link in case email sending fails
-  console.log(`[DEV] Generated Invite Link for ${parsed.data.email}: ${inviteLink}`);
-  
+  const loginLink = role.code === "OWNER" || role.code === "ADMIN" ? `${appUrl}/login` : `${appUrl}/employee-login`;
+
+  console.log(`[DEV] Employee Provisioned: ${parsed.data.email} | Password: ${parsed.data.password} | Login: ${loginLink}`);
+
   try {
     const resend = new Resend(process.env.RESEND_API_KEY);
-    const { error: resendError } = await resend.emails.send({
-      from: 'onboarding@resend.dev',
+    const fromEmail = process.env.RESEND_FROM_EMAIL || "Earthly Aaromas <onboarding@resend.dev>";
+    await resend.emails.send({
+      from: fromEmail,
       to: parsed.data.email,
-      subject: 'You have been invited to join Tea-Chain ERP',
-      html: `<p>You have been invited to join a workspace on Tea-Chain ERP.</p><p>Click <a href="${inviteLink}">here</a> to accept the invitation.</p>`
+      subject: "Welcome to Tea-Chain ERP - Your Account Credentials",
+      html: `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 540px; margin: 0 auto; padding: 24px; color: #1e293b; background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0;">
+          <h2 style="color: #0f172a; margin-top: 0; font-size: 20px;">Welcome to Tea-Chain ERP</h2>
+          <p style="font-size: 14px; line-height: 1.5; color: #475569;">Hello <strong>${parsed.data.fullName}</strong>,</p>
+          <p style="font-size: 14px; line-height: 1.5; color: #475569;">Your account has been created with access to the <strong>${locationName}</strong> workspace as <strong>${role.name}</strong>.</p>
+          
+          <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin: 20px 0;">
+            <p style="margin: 0 0 8px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; color: #64748b;">Your Login Credentials</p>
+            <p style="margin: 4px 0; font-size: 14px; color: #334155;"><strong>Email:</strong> <span style="font-family: monospace;">${parsed.data.email}</span></p>
+            <p style="margin: 4px 0; font-size: 14px; color: #334155;"><strong>Password:</strong> <span style="font-family: monospace; background: #e2e8f0; padding: 2px 6px; border-radius: 4px;">${parsed.data.password}</span></p>
+          </div>
+
+          <div style="margin: 24px 0;">
+            <a href="${loginLink}" style="display: inline-block; background-color: #4f46e5; color: #ffffff; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: 600;">Sign in to Workspace</a>
+          </div>
+
+          <p style="font-size: 12px; color: #94a3b8; margin-top: 24px;">Please keep your login credentials secure. You can sign in directly at <a href="${loginLink}" style="color: #4f46e5;">${loginLink}</a></p>
+        </div>
+      `,
     });
-    
-    if (resendError) {
-      console.error("Resend API returned an error:", resendError);
-      return { message: "Invitation created, but failed to send email. Check server logs for the link." };
-    }
   } catch (err) {
-    console.error("Failed to execute Resend client:", err);
-    return { message: "Invitation created, but failed to send email. Check server logs for the link." };
+    console.error("Resend error sending credentials:", err);
   }
-  
-  return { message: "Invitation created successfully." };
+
+  return {
+    message: "Member account created successfully.",
+    credentials: {
+      email: parsed.data.email,
+      password: parsed.data.password,
+      fullName: parsed.data.fullName,
+      roleName: role.name,
+      locationName,
+    },
+  };
 }
 
 // ─── Verify Invitation (Read-only) ──────────────────────────────────────────
 
 export async function verifyInvitation(rawToken: string) {
   const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
-  
-  // We use the service role because the user is unauthenticated
   const adminClient = createAdminClient();
-  
   const { data, error } = await adminClient.rpc("validate_invitation_token", { p_token_hash: tokenHash });
-  
   if (error || !data || data.length === 0) return null;
   return data[0];
 }
@@ -153,10 +271,8 @@ export async function acceptInvitation(
 
   const rawToken = parsed.data.token;
   const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
-  
   const adminClient = createAdminClient();
   
-  // 1. Validate token again securely
   const { data: invData, error: invError } = await adminClient.rpc("validate_invitation_token", { p_token_hash: tokenHash });
   
   if (invError || !invData || invData.length === 0) {
@@ -165,22 +281,15 @@ export async function acceptInvitation(
   
   const invitation = invData[0];
 
-  // 2. Create the user in Supabase Auth via Admin API
   const { data: authUser, error: authError } = await adminClient.auth.admin.createUser({
     email: invitation.email,
     password: parsed.data.password,
-    email_confirm: true, // auto confirm so they can login immediately
+    email_confirm: true,
+    user_metadata: { full_name: parsed.data.fullName, phone: parsed.data.phoneNumber || null },
   });
 
   if (authError) {
-    // If user already exists, it throws an error. We can optionally handle it by updating their password or linking.
-    // For now, if they exist, let's just proceed to link them.
     if (authError.message.includes("already registered")) {
-      // Actually we'd need their user_id to link them.
-      // Let's get the user by email
-      const { data: existingUsers, error: getError } = await adminClient.auth.admin.listUsers();
-      // listUsers isn't ideal for large datasets but for demo it's ok, or we can just return error.
-      // Better: we can just return an error and ask them to login.
       return { message: "An account with this email already exists." };
     }
     return { message: authError.message };
@@ -188,16 +297,14 @@ export async function acceptInvitation(
 
   const userId = authUser.user.id;
 
-  // 3. Update the profile created by the trigger `handle_new_user` automatically.
   await adminClient
     .from("profiles")
-    .update({ 
+    .upsert({ 
+      id: userId,
       full_name: parsed.data.fullName, 
       phone: parsed.data.phoneNumber || null 
-    })
-    .eq("id", userId);
+    });
   
-  // 4. Create Membership
   const { error: membershipError } = await adminClient.from("organization_memberships").insert({
     organization_id: invitation.organization_id,
     user_id: userId,
@@ -210,7 +317,6 @@ export async function acceptInvitation(
     return { message: "Failed to create membership. Please contact support." };
   }
 
-  // 5. Get the newly created membership ID
   const { data: membership } = await adminClient
     .from("organization_memberships")
     .select("id")
@@ -219,20 +325,12 @@ export async function acceptInvitation(
     .single();
 
   if (membership) {
-    // 6. Assign Role
     await adminClient.from("membership_roles").insert({
       membership_id: membership.id,
       role_id: invitation.role_id,
     });
   }
 
-  // 7. Mark invitation as accepted
-  await adminClient
-    .from("organization_invitations")
-    .update({ accepted_at: new Date().toISOString() })
-    .eq("invitation_id", invitation.invitation_id); // Wait, RPC returned it as invitation_id.
-    // Actually, in the table it's `id`
-    
   await adminClient
     .from("organization_invitations")
     .update({ accepted_at: new Date().toISOString() })

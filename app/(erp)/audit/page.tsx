@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/shared/lib/supabase/server";
+import { createAdminClient } from "@/shared/lib/supabase/admin";
 import { getAuditLog } from "@/modules/audit/services/audit-log.actions";
 import { AuditLogClient } from "@/modules/audit/components/audit-log-client";
 
@@ -25,9 +26,9 @@ export default async function AuditLogPage({
     redirect("/onboarding");
   }
 
-  // Only users with OWNER permissions should access this. Let's check permissions.
+  // Check permissions
   const { data: isOwner } = await supabase.rpc("has_permission", {
-    required_permission_code: "master_data.manage", // Assuming owner has this
+    required_permission_code: "master_data.manage",
     target_organization_id: membership.organization_id,
   });
 
@@ -56,10 +57,43 @@ export default async function AuditLogPage({
     sortOrder,
   });
 
-  // Fetch profiles for filter options
-  const { data: profiles } = await supabase
-    .from("profiles")
-    .select("id, full_name, email");
+  const adminClient = createAdminClient();
+
+  // Fetch profiles & auth users for filter dropdown
+  const [{ data: allProfiles }, { data: authUsersResponse }] = await Promise.all([
+    adminClient.from("profiles").select("id, full_name"),
+    adminClient.auth.admin.listUsers(),
+  ]);
+
+  const authUsers = authUsersResponse?.users || [];
+  const userMap = new Map<string, { email?: string; full_name?: string }>();
+  authUsers.forEach((u) => {
+    const meta = u.user_metadata || {};
+    const metaName = meta.full_name || meta.name || meta.fullName;
+    userMap.set(u.id, { email: u.email, full_name: metaName });
+  });
+
+  const profileList = (allProfiles || []).map((p: any) => {
+    const u = userMap.get(p.id);
+    const email = u?.email || "";
+    let name = p.full_name && p.full_name.trim() !== "Unknown" ? p.full_name.trim() : "";
+    if (!name && u?.full_name && u.full_name.trim() !== "Unknown") {
+      name = u.full_name.trim();
+    }
+    if (!name && email) {
+      const prefix = email.split("@")[0].replace(/\d+$/, "");
+      name = (prefix || email.split("@")[0])
+        .split(/[._-]/)
+        .filter(Boolean)
+        .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+        .join(" ");
+    }
+    return {
+      id: p.id,
+      full_name: name || "Team Member",
+      email: email,
+    };
+  });
 
   // Fetch metadata for JSON formatting
   const [
@@ -83,7 +117,7 @@ export default async function AuditLogPage({
         totalCount={result.totalCount}
         totalPages={result.totalPages}
         currentPage={page}
-        profiles={profiles || []}
+        profiles={profileList}
         entityTypes={uniqueEntityTypes || []}
         ingredients={ingredients || []}
         units={units || []}

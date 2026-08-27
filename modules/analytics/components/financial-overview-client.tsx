@@ -31,7 +31,11 @@ import {
 interface TransactionItem {
   name: string;
   quantity: number;
+  unit?: string;
   unit_cost: number;
+  base_amount?: number;
+  tax_rate?: number;
+  tax_amount?: number;
   total: number;
 }
 
@@ -45,6 +49,8 @@ interface FinancialTransaction {
   location_id?: string;
   location_name: string;
   amount: number;
+  base_amount?: number;
+  tax_amount?: number;
   tax?: number;
   status: string;
   date: string;
@@ -476,13 +482,14 @@ export function FinancialOverviewClient({ overview }: FinancialOverviewClientPro
             <thead>
               <tr className="border-b border-neutral-200 bg-neutral-50/60 text-xs font-semibold text-neutral-700">
                 <th className="py-2.5 px-3 border-r border-neutral-200 w-8 text-center"></th>
-                <th className="py-2.5 px-4 border-r border-neutral-200 w-[18%]">Reference ID</th>
-                <th className="py-2.5 px-4 border-r border-neutral-200 w-[14%]">Transaction Type</th>
-                <th className="py-2.5 px-4 border-r border-neutral-200 w-[20%]">Supplier / Customer</th>
-                <th className="py-2.5 px-4 border-r border-neutral-200 w-[16%]">Branch Location</th>
-                <th className="py-2.5 px-4 border-r border-neutral-200 w-[12%]">Date</th>
-                <th className="py-2.5 px-4 border-r border-neutral-200 w-[14%] text-right">Amount</th>
-                <th className="py-2.5 px-4 border-r border-neutral-200 w-[10%]">Status</th>
+                <th className="py-2.5 px-4 border-r border-neutral-200 w-[16%]">Reference ID</th>
+                <th className="py-2.5 px-4 border-r border-neutral-200 w-[13%]">Transaction Type</th>
+                <th className="py-2.5 px-4 border-r border-neutral-200 w-[18%]">Supplier / Customer</th>
+                <th className="py-2.5 px-4 border-r border-neutral-200 w-[14%]">Branch Location</th>
+                <th className="py-2.5 px-4 border-r border-neutral-200 w-[11%]">Date</th>
+                <th className="py-2.5 px-4 border-r border-neutral-200 w-[10%] text-right">Tax</th>
+                <th className="py-2.5 px-4 border-r border-neutral-200 w-[13%] text-right">Total Amount</th>
+                <th className="py-2.5 px-4 border-r border-neutral-200 w-[9%]">Status</th>
                 <th className="py-2.5 px-4 text-right whitespace-nowrap w-20">Details</th>
               </tr>
             </thead>
@@ -490,7 +497,7 @@ export function FinancialOverviewClient({ overview }: FinancialOverviewClientPro
             <tbody className="divide-y divide-neutral-200 text-xs font-normal text-neutral-800">
               {filteredTransactions.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="py-12 text-center text-neutral-400 font-normal">
+                  <td colSpan={10} className="py-12 text-center text-neutral-400 font-normal">
                     <div className="flex flex-col items-center justify-center gap-2">
                       <CreditCard className="h-8 w-8 text-neutral-300 animate-pulse" />
                       <p className="text-sm font-medium text-neutral-600">No transactions found</p>
@@ -576,8 +583,17 @@ export function FinancialOverviewClient({ overview }: FinancialOverviewClientPro
                           {formattedDate}
                         </td>
 
-                        {/* Amount */}
-                        <td className="py-2.5 px-4 border-r border-neutral-200 text-right font-semibold text-neutral-900">
+                        {/* Tax */}
+                        <td className="py-2.5 px-4 border-r border-neutral-200 text-right font-mono text-neutral-600">
+                          {tx.tax_amount && tx.tax_amount > 0 ? (
+                            <span className="text-slate-700 font-medium">{formatCurrency(tx.tax_amount)}</span>
+                          ) : (
+                            <span className="text-neutral-400 font-sans text-[11px]">₹0.00</span>
+                          )}
+                        </td>
+
+                        {/* Total Amount */}
+                        <td className="py-2.5 px-4 border-r border-neutral-200 text-right font-semibold font-mono text-neutral-900">
                           {formatCurrency(tx.amount)}
                         </td>
 
@@ -608,7 +624,7 @@ export function FinancialOverviewClient({ overview }: FinancialOverviewClientPro
                       {/* Inline Expanded Row Drawer (Matching Audit Log Page Pattern) */}
                       {isExpanded && (
                         <tr className="bg-neutral-50/70 border-b border-neutral-200">
-                          <td colSpan={9} className="px-5 py-4 font-sans">
+                          <td colSpan={10} className="px-5 py-4 font-sans">
                             <div className="space-y-3">
                               {/* Header Bar of Drawer */}
                               <div className="flex items-center justify-between border-b border-neutral-200 pb-2.5">
@@ -661,25 +677,72 @@ export function FinancialOverviewClient({ overview }: FinancialOverviewClientPro
                                     <span>Item Line Breakdown</span>
                                     <span>Financial Summary</span>
                                   </div>
-                                  <table className="w-full text-left text-xs border-collapse">
+                                  <table className="w-full text-left text-xs border-collapse font-sans">
                                     <thead>
-                                      <tr className="bg-neutral-50/40 border-b border-neutral-200 text-neutral-600 font-medium">
+                                      <tr className="bg-neutral-50/40 border-b border-neutral-200 text-neutral-600 font-medium text-[11px]">
                                         <th className="py-2 px-4">Item Name</th>
-                                        <th className="py-2 px-4 text-right">Quantity</th>
-                                        <th className="py-2 px-4 text-right">Unit Price / Cost</th>
+                                        <th className="py-2 px-3 text-right">Quantity</th>
+                                        <th className="py-2 px-3 text-center">Unit</th>
+                                        <th className="py-2 px-3 text-right">Unit Price / Cost</th>
+                                        <th className="py-2 px-3 text-right">Base Amount</th>
+                                        <th className="py-2 px-3 text-right">Tax</th>
                                         <th className="py-2 px-4 text-right">Line Total</th>
                                       </tr>
                                     </thead>
                                     <tbody className="divide-y divide-neutral-100 text-neutral-800">
-                                      {tx.items.map((item, idx) => (
-                                        <tr key={idx} className="hover:bg-neutral-50/50">
-                                          <td className="py-2 px-4 font-medium text-neutral-900">{item.name}</td>
-                                          <td className="py-2 px-4 text-right text-neutral-700">{item.quantity}</td>
-                                          <td className="py-2 px-4 text-right text-neutral-700">{formatCurrency(item.unit_cost)}</td>
-                                          <td className="py-2 px-4 text-right font-semibold text-neutral-900">{formatCurrency(item.total)}</td>
-                                        </tr>
-                                      ))}
+                                      {tx.items.map((item, idx) => {
+                                        const baseAmt = item.base_amount !== undefined ? item.base_amount : item.quantity * item.unit_cost;
+                                        const taxAmt = item.tax_amount || 0;
+                                        const taxRate = item.tax_rate || 0;
+                                        return (
+                                          <tr key={idx} className="hover:bg-neutral-50/50">
+                                            <td className="py-2 px-4 font-medium text-neutral-900">{item.name}</td>
+                                            <td className="py-2 px-3 text-right font-mono text-neutral-700">{item.quantity}</td>
+                                            <td className="py-2 px-3 text-center font-mono text-neutral-600">
+                                              {item.unit ? (
+                                                <span className="inline-block bg-slate-100 text-slate-700 text-[10px] px-1.5 py-0.5 rounded font-mono">
+                                                  {item.unit}
+                                                </span>
+                                              ) : (
+                                                <span className="text-neutral-400">—</span>
+                                              )}
+                                            </td>
+                                            <td className="py-2 px-3 text-right font-mono text-neutral-700">
+                                              {formatCurrency(item.unit_cost)}
+                                              {item.unit ? <span className="text-[10px] text-neutral-400 font-sans ml-0.5">/{item.unit}</span> : ""}
+                                            </td>
+                                            <td className="py-2 px-3 text-right font-mono text-neutral-700">{formatCurrency(baseAmt)}</td>
+                                            <td className="py-2 px-3 text-right font-mono text-neutral-700">
+                                              {taxAmt > 0 ? (
+                                                <span>
+                                                  {formatCurrency(taxAmt)}
+                                                  {taxRate > 0 && <span className="text-[10px] text-neutral-400 font-sans ml-1">({taxRate}%)</span>}
+                                                </span>
+                                              ) : (
+                                                <span className="text-neutral-400">₹0.00</span>
+                                              )}
+                                            </td>
+                                            <td className="py-2 px-4 text-right font-mono font-semibold text-neutral-900">{formatCurrency(item.total)}</td>
+                                          </tr>
+                                        );
+                                      })}
                                     </tbody>
+                                    <tfoot className="bg-neutral-50/80 border-t border-neutral-200 font-mono text-xs">
+                                      <tr>
+                                        <td colSpan={4} className="py-1.5 px-4 text-right font-sans font-medium text-neutral-500">
+                                          Summary Totals:
+                                        </td>
+                                        <td className="py-1.5 px-3 text-right font-medium text-neutral-800">
+                                          {formatCurrency(tx.base_amount !== undefined ? tx.base_amount : tx.items.reduce((s, i) => s + (i.base_amount || (i.quantity * i.unit_cost)), 0))}
+                                        </td>
+                                        <td className="py-1.5 px-3 text-right font-medium text-neutral-800">
+                                          {formatCurrency(tx.tax_amount !== undefined ? tx.tax_amount : tx.items.reduce((s, i) => s + (i.tax_amount || 0), 0))}
+                                        </td>
+                                        <td className="py-1.5 px-4 text-right font-bold text-indigo-700">
+                                          {formatCurrency(tx.amount)}
+                                        </td>
+                                      </tr>
+                                    </tfoot>
                                   </table>
                                 </div>
                               )}

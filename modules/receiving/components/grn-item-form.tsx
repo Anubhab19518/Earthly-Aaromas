@@ -53,14 +53,19 @@ export function GrnItemForm({
   const [isPending, startTransition] = useTransition();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Form State
+  // Form State - new items are always unplanned (no PO line)
+  const purchaseOrderItemId = editItem?.purchase_order_item_id || null;
   const [ingredientId, setIngredientId] = useState(editItem?.ingredient_id || "");
   const [purchaseUnitId, setPurchaseUnitId] = useState(editItem?.purchase_unit_id || "");
   const [receivedQty, setReceivedQty] = useState(
     editItem ? String(editItem.received_quantity) : ""
   );
-  const [unitCost, setUnitCost] = useState(editItem ? String(editItem.unit_cost) : "");
-  const [taxCategoryId, setTaxCategoryId] = useState(editItem?.tax_category_id || "");
+  const [unitCost, setUnitCost] = useState(
+    editItem ? String(editItem.unit_cost) : ""
+  );
+  const [taxCategoryId, setTaxCategoryId] = useState(
+    editItem?.tax_category_id || ""
+  );
 
   const [previewBaseQty, setPreviewBaseQty] = useState<number | null>(null);
 
@@ -138,6 +143,7 @@ export function GrnItemForm({
       const fd = new FormData();
       if (editItem) fd.append("id", editItem.id);
       fd.append("goods_receipt_id", grnId);
+      if (purchaseOrderItemId) fd.append("purchase_order_item_id", purchaseOrderItemId);
       fd.append("ingredient_id", ingredientId);
       fd.append("purchase_unit_id", purchaseUnitId);
       fd.append("received_quantity", receivedQty);
@@ -187,10 +193,12 @@ export function GrnItemForm({
           </div>
           <div>
             <h2 className="text-sm font-semibold text-slate-900 leading-tight">
-              {editItem ? "Edit Received Item" : "Add Received Line Item"}
+              {editItem ? "Edit Received Item" : "Add Unplanned / Extra Item"}
             </h2>
             <p className="text-[11px] text-slate-500">
-              Record quantity delivered and purchase price
+              {editItem
+                ? "Update quantity delivered and purchase price"
+                : "Record extra items received outside the original PO"}
             </p>
           </div>
         </div>
@@ -285,8 +293,12 @@ export function GrnItemForm({
           {/* Unit Cost & Tax Category */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="block text-[11px] font-medium text-slate-700">
-                Unit Cost (₹) <span className="text-rose-500">*</span>
+              <label className="block text-[11px] font-medium text-slate-700 truncate">
+                {(() => {
+                  const u = units.find((u) => u.id === purchaseUnitId);
+                  const symbol = u?.symbol || u?.name;
+                  return symbol ? `Unit Cost (₹/${symbol})` : "Unit Cost (₹)";
+                })()} <span className="text-rose-500">*</span>
               </label>
               <Input
                 type="number"
@@ -294,7 +306,11 @@ export function GrnItemForm({
                 min="0"
                 value={unitCost}
                 onChange={(e) => setUnitCost(e.target.value)}
-                placeholder="e.g. 400.00"
+                placeholder={(() => {
+                  const u = units.find((u) => u.id === purchaseUnitId);
+                  const symbol = u?.symbol || u?.name;
+                  return symbol ? `e.g. 400 per ${symbol}` : "e.g. 400.00";
+                })()}
                 className="h-8 text-xs font-mono"
               />
             </div>

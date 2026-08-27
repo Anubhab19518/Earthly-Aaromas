@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/shared/lib/supabase/server";
+import { createAdminClient } from "@/shared/lib/supabase/admin";
 
 export interface AuditFilter {
   actorId?: string;
@@ -28,15 +29,12 @@ export async function getAuditLog(organizationId: string, filter: AuditFilter) {
 
   // Apply sorting
   if (filter.sortBy === "actor") {
-    // Note: sorting by related table column might not work natively via supabase js simple order for foreign tables
-    // If not, we fallback to occurred_at. We'll order by occurred_at for now unless it's entity_type.
     query = query.order("occurred_at", { ascending: filter.sortOrder === "asc" });
   } else if (filter.sortBy === "entity_type") {
     query = query.order("entity_type", { ascending: filter.sortOrder === "asc" }).order("occurred_at", { ascending: false });
   } else if (filter.sortBy === "action") {
     query = query.order("action", { ascending: filter.sortOrder === "asc" }).order("occurred_at", { ascending: false });
   } else {
-    // default
     query = query.order("occurred_at", { ascending: filter.sortOrder === "asc" });
   }
 
@@ -68,17 +66,58 @@ export async function getAuditLog(organizationId: string, filter: AuditFilter) {
   let processedData = data || [];
 
   if (processedData.length > 0) {
+    const adminClient = createAdminClient();
     const orderIds = processedData.filter(d => d.entity_type === "sales_orders" && d.entity_id).map(d => d.entity_id);
     const grnIds = processedData.filter(d => d.entity_type === "goods_receipts" && d.entity_id).map(d => d.entity_id);
     const transferIds = processedData.filter(d => d.entity_type === "stock_transfers" && d.entity_id).map(d => d.entity_id);
     const poIds = processedData.filter(d => d.entity_type === "purchase_orders" && d.entity_id).map(d => d.entity_id);
+    const actorIds = Array.from(new Set(processedData.map((d: any) => d.actor_id).filter(Boolean)));
 
-    const [ { data: orders }, { data: grns }, { data: transfers }, { data: pos } ] = await Promise.all([
+    const [
+      { data: orders },
+      { data: grns },
+      { data: transfers },
+      { data: pos },
+      { data: allProfiles },
+      { data: authUsersResponse }
+    ] = await Promise.all([
       orderIds.length > 0 ? supabase.from("sales_orders").select("id, order_number").in("id", orderIds) : Promise.resolve({ data: [] }),
       grnIds.length > 0 ? supabase.from("goods_receipts").select("id, grn_number").in("id", grnIds) : Promise.resolve({ data: [] }),
       transferIds.length > 0 ? supabase.from("stock_transfers").select("id, transfer_number").in("id", transferIds) : Promise.resolve({ data: [] }),
       poIds.length > 0 ? supabase.from("purchase_orders").select("id, po_number").in("id", poIds) : Promise.resolve({ data: [] }),
+      actorIds.length > 0 ? adminClient.from("profiles").select("id, full_name").in("id", actorIds) : Promise.resolve({ data: [] }),
+      actorIds.length > 0 ? adminClient.auth.admin.listUsers() : Promise.resolve({ data: { users: [] } }),
     ]);
+
+    const profileMap = new Map<string, string>();
+    if (allProfiles) {
+      allProfiles.forEach((p: any) => {
+        if (p.full_name && p.full_name.trim() !== "" && p.full_name.trim() !== "Unknown") {
+          profileMap.set(p.id, p.full_name.trim());
+        }
+      });
+    }
+
+    const authUserMap = new Map<string, { name: string; email: string }>();
+    if (authUsersResponse?.users) {
+      authUsersResponse.users.forEach((u: any) => {
+        const meta = u.user_metadata || {};
+        const metaName = meta.full_name || meta.name || meta.fullName;
+        let cleanName = metaName && metaName.trim() !== "" && metaName.trim() !== "Unknown" ? metaName.trim() : "";
+        if (!cleanName && u.email) {
+          const prefix = u.email.split("@")[0].replace(/\d+$/, "");
+          cleanName = (prefix || u.email.split("@")[0])
+            .split(/[._-]/)
+            .filter(Boolean)
+            .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+            .join(" ");
+        }
+        authUserMap.set(u.id, {
+          name: cleanName || "Team Member",
+          email: u.email || "",
+        });
+      });
+    }
 
     processedData = processedData.map(d => {
       let formatted_entity_id = d.entity_id;
@@ -96,8 +135,24 @@ export async function getAuditLog(organizationId: string, filter: AuditFilter) {
         const po = pos.find(p => p.id === d.entity_id);
         if (po) formatted_entity_id = po.po_number;
       }
-      
-      return { ...d, formatted_entity_id };
+
+      const authUser = d.actor_id ? authUserMap.get(d.actor_id) : null;
+      const performerName =
+        (d.actor_id ? profileMap.get(d.actor_id) : null) ||
+        authUser?.name ||
+        (d.profiles?.full_name && d.profiles.full_name.trim() !== "Unknown" ? d.profiles.full_name.trim() : null) ||
+        (d.actor_id ? "Team Member" : "System Automations");
+
+      const performerEmail = authUser?.email || "";
+
+      return {
+        ...d,
+        formatted_entity_id,
+        profiles: {
+          full_name: performerName,
+          email: performerEmail,
+        }
+      };
     });
   }
 

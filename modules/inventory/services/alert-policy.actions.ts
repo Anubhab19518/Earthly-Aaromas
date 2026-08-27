@@ -148,6 +148,7 @@ export type InventoryAlert = {
   ingredientId: string;
   ingredientName: string;
   quantity: number;
+  unitSymbol?: string;
   level: "OUT_OF_STOCK" | "CRITICAL" | "WARNING";
 };
 
@@ -158,16 +159,20 @@ export async function getActiveInventoryAlerts(locationId: string): Promise<Inve
   const organizationId = await getActiveOrganizationId(supabase);
   if (!organizationId) return [];
 
-  // Fetch policies with ingredient names
-  const { data: policies } = await supabase
-    .from("inventory_alert_policies")
-    .select("ingredient_id, warning_level, critical_level, out_of_stock_level, ingredients(name)")
-    .eq("location_id", locationId)
-    .eq("organization_id", organizationId)
-    .is("deleted_at", null);
+  // Fetch policies with ingredient names and base units
+  const [{ data: policies }, { data: units }] = await Promise.all([
+    supabase
+      .from("inventory_alert_policies")
+      .select("ingredient_id, warning_level, critical_level, out_of_stock_level, ingredients(name, base_unit_id)")
+      .eq("location_id", locationId)
+      .eq("organization_id", organizationId)
+      .is("deleted_at", null),
+    supabase.from("units").select("id, symbol, name").is("deleted_at", null),
+  ]);
 
   if (!policies || policies.length === 0) return [];
 
+  const unitMap = new Map(units?.map((u: any) => [u.id, u.symbol]) || []);
   const ingredientIds = policies.map((p: any) => p.ingredient_id);
 
   // Fetch current snapshots
@@ -187,26 +192,31 @@ export async function getActiveInventoryAlerts(locationId: string): Promise<Inve
     const outOfStockLevel = Number(policy.out_of_stock_level);
     const criticalLevel = Number(policy.critical_level);
     const warningLevel = Number(policy.warning_level);
+    const ing = policy.ingredients as any;
+    const unitSymbol = ing?.base_unit_id ? unitMap.get(ing.base_unit_id) || "" : "";
 
     if (qty <= outOfStockLevel) {
       alerts.push({
         ingredientId: policy.ingredient_id,
-        ingredientName: (policy.ingredients as any)?.name || "Unknown",
+        ingredientName: ing?.name || "Unknown",
         quantity: qty,
+        unitSymbol,
         level: "OUT_OF_STOCK",
       });
     } else if (qty <= criticalLevel) {
       alerts.push({
         ingredientId: policy.ingredient_id,
-        ingredientName: (policy.ingredients as any)?.name || "Unknown",
+        ingredientName: ing?.name || "Unknown",
         quantity: qty,
+        unitSymbol,
         level: "CRITICAL",
       });
     } else if (qty <= warningLevel) {
       alerts.push({
         ingredientId: policy.ingredient_id,
-        ingredientName: (policy.ingredients as any)?.name || "Unknown",
+        ingredientName: ing?.name || "Unknown",
         quantity: qty,
+        unitSymbol,
         level: "WARNING",
       });
     }

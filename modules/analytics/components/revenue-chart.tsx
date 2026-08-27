@@ -162,10 +162,10 @@ export function RevenueChart({ initialData, orgId, locationId }: RevenueChartPro
 
           {/* CTA button */}
           <Link
-            href="/orders"
+            href="/financial"
             className="mt-6 block w-full rounded-lg bg-gradient-to-r from-indigo-500 to-violet-500 px-4 py-3 text-center text-sm font-semibold text-white shadow-sm hover:from-indigo-600 hover:to-violet-600 transition-all"
           >
-            View Orders
+            View Financials
           </Link>
         </div>
 

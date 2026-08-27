@@ -26,6 +26,7 @@ export type GoodsReceipt = z.infer<typeof goodsReceiptSchema>;
 export const goodsReceiptItemSchema = z.object({
   id: z.string().uuid(),
   goods_receipt_id: z.string().uuid(),
+  purchase_order_item_id: z.string().uuid().nullable().optional(),
   ingredient_id: z.string().uuid(),
   purchase_unit_id: z.string().uuid(),
   received_quantity: z.number().positive(),
@@ -42,8 +43,9 @@ export type GoodsReceiptItem = z.infer<typeof goodsReceiptItemSchema>;
 // ─── Form Schemas ────────────────────────────────────────────────────────────
 
 export const createGrnSchema = z.object({
-  supplier_id: z.string().uuid("Please select a supplier"),
-  warehouse_location_id: z.string().uuid("Please select a warehouse"),
+  supplier_id: z.string().min(1, "Please select a supplier or local vendor"),
+  warehouse_location_id: z.string().uuid("Please select a destination facility"),
+  local_vendor_name: z.string().max(160).nullable().optional(),
   purchase_order_id: z.string().uuid().nullable().optional(),
   invoice_number: z.string().max(80).nullable().optional(),
   invoice_date: z.string().nullable().optional(),
@@ -58,6 +60,7 @@ export type UpdateGrnFormValues = z.infer<typeof updateGrnSchema>;
 
 export const addGrnItemSchema = z.object({
   goods_receipt_id: z.string().uuid(),
+  purchase_order_item_id: z.string().uuid().nullable().optional(),
   ingredient_id: z.string().uuid("Please select an ingredient"),
   purchase_unit_id: z.string().uuid("Please select a purchase unit"),
   received_quantity: z.number().positive("Received quantity must be greater than 0"),

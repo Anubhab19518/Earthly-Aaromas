@@ -70,12 +70,14 @@ export async function createStockAdjustment(
   _previousState: InventoryActionState,
   formData: FormData,
 ): Promise<InventoryActionState> {
+  const remarksVal = formData.get("remarks");
   const parsedInput = stockAdjustmentFormSchema.safeParse({
     location_id: formData.get("location_id"),
     ingredient_id: formData.get("ingredient_id"),
+    unit_id: formData.get("unit_id") || undefined,
     reason: formData.get("reason"),
     quantity_change: Number(formData.get("quantity_change")),
-    remarks: formData.get("remarks"),
+    remarks: typeof remarksVal === "string" && remarksVal.trim().length > 0 ? remarksVal.trim() : null,
   });
 
   if (!parsedInput.success) {
@@ -97,7 +99,23 @@ export async function createStockAdjustment(
 
   if (!ingredient) return { message: "Ingredient not found." };
 
-  const quantityChange = parsedInput.data.quantity_change;
+  let convertedQuantity = parsedInput.data.quantity_change;
+  const selectedUnitId = parsedInput.data.unit_id || ingredient.base_unit_id;
+
+  // If a packaging/converted unit was selected, compute the base unit quantity
+  if (selectedUnitId && selectedUnitId !== ingredient.base_unit_id) {
+    const { data: conversion } = await supabase
+      .from("ingredient_unit_conversions")
+      .select("conversion_factor")
+      .eq("ingredient_id", parsedInput.data.ingredient_id)
+      .eq("from_unit_id", selectedUnitId)
+      .is("deleted_at", null)
+      .maybeSingle();
+
+    if (conversion) {
+      convertedQuantity = parsedInput.data.quantity_change * Number(conversion.conversion_factor);
+    }
+  }
   
   let transactionType = "STOCK_ADJUSTMENT";
   if (parsedInput.data.reason === "DAMAGE" || parsedInput.data.reason === "EXPIRY") {
@@ -111,12 +129,13 @@ export async function createStockAdjustment(
       transaction_type: transactionType as any,
       reference_type: "MANUAL",
       reference_id: parsedInput.data.reason,
-      quantity_change: quantityChange,
+      quantity_change: convertedQuantity,
       unit_id: ingredient.base_unit_id, // Always post in base unit
       remarks: parsedInput.data.remarks || null,
     });
 
     revalidatePath("/inventory");
+    revalidatePath("/inventory/ledger");
     return null;
   } catch (err: any) {
     return { message: err.message || "An error occurred while posting inventory." };

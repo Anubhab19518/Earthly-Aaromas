@@ -68,20 +68,20 @@ async function updatePoTotalWithTax(supabase: any, poId: string, organizationId:
 
 // ─── Location Validation Helper ──────────────────────────────────────────────
 
-async function isWarehouseLocation(
+async function isValidLocation(
   supabase: any,
   locationId: string,
   organizationId: string
 ): Promise<boolean> {
   const { data: location } = await supabase
     .from("locations")
-    .select("location_types!inner(code)")
+    .select("id")
     .eq("id", locationId)
     .eq("organization_id", organizationId)
     .is("deleted_at", null)
     .single();
 
-  return location?.location_types?.code === "WAREHOUSE";
+  return !!location;
 }
 
 // ─── Compute base quantity from conversions ──────────────────────────────────
@@ -142,9 +142,9 @@ export async function createPurchaseOrder(
   const auth = await getAuthContext(supabase);
   if (!auth) return { message: "Unauthorized." };
 
-  const isWarehouse = await isWarehouseLocation(supabase, parsed.data.locationId, auth.organizationId);
-  if (!isWarehouse) {
-    return { message: "Purchase Orders can only be created for Warehouses." };
+  const isValid = await isValidLocation(supabase, parsed.data.locationId, auth.organizationId);
+  if (!isValid) {
+    return { message: "Invalid destination facility selected." };
   }
 
   const { data: po, error } = await supabase
@@ -221,9 +221,9 @@ export async function updatePurchaseOrder(
   const auth = await getAuthContext(supabase);
   if (!auth) return { message: "Unauthorized." };
 
-  const isWarehouse = await isWarehouseLocation(supabase, parsed.data.locationId, auth.organizationId);
-  if (!isWarehouse) {
-    return { message: "Purchase Orders can only be updated for Warehouses." };
+  const isValid = await isValidLocation(supabase, parsed.data.locationId, auth.organizationId);
+  if (!isValid) {
+    return { message: "Invalid destination facility selected." };
   }
 
   const { error } = await supabase

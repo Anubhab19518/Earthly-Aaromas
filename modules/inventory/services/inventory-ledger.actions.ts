@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/shared/lib/supabase/server";
+import { createAdminClient } from "@/shared/lib/supabase/admin";
 
 export interface LedgerFilter {
   locationId?: string;
@@ -66,14 +67,52 @@ export async function getInventoryLedger(organizationId: string, filter: LedgerF
   let processedData = data || [];
 
   if (processedData.length > 0) {
+    const adminClient = createAdminClient();
     const orderIds = processedData.filter(d => d.reference_type === "RECIPE_CONSUMPTION" && d.reference_id).map(d => d.reference_id);
     const transferNumbers = processedData.filter(d => (d.reference_type === "TRANSFER_IN" || d.reference_type === "TRANSFER_OUT" || d.reference_type === "STOCK_TRANSFER") && d.reference_id).map(d => d.reference_id);
+    const performerIds = Array.from(new Set(processedData.map((d: any) => d.performed_by).filter(Boolean)));
 
-    const [ { data: orders }, { data: transfers }, { data: locations } ] = await Promise.all([
+    const [
+      { data: orders },
+      { data: transfers },
+      { data: locations },
+      { data: allProfiles },
+      { data: authUsersResponse }
+    ] = await Promise.all([
       orderIds.length > 0 ? supabase.from("sales_orders").select("id, order_number").in("id", orderIds) : Promise.resolve({ data: [] }),
       transferNumbers.length > 0 ? supabase.from("stock_transfers").select("transfer_number, source_location_id, destination_location_id").in("transfer_number", transferNumbers) : Promise.resolve({ data: [] }),
       transferNumbers.length > 0 ? supabase.from("locations").select("id, name").eq("organization_id", organizationId) : Promise.resolve({ data: [] }),
+      performerIds.length > 0 ? adminClient.from("profiles").select("id, full_name").in("id", performerIds) : Promise.resolve({ data: [] }),
+      performerIds.length > 0 ? adminClient.auth.admin.listUsers() : Promise.resolve({ data: { users: [] } }),
     ]);
+
+    const profileMap = new Map<string, string>();
+    if (allProfiles) {
+      allProfiles.forEach((p: any) => {
+        if (p.full_name && p.full_name.trim() !== "" && p.full_name.trim() !== "Unknown") {
+          profileMap.set(p.id, p.full_name.trim());
+        }
+      });
+    }
+
+    const authUserMap = new Map<string, string>();
+    if (authUsersResponse?.users) {
+      authUsersResponse.users.forEach((u: any) => {
+        const meta = u.user_metadata || {};
+        const metaName = meta.full_name || meta.name || meta.fullName;
+        if (metaName && metaName.trim() !== "" && metaName.trim() !== "Unknown") {
+          authUserMap.set(u.id, metaName.trim());
+        } else if (u.email) {
+          const prefix = u.email.split("@")[0].replace(/\d+$/, "");
+          const cleanName = (prefix || u.email.split("@")[0])
+            .split(/[._-]/)
+            .filter(Boolean)
+            .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+            .join(" ");
+          authUserMap.set(u.id, cleanName || "Team Member");
+        }
+      });
+    }
 
     processedData = processedData.map(d => {
       let formatted_reference = d.reference_id;
@@ -93,8 +132,20 @@ export async function getInventoryLedger(organizationId: string, filter: LedgerF
       } else if (d.reference_type === "GOODS_RECEIPT") {
         formatted_reference = d.reference_id; // already grn number
       }
+
+      const performerName =
+        profileMap.get(d.performed_by) ||
+        authUserMap.get(d.performed_by) ||
+        (d.profiles?.full_name && d.profiles.full_name.trim() !== "Unknown" ? d.profiles.full_name.trim() : null) ||
+        "System";
       
-      return { ...d, formatted_reference };
+      return {
+        ...d,
+        formatted_reference,
+        profiles: {
+          full_name: performerName
+        }
+      };
     });
   }
 

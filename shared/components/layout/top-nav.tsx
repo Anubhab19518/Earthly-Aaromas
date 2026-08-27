@@ -46,7 +46,6 @@ interface TopNavProps {
 }
 
 const HANDY_NAV_LINKS = [
-  { name: "Orders", href: "/orders" },
   { name: "Inventory", href: "/inventory" },
   { name: "Team", href: "/team" },
   { name: "Menu", href: "/menu" },

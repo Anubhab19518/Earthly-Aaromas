@@ -76,7 +76,10 @@ export function NotificationDropdown({ alerts }: { alerts: InventoryAlert[] }) {
                       </span>
                     </div>
                     <p className="text-xs text-slate-500 mt-1 pl-6">
-                      Current quantity: <strong className="text-slate-700">{alert.quantity}</strong>
+                      Current quantity:{" "}
+                      <strong className="text-slate-700">
+                        {alert.quantity.toLocaleString()} {alert.unitSymbol || ""}
+                      </strong>
                     </p>
                   </DropdownMenuItem>
                 );

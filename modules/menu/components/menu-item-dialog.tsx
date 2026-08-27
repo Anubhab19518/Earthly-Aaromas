@@ -10,6 +10,7 @@ import {
   DollarSign,
   Percent,
   Check,
+  Image as ImageIcon,
 } from "lucide-react";
 import { createMenuItem, updateMenuItem } from "../services/menu.actions";
 import { Input } from "@/shared/components/ui/input";
@@ -62,6 +63,7 @@ export function MenuItemDialog({
   const [name, setName] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [description, setDescription] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
   const [taxCategoryId, setTaxCategoryId] = useState("");
   const [isActive, setIsActive] = useState(true);
 
@@ -77,6 +79,7 @@ export function MenuItemDialog({
         setName(item.name);
         setCategoryId(item.category_id);
         setDescription(item.description || "");
+        setImageUrl(item.image_url || "");
         setTaxCategoryId(item.tax_category_id || "");
         setIsActive(item.is_active);
         setDefaultPrice("");
@@ -84,6 +87,7 @@ export function MenuItemDialog({
         setName("");
         setCategoryId(categories[0]?.id || "");
         setDescription("");
+        setImageUrl("");
         setTaxCategoryId("");
         setIsActive(true);
         setDefaultPrice("");
@@ -111,6 +115,8 @@ export function MenuItemDialog({
       formData.append("name", name.trim());
       formData.append("category_id", categoryId);
       if (description.trim()) formData.append("description", description.trim());
+      if (imageUrl.trim()) formData.append("image_url", imageUrl.trim());
+      else formData.append("image_url", "");
       if (taxCategoryId) formData.append("tax_category_id", taxCategoryId);
       formData.append("is_active", String(isActive));
 
@@ -257,7 +263,38 @@ export function MenuItemDialog({
             </Select>
           </div>
 
-          {/* 5. Description */}
+          {/* 5. Image URL */}
+          <div className="space-y-1">
+            <label className="block text-[11px] font-medium text-slate-700">
+              Image URL (Optional)
+            </label>
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1">
+                <ImageIcon className="absolute left-2.5 top-2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
+                <Input
+                  type="url"
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  placeholder="https://example.com/item-photo.jpg"
+                  className="h-8 text-xs pl-8"
+                />
+              </div>
+              {imageUrl && (
+                <div className="h-8 w-8 rounded border border-slate-200 overflow-hidden bg-slate-50 flex items-center justify-center shrink-0">
+                  <img
+                    src={imageUrl}
+                    alt="Preview"
+                    className="h-full w-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLElement).style.display = "none";
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* 6. Description */}
           <div className="space-y-1">
             <label className="block text-[11px] font-medium text-slate-700">
               Description (Optional)
@@ -271,7 +308,7 @@ export function MenuItemDialog({
             />
           </div>
 
-          {/* 6. Active Toggle */}
+          {/* 7. Active Toggle */}
           <div className="flex items-center gap-2 pt-1">
             <input
               type="checkbox"

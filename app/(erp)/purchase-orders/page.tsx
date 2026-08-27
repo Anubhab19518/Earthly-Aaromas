@@ -55,17 +55,7 @@ export default async function PurchaseOrdersPage() {
 
 
 
-  let canCreate = false;
-  if (activeBranchId) {
-    const activeLocation = locations?.find(l => l.id === activeBranchId);
-    if (activeLocation?.location_types?.code === "WAREHOUSE") {
-      canCreate = true;
-    }
-  } else {
-    // If no active branch is selected (shouldn't happen), assume false.
-    // In some setups "All Locations" might be possible, but standard is restricted.
-    canCreate = false;
-  }
+  const canCreate = Boolean(canManage);
 
   return (
     <section>

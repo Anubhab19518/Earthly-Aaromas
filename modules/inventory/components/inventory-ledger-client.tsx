@@ -251,8 +251,19 @@ export function InventoryLedgerClient({
                         </div>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap font-medium text-slate-600">
-                      {row.profiles?.full_name || "System"}
+                    <td className="px-6 py-4 whitespace-nowrap text-slate-800 font-medium">
+                      <div className="flex items-center gap-2">
+                        <div className={`h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${
+                          (row.profiles?.full_name && row.profiles.full_name !== "System")
+                            ? "bg-indigo-100 text-indigo-700 border border-indigo-200/60"
+                            : "bg-slate-100 text-slate-500 border border-slate-200"
+                        }`}>
+                          {row.profiles?.full_name ? row.profiles.full_name.charAt(0).toUpperCase() : "S"}
+                        </div>
+                        <span className={row.profiles?.full_name === "System" ? "text-slate-500 font-normal" : "text-slate-900 font-medium"}>
+                          {row.profiles?.full_name || "System"}
+                        </span>
+                      </div>
                     </td>
                   </tr>
                   );

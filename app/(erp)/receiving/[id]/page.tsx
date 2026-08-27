@@ -59,9 +59,8 @@ export default async function GrnDetailPage({ params }: Props) {
       .order("name"),
     supabase
       .from("locations")
-      .select("*, location_types!inner(code)")
+      .select("*, location_types(code, name)")
       .eq("organization_id", membership.organization_id)
-      .eq("location_types.code", "WAREHOUSE")
       .is("deleted_at", null)
       .order("name"),
     supabase
@@ -90,6 +89,39 @@ export default async function GrnDetailPage({ params }: Props) {
 
   if (!grn) notFound();
 
+  // If GRN is linked to a PO, fetch PO items and posted receipts for fulfillment tracking
+  let poItems: any[] = [];
+  let postedPoReceipts: any[] = [];
+
+  if (grn.purchase_order_id) {
+    const [{ data: fetchedPoItems }, { data: fetchedPostedReceipts }] = await Promise.all([
+      supabase
+        .from("purchase_order_items")
+        .select("*")
+        .eq("po_id", grn.purchase_order_id),
+      supabase
+        .from("goods_receipt_items")
+        .select(`
+          id,
+          goods_receipt_id,
+          purchase_order_item_id,
+          ingredient_id,
+          received_quantity,
+          converted_base_quantity,
+          goods_receipts!inner (
+            id,
+            purchase_order_id,
+            status
+          )
+        `)
+        .eq("goods_receipts.purchase_order_id", grn.purchase_order_id)
+        .eq("goods_receipts.status", "POSTED"),
+    ]);
+
+    poItems = fetchedPoItems || [];
+    postedPoReceipts = fetchedPostedReceipts || [];
+  }
+
   return (
     <section>
       <GrnDetailView
@@ -101,6 +133,8 @@ export default async function GrnDetailPage({ params }: Props) {
         conversions={conversions || []}
         units={units || []}
         taxCategories={taxCategories || []}
+        poItems={poItems}
+        postedPoReceipts={postedPoReceipts}
         comments={comments}
       />
     </section>

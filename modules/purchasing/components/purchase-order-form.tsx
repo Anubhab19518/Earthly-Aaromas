@@ -94,20 +94,12 @@ export function PurchaseOrderForm({
   const [draftTaxCategoryId, setDraftTaxCategoryId] = useState("");
   const [itemError, setItemError] = useState<string | null>(null);
 
-  // Only show warehouse locations for PO destination
-  const warehouseLocations = useMemo(() => {
-    return locations.filter((loc) => {
-      const typeCode = loc.location_types?.code;
-      return !typeCode || typeCode === "WAREHOUSE" || typeCode === "CENTRAL_WAREHOUSE";
-    });
-  }, [locations]);
-
-  // If no warehouse is selected yet, default to first available warehouse
+  // If no destination location is selected yet, default to first available location
   useEffect(() => {
-    if (!locationId && warehouseLocations.length > 0) {
-      setLocationId(warehouseLocations[0].id);
+    if (!locationId && locations.length > 0) {
+      setLocationId(locations[0].id);
     }
-  }, [locationId, warehouseLocations]);
+  }, [locationId, locations]);
 
   // Selected Supplier details
   const selectedSupplier = useMemo(
@@ -245,7 +237,7 @@ export function PurchaseOrderForm({
       return;
     }
     if (!locationId) {
-      setErrorMessage("Please select a destination warehouse.");
+      setErrorMessage("Please select a destination facility.");
       return;
     }
 
@@ -403,26 +395,36 @@ export function PurchaseOrderForm({
                   )}
                 </div>
 
-                {/* 2. Destination Warehouse */}
+                {/* 2. Destination Facility (Warehouse / Shop) */}
                 <div className="space-y-1">
                   <label className="block text-[11px] font-medium text-slate-700">
-                    Destination Warehouse <span className="text-rose-500">*</span>
+                    Destination Facility (Warehouse / Shop) <span className="text-rose-500">*</span>
                   </label>
                   <Select value={locationId} onValueChange={(val) => setLocationId(val)}>
                     <SelectTrigger className="h-8 text-xs bg-white border-slate-200">
-                      <SelectValue placeholder="Select warehouse facility..." />
+                      <SelectValue placeholder="Select destination facility..." />
                     </SelectTrigger>
                     <SelectContent>
-                      {warehouseLocations.map((l) => (
-                        <SelectItem key={l.id} value={l.id} className="text-xs font-medium py-1.5">
-                          <div className="flex items-center justify-between w-full gap-2">
-                            <span>{l.name}</span>
-                            <span className="font-mono text-[10px] text-blue-600 bg-blue-50 px-1 py-0.2 rounded border border-blue-200/50">
-                              {l.code || "WAREHOUSE"}
-                            </span>
-                          </div>
-                        </SelectItem>
-                      ))}
+                      {locations.map((l) => {
+                        const typeCode = l.location_types?.code || "";
+                        const isWarehouse = typeCode === "WAREHOUSE" || typeCode === "CENTRAL_WAREHOUSE";
+                        const typeName = l.location_types?.name || (isWarehouse ? "Warehouse" : "Shop");
+
+                        return (
+                          <SelectItem key={l.id} value={l.id} className="text-xs font-medium py-1.5">
+                            <div className="flex items-center justify-between w-full gap-2">
+                              <span>{l.name}</span>
+                              <span className={`font-mono text-[10px] px-1 py-0.2 rounded border ${
+                                isWarehouse 
+                                  ? "text-blue-600 bg-blue-50 border-blue-200/50" 
+                                  : "text-emerald-700 bg-emerald-50 border-emerald-200/50"
+                              }`}>
+                                {l.code} • {typeName}
+                              </span>
+                            </div>
+                          </SelectItem>
+                        );
+                      })}
                     </SelectContent>
                   </Select>
                 </div>
@@ -526,7 +528,7 @@ export function PurchaseOrderForm({
                       <th className="py-2 px-3 border-r border-slate-200/80 w-[30%]">Ingredient / Item</th>
                       <th className="py-2 px-3 border-r border-slate-200/80 w-[18%]">Packaging unit</th>
                       <th className="py-2 px-3 border-r border-slate-200/80 w-[12%]">Qty</th>
-                      <th className="py-2 px-3 border-r border-slate-200/80 w-[14%]">Cost (₹)</th>
+                      <th className="py-2 px-3 border-r border-slate-200/80 w-[14%]">Unit Cost (₹)</th>
                       <th className="py-2 px-3 border-r border-slate-200/80 w-[12%]">Tax</th>
                       <th className="py-2 px-3 border-r border-slate-200/80 w-[14%]">Total (₹)</th>
                       <th className="py-2 px-2 text-right w-[4%]"></th>
@@ -574,6 +576,9 @@ export function PurchaseOrderForm({
                             </td>
                             <td className="py-2 px-3 border-r border-slate-200/80 font-mono text-slate-700">
                               ₹{item.expectedCost.toFixed(2)}
+                              {item.unitSymbol && (
+                                <span className="text-[10px] text-slate-400 font-sans ml-0.5">/{item.unitSymbol}</span>
+                              )}
                             </td>
                             <td className="py-2 px-3 border-r border-slate-200/80 text-[11px] text-slate-500">
                               {item.taxRatePercentage > 0 ? `${item.taxRatePercentage}%` : "0%"}
@@ -610,49 +615,47 @@ export function PurchaseOrderForm({
                           <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-end">
                             {/* 1. Ingredient (4 cols) */}
                             <div className="sm:col-span-4 space-y-1">
-                              <label className="text-[10px] font-medium text-slate-500 uppercase">Ingredient</label>
+                              <label className="text-[10px] font-medium text-slate-500 uppercase block">Ingredient</label>
                               <Select
                                 value={draftIngredientId}
                                 onValueChange={(val) => handleSelectDraftIngredient(val)}
                               >
-                                <SelectTrigger className="h-7 text-xs bg-white border-slate-200">
+                                <SelectTrigger className="h-8 text-xs bg-white border-slate-200 px-2.5">
                                   <SelectValue placeholder="Select raw material..." />
                                 </SelectTrigger>
                                 <SelectContent>
                                   {ingredients.map((ing) => (
                                     <SelectItem key={ing.id} value={ing.id} className="text-xs font-medium">
-                                      <div className="flex items-center justify-between w-full gap-2">
-                                        <span>{ing.name}</span>
-                                        {ing.sku && (
-                                          <span className="font-mono text-[10px] text-slate-400">{ing.sku}</span>
-                                        )}
-                                      </div>
+                                      <span className="truncate">{ing.name}</span>
+                                      {ing.sku && (
+                                        <span className="font-mono text-[10px] text-slate-400 ml-1.5 shrink-0">({ing.sku})</span>
+                                      )}
                                     </SelectItem>
                                   ))}
                                 </SelectContent>
                               </Select>
                             </div>
 
-                            {/* 2. Packaging Unit (3 cols) */}
-                            <div className="sm:col-span-3 space-y-1">
-                              <label className="text-[10px] font-medium text-slate-500 uppercase">Unit</label>
+                            {/* 2. Packaging Unit (2 cols) */}
+                            <div className="sm:col-span-2 space-y-1">
+                              <label className="text-[10px] font-medium text-slate-500 uppercase block">Unit</label>
                               <Select value={draftUnitId} onValueChange={(val) => setDraftUnitId(val)}>
-                                <SelectTrigger className="h-7 text-xs bg-white border-slate-200">
+                                <SelectTrigger className="h-8 text-xs bg-white border-slate-200 px-2.5">
                                   <SelectValue placeholder="Unit..." />
                                 </SelectTrigger>
                                 <SelectContent>
                                   {compatibleUnits.map((u) => (
                                     <SelectItem key={u.id} value={u.id} className="text-xs">
-                                      {u.name} ({u.symbol})
+                                      {u.name} ({u.symbol || u.name})
                                     </SelectItem>
                                   ))}
                                 </SelectContent>
                               </Select>
                             </div>
 
-                            {/* 3. Quantity (1.5 cols) */}
+                            {/* 3. Quantity (2 cols) */}
                             <div className="sm:col-span-2 space-y-1">
-                              <label className="text-[10px] font-medium text-slate-500 uppercase">Qty</label>
+                              <label className="text-[10px] font-medium text-slate-500 uppercase block">Qty</label>
                               <Input
                                 variant="underline"
                                 type="number"
@@ -660,13 +663,19 @@ export function PurchaseOrderForm({
                                 min="0.001"
                                 value={draftQuantity}
                                 onChange={(e) => setDraftQuantity(e.target.value)}
-                                className="h-7 text-xs font-mono font-medium text-slate-900 border-b-2 border-blue-500 px-1"
+                                className="h-8 text-xs font-mono font-medium text-slate-900 border-b-2 border-blue-500 px-1"
                               />
                             </div>
 
-                            {/* 4. Unit Cost (1.5 cols) */}
+                            {/* 4. Unit Cost (2 cols) */}
                             <div className="sm:col-span-2 space-y-1">
-                              <label className="text-[10px] font-medium text-slate-500 uppercase">Cost (₹)</label>
+                              <label className="text-[10px] font-medium text-slate-500 uppercase truncate block">
+                                {(() => {
+                                  const u = units.find((u) => u.id === draftUnitId);
+                                  const symbol = u?.symbol || u?.name;
+                                  return symbol ? `Unit Cost (₹/${symbol})` : "Unit Cost (₹)";
+                                })()}
+                              </label>
                               <Input
                                 variant="underline"
                                 type="number"
@@ -674,19 +683,24 @@ export function PurchaseOrderForm({
                                 min="0"
                                 value={draftCost}
                                 onChange={(e) => setDraftCost(e.target.value)}
-                                className="h-7 text-xs font-mono font-medium text-slate-900 border-b-2 border-blue-500 px-1"
+                                placeholder={(() => {
+                                  const u = units.find((u) => u.id === draftUnitId);
+                                  const symbol = u?.symbol || u?.name;
+                                  return symbol ? `₹/${symbol}` : "0.00";
+                                })()}
+                                className="h-8 text-xs font-mono font-medium text-slate-900 border-b-2 border-blue-500 px-1"
                               />
                             </div>
 
-                            {/* 5. Tax (1 col) */}
-                            <div className="sm:col-span-1 space-y-1">
-                              <label className="text-[10px] font-medium text-slate-500 uppercase">Tax</label>
+                            {/* 5. Tax (2 cols) */}
+                            <div className="sm:col-span-2 space-y-1">
+                              <label className="text-[10px] font-medium text-slate-500 uppercase block">Tax Category</label>
                               <Select value={draftTaxCategoryId} onValueChange={(val) => setDraftTaxCategoryId(val)}>
-                                <SelectTrigger className="h-7 text-xs bg-white border-slate-200 px-1">
-                                  <SelectValue placeholder="Tax" />
+                                <SelectTrigger className="h-8 text-xs bg-white border-slate-200 px-2">
+                                  <SelectValue placeholder="No Tax (0%)" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="" className="text-xs">0% None</SelectItem>
+                                  <SelectItem value="" className="text-xs">No Tax (0%)</SelectItem>
                                   {taxCategories.map((tc) => {
                                     const rate = tc.tax_rates?.[0]?.rate_percentage || 0;
                                     return (
@@ -798,11 +812,16 @@ export function PurchaseOrderForm({
             </div>
             {selectedLocation ? (
               <div className="text-[11px] text-slate-600 bg-slate-50 p-2 rounded border border-slate-200/60 space-y-0.5">
-                <p className="font-semibold text-slate-900">{selectedLocation.name}</p>
+                <div className="flex items-center justify-between">
+                  <p className="font-semibold text-slate-900">{selectedLocation.name}</p>
+                  <span className="font-mono text-[9px] px-1 py-0.2 rounded bg-slate-200 text-slate-600">
+                    {selectedLocation.location_types?.name || selectedLocation.location_types?.code || "FACILITY"}
+                  </span>
+                </div>
                 {selectedLocation.address && <p className="text-slate-500">{selectedLocation.address}</p>}
               </div>
             ) : (
-              <p className="text-[11px] text-slate-400 italic">Select a warehouse to view destination</p>
+              <p className="text-[11px] text-slate-400 italic">Select a facility to view destination</p>
             )}
           </div>
 

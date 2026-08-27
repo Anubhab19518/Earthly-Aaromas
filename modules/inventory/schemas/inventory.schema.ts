@@ -62,9 +62,10 @@ export type PostInventoryMovementInput = z.infer<typeof postInventoryMovementSch
 export const stockAdjustmentFormSchema = z.object({
   location_id: z.string().uuid("Please select a location"),
   ingredient_id: z.string().uuid("Please select an ingredient"),
+  unit_id: z.string().uuid().optional(),
   reason: z.enum(["OPENING_STOCK", "ADJUSTMENT", "DAMAGE", "EXPIRY"]),
   quantity_change: z.number().refine((val) => val !== 0, "Quantity cannot be zero"),
-  remarks: z.string().optional(),
+  remarks: z.string().nullable().optional(),
 });
 
 export type StockAdjustmentFormValues = z.infer<typeof stockAdjustmentFormSchema>;

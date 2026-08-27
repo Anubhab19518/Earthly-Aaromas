@@ -51,7 +51,8 @@ export default async function InventoryPage() {
     { data: categories },
     { data: locations },
     { data: units },
-    { data: alertPolicies }
+    { data: alertPolicies },
+    { data: conversions },
   ] = await Promise.all([
     snapshotsQuery,
     supabase
@@ -79,6 +80,11 @@ export default async function InventoryPage() {
       .select("*")
       .eq("organization_id", membership.organization_id)
       .is("deleted_at", null),
+    supabase
+      .from("ingredient_unit_conversions")
+      .select("*")
+      .eq("organization_id", membership.organization_id)
+      .is("deleted_at", null),
   ]);
 
   return (
@@ -90,6 +96,7 @@ export default async function InventoryPage() {
         locations={locations || []}
         units={units || []}
         alertPolicies={alertPolicies || []}
+        conversions={conversions || []}
       />
     </section>
   );

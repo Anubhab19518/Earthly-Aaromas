@@ -341,6 +341,18 @@ export function MenuItemsTable({
                               }`}
                             />
                           </button>
+                          {item.image_url && (
+                            <div className="h-7 w-7 rounded border border-slate-200 overflow-hidden bg-slate-100 shrink-0 mt-0.5">
+                              <img
+                                src={item.image_url}
+                                alt={item.name}
+                                className="h-full w-full object-cover"
+                                onError={(e) => {
+                                  (e.target as HTMLElement).style.display = "none";
+                                }}
+                              />
+                            </div>
+                          )}
                           <div className="min-w-0">
                             <div className="flex items-center gap-1.5">
                               <span className="font-semibold text-slate-900">{item.name}</span>

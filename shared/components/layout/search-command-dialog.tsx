@@ -43,14 +43,6 @@ const SEARCH_OPTIONS: SearchOption[] = [
     icon: UserPlus,
   },
   {
-    id: "action-orders",
-    title: "View Active Orders",
-    description: "Track customer sales transactions and order history",
-    href: "/orders",
-    category: "Quick Actions",
-    icon: ShoppingCart,
-  },
-  {
     id: "action-inventory",
     title: "Check Inventory Snapshot",
     description: "Review current stock levels and ingredient counts",
@@ -65,14 +57,6 @@ const SEARCH_OPTIONS: SearchOption[] = [
     href: "/dashboard",
     category: "Available Pages",
     icon: LayoutDashboard,
-  },
-  {
-    id: "page-orders",
-    title: "Orders & Sales",
-    description: "Real-time POS sales transactions & order records",
-    href: "/orders",
-    category: "Available Pages",
-    icon: ShoppingCart,
   },
   {
     id: "page-inventory",

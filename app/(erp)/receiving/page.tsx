@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/shared/lib/supabase/server";
 import { GrnListTable } from "@/modules/receiving/components/grn-list-table";
-
 import { cookies } from "next/headers";
 
 export default async function ReceivingPage() {
@@ -24,14 +23,14 @@ export default async function ReceivingPage() {
 
   if (!canManage) redirect("/dashboard");
 
-  let grnsQuery = supabase
+  const grnsQuery = supabase
     .from("goods_receipts")
     .select("*")
     .eq("organization_id", membership.organization_id)
     .is("deleted_at", null)
     .order("created_at", { ascending: false });
 
-  const [{ data: suppliers }, { data: warehouseLocations }, { data: purchaseOrders }, { data: allLocations }] = await Promise.all([
+  const [{ data: suppliers }, { data: locations }, { data: purchaseOrders }] = await Promise.all([
     supabase
       .from("suppliers")
       .select("*")
@@ -41,9 +40,8 @@ export default async function ReceivingPage() {
       .order("name"),
     supabase
       .from("locations")
-      .select("*, location_types!inner(code)")
+      .select("*, location_types(code, name)")
       .eq("organization_id", membership.organization_id)
-      .eq("location_types.code", "WAREHOUSE")
       .is("deleted_at", null)
       .order("name"),
     supabase
@@ -52,42 +50,25 @@ export default async function ReceivingPage() {
       .eq("organization_id", membership.organization_id)
       .in("status", ["APPROVED", "SENT", "PARTIAL"])
       .order("created_at", { ascending: false }),
-    supabase
-      .from("locations")
-      .select("*")
-      .eq("organization_id", membership.organization_id)
-      .is("deleted_at", null)
-      .order("name"),
   ]);
 
   const { data: grns } = await grnsQuery;
 
   const cookieStore = await cookies();
-  const activeBranchId = cookieStore.get("active_branch_id")?.value || allLocations?.[0]?.id || "";
+  const activeBranchId = cookieStore.get("active_branch_id")?.value || "";
 
-  const filteredGrns = activeBranchId
+  const filteredGrns = activeBranchId && activeBranchId !== "GLOBAL"
     ? grns?.filter((g) => g.warehouse_location_id === activeBranchId)
     : grns;
-
-
-
-  let canCreate = false;
-  if (activeBranchId) {
-    if (warehouseLocations?.some((wl) => wl.id === activeBranchId)) {
-      canCreate = true;
-    }
-  } else {
-    canCreate = false;
-  }
 
   return (
     <section>
       <GrnListTable
         grns={filteredGrns || []}
         suppliers={suppliers || []}
-        warehouseLocations={warehouseLocations || []}
+        warehouseLocations={locations || []}
         purchaseOrders={purchaseOrders || []}
-        canCreate={canCreate}
+        canCreate={Boolean(canManage)}
       />
     </section>
   );

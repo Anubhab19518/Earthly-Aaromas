@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const purchaseOrderSchema = z.object({
   supplierId: z.string().min(1, "Supplier is required"),
-  locationId: z.string().min(1, "Destination warehouse is required"),
+  locationId: z.string().min(1, "Destination facility / location is required"),
   expectedDeliveryDate: z.string().nullable().optional(),
   notes: z.string().nullable().optional(),
 });
