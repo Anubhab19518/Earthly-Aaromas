@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 
 import { signInSchema } from "@/modules/auth/schemas/auth.schema";
 import { createClient } from "@/shared/lib/supabase/server";
+import { getAppConfig } from "@/shared/lib/supabase/config";
 
 export type SignInState = {
   message: string;
@@ -34,12 +35,13 @@ export async function signIn(
   const { data: roleCode } = await supabase.rpc("get_my_role_code");
 
   // Cache role in a cookie so proxy can route without DB calls
+  const { isProduction } = getAppConfig();
   const cookieStore = await cookies();
   cookieStore.set("tc_role", roleCode ?? "", {
     httpOnly: true,
     path: "/",
     sameSite: "strict",
-    secure: process.env.NODE_ENV === "production",
+    secure: isProduction,
     maxAge: 60 * 60 * 24 * 7, // 7 days
   });
 

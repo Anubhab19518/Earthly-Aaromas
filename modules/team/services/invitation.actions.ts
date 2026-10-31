@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/shared/lib/supabase/server";
 import { createAdminClient } from "@/shared/lib/supabase/admin";
+import { getResendConfig, getAppConfig } from "@/shared/lib/supabase/config";
 import { createInvitationSchema, acceptInvitationSchema } from "@/modules/team/schemas/invitation.schema";
 import crypto from "crypto";
 import { Resend } from "resend";
@@ -195,19 +196,20 @@ export async function createInvitation(
   revalidatePath("/team");
 
   // 6. Send email notification with login credentials
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const { appUrl } = getAppConfig();
   const loginLink = role.code === "OWNER" || role.code === "ADMIN" ? `${appUrl}/login` : `${appUrl}/employee-login`;
 
   console.log(`[DEV] Employee Provisioned: ${parsed.data.email} | Password: ${parsed.data.password} | Login: ${loginLink}`);
 
   try {
-    const resend = new Resend(process.env.RESEND_API_KEY);
-    const fromEmail = process.env.RESEND_FROM_EMAIL || "Earthly Aaromas <onboarding@resend.dev>";
-    await resend.emails.send({
-      from: fromEmail,
-      to: parsed.data.email,
-      subject: "Welcome to Tea-Chain ERP - Your Account Credentials",
-      html: `
+    const { apiKey, fromEmail } = getResendConfig();
+    if (apiKey) {
+      const resend = new Resend(apiKey);
+      await resend.emails.send({
+        from: fromEmail,
+        to: parsed.data.email,
+        subject: "Welcome to Tea-Chain ERP - Your Account Credentials",
+        html: `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 540px; margin: 0 auto; padding: 24px; color: #1e293b; background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0;">
           <h2 style="color: #0f172a; margin-top: 0; font-size: 20px;">Welcome to Tea-Chain ERP</h2>
           <p style="font-size: 14px; line-height: 1.5; color: #475569;">Hello <strong>${parsed.data.fullName}</strong>,</p>
@@ -226,7 +228,8 @@ export async function createInvitation(
           <p style="font-size: 12px; color: #94a3b8; margin-top: 24px;">Please keep your login credentials secure. You can sign in directly at <a href="${loginLink}" style="color: #4f46e5;">${loginLink}</a></p>
         </div>
       `,
-    });
+      });
+    }
   } catch (err) {
     console.error("Resend error sending credentials:", err);
   }

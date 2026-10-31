@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { employeeLoginSchema } from "@/modules/team/schemas/invitation.schema";
 import { createClient } from "@/shared/lib/supabase/server";
+import { getAppConfig } from "@/shared/lib/supabase/config";
 
 export type EmployeeSignInState = {
   message: string;
@@ -40,12 +41,13 @@ export async function employeeSignIn(
   }
 
   // Cache role so proxy can route without DB calls
+  const { isProduction } = getAppConfig();
   const cookieStore = await cookies();
   cookieStore.set("tc_role", roleCode, {
     httpOnly: true,
     path: "/",
     sameSite: "strict",
-    secure: process.env.NODE_ENV === "production",
+    secure: isProduction,
     maxAge: 60 * 60 * 24 * 7,
   });
 

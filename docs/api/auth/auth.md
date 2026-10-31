@@ -14,10 +14,18 @@ info:
   description: Authentication, Multi-Factor Authentication (TOTP), and Organization setup APIs.
 
 paths:
+  /login:
+    get:
+      summary: Owner Login Screen
+      description: Web portal login route for Owners with mandatory TOTP MFA (AAL2) challenge. Redirects to `/dashboard` upon verification.
+  /employee-login:
+    get:
+      summary: Employee Storefront Login Screen
+      description: Dedicated storefront login portal for branch staff and baristas. Directly sets branch context and redirects to `/employee` without requiring administrative MFA.
   /auth/login:
     post:
       summary: Authenticate User
-      description: Logs in an owner or employee using Supabase Auth email and password credentials.
+      description: Logs in an owner or employee using Supabase Auth email and password credentials. Sets `tc_role` cookie (`OWNER` or `EMPLOYEE`) for edge routing.
       operationId: login
       requestBody:
         required: true
